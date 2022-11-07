@@ -88,6 +88,7 @@ public class TransactionsService {
 		else if(type.equalsIgnoreCase("transfer")) {
 			
 			Transfer transfer = new Transfer((LinkedTreeMap) transaction.getTransactionInfo());
+			transfer.setTimestamp(transaction.getTimestamp());
 			transfer.setTransactionId(transaction.getId());
 			transferTransactionsDaoService.save(transfer);
 			
@@ -121,8 +122,7 @@ public class TransactionsService {
 		if(transactionType.equalsIgnoreCase("expense")) {
 			Expense t = expenseTransactionsDaoService.findByTransactionId(transaction.getId());
 			transaction.setTransactionInfo(t);
-			transaction.setWalletSplits(baseWalletsDaoService.findWalletSplitsByTransactionId(transaction.getId()));
-			
+			transaction.setWalletSplits(baseWalletsDaoService.findWalletSplitsByExpenseId(t.getId()));
 		}
 			
 		else if(transactionType.equalsIgnoreCase("income")) {
@@ -176,6 +176,7 @@ public class TransactionsService {
 		}
 		
 		expenseTransactionsDaoService.deleteExpenseSplitByExpenseId(expense.getId());
+		expenseTransactionsDaoService.deleteTagMappingByExpenseId(expense.getId());
 		expenseTransactionsDaoService.deleteById(expense.getId());
 		
 	}
@@ -236,7 +237,6 @@ public class TransactionsService {
     	validatorUtil.nullValidation(transfer.getWalletTo(),errors,"Wallet To ");
     	validatorUtil.nullValidation(transfer.getWalletFrom(),errors,"Wallet From");
     	validatorUtil.nullValidation(transfer.getNote(),errors,"Note");
-    	validatorUtil.nullValidation(transfer.getTimestamp(),errors,"Timestamp");
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
     	
 		
@@ -289,7 +289,7 @@ public class TransactionsService {
 	private void validateBaseTransaction(Transactions newTransaction) {
 		
 		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
-		Long transactioId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
+//		Long transactioId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 		
     	Map<String,String> errors = new HashMap<String,String>();
     	
@@ -299,17 +299,17 @@ public class TransactionsService {
     	
     	
     	// Null Validation
-    	validatorUtil.nullValidation(newTransaction.getType(),errors,"Name");
-    	validatorUtil.nullValidation(newTransaction.getAmount(),errors,"Color");
-    	validatorUtil.nullValidation(newTransaction.getTimestamp(),errors,"Name");
-    	validatorUtil.nullValidation(newTransaction.getWalletSplits(),errors,"Color");
+    	validatorUtil.nullValidation(newTransaction.getType(),errors,"Type");
+    	validatorUtil.nullValidation(newTransaction.getAmount(),errors,"Amoubt");
+    	validatorUtil.nullValidation(newTransaction.getTimestamp(),errors,"Timestamp");
+    	if(newTransaction.getType().equalsIgnoreCase("expense")) validatorUtil.nullValidation(newTransaction.getWalletSplits(),errors,"Wallet Splits");
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
 
-    	// Ownership Validation
-    	if(baseTransactionsDaoService.findById(transactioId)==null) {
-    		errors.put("Trasactions","Not existi in account");
-    		throw new CustomException(errors.toString(),404);
-    	}
+//    	// Ownership Validation
+//    	if(baseTransactionsDaoService.findById(transactioId)==null) {
+//    		errors.put("Trasactions","Not existi in account");
+//    		throw new CustomException(errors.toString(),404);
+//    	}
 		
 	}
 

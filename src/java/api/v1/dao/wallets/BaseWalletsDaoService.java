@@ -2,6 +2,7 @@ package api.v1.dao.wallets;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -148,14 +149,18 @@ public class BaseWalletsDaoService {
 
 	public Wallets update(Wallets wallet) {
 		
+		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
+		Long walletId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
+		
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 
 		int archiveWallet = wallet.getArchiveWallet()==false ? 0 : 1;
 		int excludeFromStats = wallet.getExcludeFromStats()==false ? 0 : 1;
 		
 		// Update Wallet
-		String sql  = "UPDATE `wallets` SET `name`='"+wallet.getName()+"',`archive_wallet`='"+archiveWallet+"',`balance`='"+wallet.getBalance()+"',`exclude_from_stats`='"+excludeFromStats+"' WHERE id="+wallet.getId()+" and user_id="+operatingUser.getId();
+		String sql  = "UPDATE `wallets` SET `name`='"+wallet.getName()+"',`archive_wallet`='"+archiveWallet+"',`balance`='"+wallet.getBalance()+"',`exclude_from_stats`='"+excludeFromStats+"' WHERE id="+walletId+" and user_id="+userId;
 		int rs = dbUtil.executeUpdateQuery(sql);
+		
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		
 		return wallet;
@@ -208,11 +213,11 @@ public class BaseWalletsDaoService {
     	}
 	}
 
-	public Map<Long,Long> findWalletSplitsByTransactionId(Long transactionId){
+	public Map<Long,Long> findWalletSplitsByExpenseId(Long expenseId){
 		Map<Long,Long> walletSplits = new HashMap<Long,Long>();
 		
 		ResultSet rs;
-		String sql = "SELECT * FROM `expense_split` WHERE transaction_id = " + transactionId;
+		String sql = "SELECT * FROM `expense_split` WHERE expense_id = " + expenseId;
 		
 		try {
 			rs = dbUtil.executeSelectionQuery(sql);

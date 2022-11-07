@@ -139,8 +139,9 @@ public class CategoryKeyController extends RestController {
 			
 			
 		}else if(method.equals("DELETE")) {
-			
+
 			categoryService.validateIsOwnerById(userId,categoryId);
+
 			
 		}
 		return true;

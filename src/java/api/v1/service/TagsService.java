@@ -1,9 +1,11 @@
 package api.v1.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import api.v1.contexts.RequestContext;
 import api.v1.dao.TagsDaoService;
 import api.v1.entity.Tags;
 import api.v1.exception.CustomException;
@@ -78,6 +80,11 @@ public class TagsService extends Thread {
 	
     public void validateUpdateTag(Tags newTag) {
 		
+    	Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
+		Long tagId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
+		
+		System.out.println(userId + " "+ tagId);
+		
     	Map<String,String> errors = new HashMap<String,String>();
     	
     	// Supertype Validation
@@ -91,7 +98,8 @@ public class TagsService extends Thread {
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
     	
     	// Ownership Validation
-    	if(tagsDaoService.findById(newTag.getId())==null) {
+    	Tags tag = tagsDaoService.findById(tagId);
+    	if(tag==null || tag.getUserId()!=userId) {
     		errors.put("Tag","Not exist");
     		throw new CustomException(errors.toString(),404);
     	}

@@ -1,5 +1,7 @@
 package api.v1.entity.transactions;
 
+import java.util.Date;
+
 import com.google.gson.internal.LinkedTreeMap;
 
 import lombok.AllArgsConstructor;
@@ -17,12 +19,11 @@ public class Transfer {
 		this.walletTo = ((Double) transactionInfo.get("walletTo")).longValue();
 		this.walletFrom = ((Double) transactionInfo.get("walletFrom")).longValue();
 		this.note = (String) transactionInfo.get("note");
-		this.timestamp = (String) transactionInfo.get("timestamp");
 	}
 	Long id;
 	Long walletTo;
 	Long walletFrom;
 	String note;
-	String timestamp;
+	Date timestamp;
 	Long transactionId;
 }

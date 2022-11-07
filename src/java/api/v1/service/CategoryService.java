@@ -109,7 +109,7 @@ public class CategoryService {
     	Map<String,String> errors = new HashMap<String,String>();
     	
     	// Ownership Validation
-    	if(categoryDaoService.findByCategoryId(userId)==null) {
+    	if(categoryDaoService.findByCategoryId(categoryId)==null) {
     		errors.put("Category","Not found");
     		throw new CustomException(errors.toString(),400);
     	}

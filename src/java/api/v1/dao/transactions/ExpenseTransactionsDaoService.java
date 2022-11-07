@@ -111,5 +111,12 @@ public class ExpenseTransactionsDaoService {
 	}
 
 
+	
+	public void deleteTagMappingByExpenseId(Long expenseId) {
+		String sql = "DELETE FROM expense_tag_mapping WHERE `expense_id` = "+expenseId;
+		ResultSet rs = dbUtil.executeInsertionQuery(sql);
+	}
+
+
 
 }

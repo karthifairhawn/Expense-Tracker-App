@@ -141,6 +141,7 @@ public class TagsKeyController  extends RestController {
 			tagsService.validateTagDeletion(userId, tagId); 
 		}
 		
+		
 		return true;
 	}
 

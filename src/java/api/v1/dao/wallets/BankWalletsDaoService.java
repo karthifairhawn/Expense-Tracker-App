@@ -2,9 +2,12 @@ package api.v1.dao.wallets;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.gson.Gson;
+
+import api.v1.contexts.RequestContext;
 import api.v1.entity.wallets.BankWallets;
 import api.v1.exception.CustomException;
 import api.v1.service.UsersService;
@@ -73,8 +76,11 @@ public class BankWalletsDaoService {
 	
 	public void update(BankWallets wallet, Long walletId) {
 
+		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
+		Long walletIdd = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
+		
 		// Wallet Updation
-		String sql = "UPDATE `bank_wallet` SET `account_number`='"+wallet.getAccountNumber()+"',`ifsc_code`='"+wallet.getIfscCode()+"' WHERE wallet_id="+walletId;
+		String sql = "UPDATE `bank_wallet` SET `account_number`='"+wallet.getAccountNumber()+"',`ifsc_code`='"+wallet.getIfscCode()+"' WHERE wallet_id="+walletIdd;
 		int rs = dbUtil.executeUpdateQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		

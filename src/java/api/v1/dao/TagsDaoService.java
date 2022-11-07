@@ -136,7 +136,7 @@ public class TagsDaoService {
 		
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
-		String query = "SELECT * FROM `tags` where id = " + tagId+" and user_id = " +operatingUser.getId();
+		String query = "SELECT * FROM `tags` where id = " + tagId+" and user_id = " + operatingUser.getId();
 		ResultSet rs;
 		Tags newTag;
 		try {

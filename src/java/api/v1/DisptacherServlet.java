@@ -68,13 +68,15 @@ public class DisptacherServlet extends HttpServlet {
 	
 	private void dispatchRequest(RestController controller, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
+		
 		String method = request.getMethod();
 		
 		String requestBody = RequestContext.getAttribute("requestBody");
 		
 		controller.init(null);
 		Boolean isValidRequest = controller.isValidRequest(requestBody,method);
-		
+		System.out.println(method+"---");
+
 		
 		
 		if(isValidRequest){
