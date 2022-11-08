@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import api.v1.contexts.RequestContext;
 import api.v1.contexts.RestControllerContext;
 import api.v1.controllers.RestController;
+import api.v1.entity.Users;
 import api.v1.exception.CustomException;
 import api.v1.utils.ValidatorUtil;
 
@@ -75,9 +76,18 @@ public class DisptacherServlet extends HttpServlet {
 		
 		controller.init(null);
 		Boolean isValidRequest = controller.isValidRequest(requestBody,method);
-		System.out.println(method+"---");
 
+		Users operatingUser = (Users)RequestContext.getAttribute("user");
+		List<Long> pathKeys = ((ArrayList) RequestContext.getAttribute("pathKeys"));
+		Long userId = null;
 		
+		System.out.println(pathKeys);
+		
+		if(pathKeys.size()>0) userId =  (Long) pathKeys.get(0);
+		
+		if(operatingUser!=null && operatingUser.getId() != userId) {
+			throw new CustomException("You are not authorised to view/edit this data",500);
+		}
 		
 		if(isValidRequest){
 			
