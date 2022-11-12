@@ -17,22 +17,25 @@ public class DatabaseUtil {
 
 	private static DatabaseUtil databaseUtil = null;
 
-	private Connection con;
+
+		private Connection con;
+
+
 	
-	public Connection intiateConnection() throws SQLException {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		return DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "");
-	}
+//	public Connection intiateConnection() throws SQLException {
+//		try {
+//			
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		}
+//		return DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "");
+//	}
 
 	public ResultSet executeInsertionQuery(String query) {
 		System.out.println("Query Execution recieved : " + query);
 
 		try {
-			con = intiateConnection();
+//			con = intiateConnection();
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
 			System.out.println("This query is executed : " + query);
@@ -51,7 +54,7 @@ public class DatabaseUtil {
 		System.out.println("Query Execution recieved : " + query);
 
 		try {
-			con = intiateConnection();
+//			con = intiateConnection();
 			Statement stmt = null;
 			stmt = con.createStatement();
 			int totalUpdates = stmt.executeUpdate(query);
@@ -93,7 +96,7 @@ public class DatabaseUtil {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		con = intiateConnection();
+//		con = intiateConnection();
 		ResultSet rs = null;
 		Statement stmt = con.createStatement();
 		rs = stmt.executeQuery(query+" limit "+limit+" offset "+offset);
@@ -103,7 +106,7 @@ public class DatabaseUtil {
 	
 	public ResultSet executeSelectionQuery(String query) throws SQLException {
 
-		con = intiateConnection();
+//		con = intiateConnection();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
@@ -116,6 +119,13 @@ public class DatabaseUtil {
 	public static DatabaseUtil getInstance() {
 		if (databaseUtil == null) {
 			databaseUtil = new DatabaseUtil();
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+				databaseUtil.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "");
+			} catch (SQLException | ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return databaseUtil;
 	}

@@ -67,7 +67,8 @@ public class ExpenseTransactionsDaoService {
 				expense.setCategoryId(rs.getLong("category_id"));
 				expense.setNote(rs.getString("note"));
 				expense.setReason(rs.getString("reason"));
-				expense.setSpendOn(new Timestamp(rs.getLong("spend_on")).toString());
+				expense.setSpendOn(rs.getString("spend_on"));
+				
 				expense.setTransactionId(transactionId);
 			}
 			

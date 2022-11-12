@@ -12,8 +12,12 @@ import java.util.Map;
 import com.mysql.jdbc.ResultSetMetaData;
 
 import api.v1.contexts.RequestContext;
+import api.v1.dao.wallets.BaseWalletsDaoService;
 import api.v1.entity.Users;
+import api.v1.entity.transactions.Expense;
+import api.v1.entity.transactions.Income;
 import api.v1.entity.transactions.Transactions;
+import api.v1.entity.transactions.Transfer;
 import api.v1.exception.CustomException;
 import api.v1.utils.DatabaseUtil;
 
@@ -22,6 +26,7 @@ public class BaseTransactionsDaoService {
 	DatabaseUtil dbUtil;
 	private BaseTransactionsDaoService() {}
 	private static BaseTransactionsDaoService baseTransactionsDaoService;
+
 	public static BaseTransactionsDaoService getInstance(){
 		if(baseTransactionsDaoService == null){
 			baseTransactionsDaoService = new BaseTransactionsDaoService();
@@ -60,8 +65,13 @@ public class BaseTransactionsDaoService {
 		List<Transactions> incomes = new LinkedList<Transactions>();
 		List<Transactions> transfers = new LinkedList<Transactions>();
 		
+		if(filters==null) {
+			throw new CustomException("Bad Request",400);
+		}
+		
 		int dateFrom = Integer.parseInt(filters.get("from"));
 		int dateTo = Integer.parseInt(filters.get("to"));
+		String fetchType = filters.get("type");
 		
 		String query = "SELECT * FROM `transactions` WHERE (user_id="+operatingUser.getId()+" and timestamp>='"+dateFrom +"') and ( timestamp<='"+dateTo+"')";
 		
@@ -78,6 +88,7 @@ public class BaseTransactionsDaoService {
 				
 				String type = transaction.getType();
 				
+				
 				if(type.equals("expense")) expenses.add(transaction);
 				else if(type.equals("income")) incomes.add(transaction);
 				else if(type.equals("transfer")) transfers.add(transaction);
@@ -90,9 +101,66 @@ public class BaseTransactionsDaoService {
 					new Date().toLocaleString());
 		}
 		
-		allTransactions.put("expenses",expenses);
-		allTransactions.put("incomes",incomes);
-		allTransactions.put("transfers",transfers);
+		if(fetchType.equals(null) || fetchType.equals("expenses")) allTransactions.put("expenses",expenses);
+		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
+		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
+		return allTransactions;
+	}
+
+	
+	public Map<String, List<Transactions>> findAllExpenseBySpendRange(Map<String, String> filters){
+		
+		Users operatingUser = (Users)RequestContext.getAttribute("user");
+		
+		Map<String,List<Transactions>> allTransactions = new HashMap<String,List<Transactions>>();
+		List<Transactions> expenses = new LinkedList<Transactions>();
+		List<Transactions> incomes = new LinkedList<Transactions>();
+		List<Transactions> transfers = new LinkedList<Transactions>();
+		
+		if(filters==null) {
+			throw new CustomException("Bad Request",400);
+		}
+		
+		int dateFrom = Integer.parseInt(filters.get("from"));
+
+		String fetchType = filters.get("type");
+		
+		String dateTo = filters.get("to");
+		dateTo = dateTo.substring(0, 4)+"-"+dateTo.substring(4, 6)+"-"+dateTo.substring(6)+" 23:59";
+		String query = "SELECT * FROM `transactions` LEFT JOIN `expenses` on transactions.id = expenses.transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (expenses.spend_on>='"+dateFrom +"' and  expenses.spend_on<='"+dateTo+"') order	 by `spend_on`";
+		
+		
+		
+		System.out.println("Execution recieved "+query);
+		ResultSet rs;
+		try {
+			rs = dbUtil.executeSelectionQuery(query);
+			ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
+			while (rs.next()) {
+				Transactions transaction = new Transactions();
+				transaction.setId(rs.getLong("id"));
+				transaction.setAmount(rs.getLong("amount"));
+				transaction.setType(rs.getString("type"));
+				transaction.setTimestamp(rs.getTimestamp("timestamp"));
+				
+				String type = transaction.getType();
+				
+				
+				if(type.equals("expense")) expenses.add(transaction);
+				else if(type.equals("income")) incomes.add(transaction);
+				else if(type.equals("transfer")) transfers.add(transaction);
+
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new CustomException("Problem in retriving your wallets please contact admin", 500,
+					new Date().toLocaleString());
+		}
+		
+		if(fetchType.equals(null) || fetchType.equals("expenses")) allTransactions.put("expenses",expenses);
+		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
+		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
 		return allTransactions;
 	}
 

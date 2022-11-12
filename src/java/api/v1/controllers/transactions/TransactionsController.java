@@ -1,6 +1,7 @@
 package api.v1.controllers.transactions;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class TransactionsController extends RestController {
 		
 		String requestBody = (String)RequestContext.getAttribute("requestBody");		
 		Transactions newTransaction = gson.fromJson(requestBody, new TypeToken<Transactions<?>>(){}.getType()); 
-		
+		newTransaction.setTimestamp(new Date()); 
 		
 		newTransaction = transactionsService.save(newTransaction);
 		

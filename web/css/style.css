@@ -1,0 +1,167 @@
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+}
+
+
+
+html, body{
+    width: 100%;
+    height: 100%;
+}
+
+.nav-item{
+    padding: 20px 15px;
+    font-size: 16px;
+    margin:0px 5px; 
+}
+
+.active {
+    border-bottom: 1px solid grey;
+    border-radius: 2px;
+}
+
+
+#date-range-type{
+    background-color: #ececec;
+    padding: 12px;
+}
+
+.label{
+    background-color: #142d4c;
+    padding: 0px 10px;
+    color: white;
+}
+
+.form-select{
+    border-radius: 0px !important;
+    background-color: #ececec !important;
+}
+
+.expense-card, .wallet-card{
+    background-color: #ececec !important;
+    color:#142d4c;
+    margin: 15px 0px;
+}
+
+
+
+
+.expense-card .expense-card-time, .expense-card-amount,.expense-card .title,.expense-card-left .category{
+    width: 250px;
+}
+
+.expense-card-wallet{
+    width: 350px;
+}
+
+.spend-amount{
+    width: 200px;
+}
+
+.wallet-card{
+    font-size: 20px;
+}
+
+.bank-name{
+    width: 350px;
+}
+
+.acct-type{
+    font-size: 17px;
+    opacity: 80%;
+}
+
+.nav-item{
+    cursor: pointer;
+}
+
+.date-grouping{
+    font-size: 20px;
+}
+
+.category-ico, .wallet-card .fa-solid {
+    border-radius: 50%;
+    background-color: #9fd3c7;
+    padding: 8px;
+    color: #385170;
+
+}
+
+#form-category-icon{
+    border-radius: 5px 0px 0px 5px;
+    background-color: #142d4c;
+    padding: 8px;
+    color: #9fd3c7;
+    width: 35px;
+}
+
+#new-category-icon{
+
+    width: 80px;
+    padding: 10px;
+    /* font-size: 20px; */
+}
+
+#expense-more, .url{
+    color: #3366CC;
+    cursor: pointer;
+}
+
+.more-expense-info{
+    display: none;
+
+}
+
+#output {
+  padding: 20px;
+  background: #dadada;
+}
+
+form {
+  margin-top: 20px;
+}
+
+select {
+  width: 300px;
+}
+
+
+.selectize-input .item{
+    background-color:#9fd3c7 !important;
+}
+
+.btn-primary{
+    background-color: #9fd3c7;
+    border-color: #9fd3c7;
+    color: #142d4c;
+}
+
+#new-category-icon, .category-ico, .create-category-ico {
+    font-family: 'Lato', 'Font Awesome 5 Free';
+    font-weight: 900;
+   
+}
+.category-ico{
+    width: 40px;
+    overflow: hidden;
+}
+
+.create-category-ico{
+    width: 70px;
+}
+
+.create-category-option{
+    background-color: #c1dbdb;
+    color: #142d4c;
+    padding: 10px;
+}
+
+
+#spinner{
+    display: none !important;
+    height: 100%;
+    width: 100%;
+    position: absolute !important;
+    backdrop-filter: blur(10px);
+    /* z-index: 999; */
+}

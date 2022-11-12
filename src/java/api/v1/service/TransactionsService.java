@@ -2,6 +2,7 @@ package api.v1.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import com.google.gson.Gson;
@@ -107,7 +108,34 @@ public class TransactionsService {
 
 	public  Map<String, List<Transactions>> findAll(Map<String, String> queryParams){
 		
-		 return baseTransactionsDaoService.findAll(queryParams);
+		Map<String, List<Transactions>> allTransactions =  baseTransactionsDaoService.findAllExpenseBySpendRange(queryParams);
+		
+		if(queryParams.get("type").equals("expenses")) {
+			allTransactions =  baseTransactionsDaoService.findAllExpenseBySpendRange(queryParams);
+		}else {
+			allTransactions =  baseTransactionsDaoService.findAll(queryParams);
+		}
+		 
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.println(allTransactions);
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		 
+		for(Map.Entry<String,List<Transactions>> e: allTransactions.entrySet()) {
+			 List<Transactions> transactions = e.getValue();
+			 
+			 List<Transactions> completeTransaction = new LinkedList<Transactions>();
+			 for(Transactions t:transactions) {
+				 completeTransaction.add(findById(t.getId()));
+			 }
+			 
+			 allTransactions.put(e.getKey(),completeTransaction);
+		 }
+
+		 return allTransactions;
 		 
 
 	}
@@ -301,7 +329,6 @@ public class TransactionsService {
     	// Null Validation
     	validatorUtil.nullValidation(newTransaction.getType(),errors,"Type");
     	validatorUtil.nullValidation(newTransaction.getAmount(),errors,"Amoubt");
-    	validatorUtil.nullValidation(newTransaction.getTimestamp(),errors,"Timestamp");
     	if(newTransaction.getType().equalsIgnoreCase("expense")) validatorUtil.nullValidation(newTransaction.getWalletSplits(),errors,"Wallet Splits");
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
 
