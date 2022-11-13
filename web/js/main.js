@@ -1,4 +1,4 @@
-import {findTransactions,createTransactions} from '../apis/transactions.js';
+import {findTransactions,createTransactions,deleteTransactionsById} from '../apis/transactions.js';
 import {findWalletById, findWallets} from '../apis/wallets.js';
 import {findTagById,findTags} from '../apis/tags.js';
 import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
@@ -15,6 +15,7 @@ $('.nav-item').click(function(){
 
 
 // Mount Dashboard by default
+var currTimeSpan = 'Today';
 mountDashboard();
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
@@ -43,19 +44,35 @@ function mountDashboard(){
 
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
-        let currTimeSpan = 'Today';
+        
         let groupBy= 'Time';
         dateRangeChangeHandler();
         
+        $(".daterangepicker ul").find(`[data-range-key='${currTimeSpan}']`).click();
+
+        // console.log($(".daterangepicker ul").find(`[data-range-key='${currTimeSpan}']`)[0]);
+
+        // console.log(currTimeSpan);
+
+        
 
         // Fetch category info of each expense and populateExpense()
-        async function findAllCategoryInfoByExpense(expenseData){ 
+        async function findAllExpenseDetails(expenseFrom,expenseTo){ 
             
             
+            let expenseData = null;
+            await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>expenseData = data);
+
             // Delete old expense data from dom
             $("#expense-card-container").html("");
 
             let expenses = expenseData.data.expenses;
+
+          
+            if(expenses.length ==0 )[
+                // console.log("no expense data found")
+                $("#expense-card-container").html('<center class="card"><h1 class="card-body">No expense data found</h1></center>')
+            ]
 
             for(let i=0; i<expenses.length; i++){ 
                 
@@ -80,19 +97,17 @@ function mountDashboard(){
 
         // Fetch Wallet Split and tag info then populateExpense
         function populateExpense(walletInfo,expense,categoryInfo){
-            let expenseTemplate = document.getElementById("expense-card-template");
-            let expenseContainer = document.getElementById("expense-card-container");
+
+            let expenseTemplate = $("#expense-card-template")[0];
+            let expenseContainer = $("#expense-card-container")[0];
             let expenseTemplateClone = expenseTemplate.content.cloneNode(true);
             
-            expenseContainer.appendChild(expenseTemplateClone);
-            let currentElement = document.getElementsByClassName("card")[document.getElementsByClassName("card").length-1];
-
-
             // Grouping multiple dasys expense with dates and calculating days's expense 
             if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate && !(currTimeSpan=='Today' || currTimeSpan=='Yesterday')){
                 daysTotalExpense = expense.amount;
                 newDateSection(expense.transactionInfo.spendOn.split(" ")[0]); 
                 listingExpenseDate = expense.transactionInfo.spendOn.split(" ")[0];
+
             }else{
                 daysTotalExpense+=expense.amount;
                 $('#days-total-expense').text(daysTotalExpense); 
@@ -100,10 +115,14 @@ function mountDashboard(){
 
 
 
+            expenseContainer.appendChild(expenseTemplateClone);
+            let currentElement = document.getElementsByClassName("card")[document.getElementsByClassName("card").length-1];
+
+
             // Findign wallet Split
             let walletSplitHtml = '';
             for(let i=0; i<walletInfo.length;i++){
-                walletSplitHtml+='<b>'+walletInfo[i].data.name+'</b>';
+                walletSplitHtml+=''+walletInfo[i].data.name+'';
                 let id = walletInfo[i].data.id;
                 walletSplitHtml+=" - "+expense.walletSplits[id]+" ₹ <br>";
             }
@@ -128,6 +147,18 @@ function mountDashboard(){
             
             // Setting expense data to the dom
             if(categoryInfo.imagePath == undefined) categoryInfo.imagePath = 'f543';
+
+
+            // find wallet type
+            let walletType = null;
+            if(walletInfo.length==1){
+                walletType = walletInfo[0].data.type;
+            }else{
+                walletType = 'Multiple Wallet Split'
+            }
+
+            $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
+            $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".title").text(expense.transactionInfo.reason);
             $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
@@ -135,15 +166,34 @@ function mountDashboard(){
             $(currentElement).find(".category").text(categoryInfo.name);
             $(currentElement).find(".wallet-splits").html(walletSplitHtml);
             $(currentElement).find(".wallet-name").html(walletName);
+
+            $(currentElement).find(".wallet-type").text(walletType);
+
             $(currentElement).find(".spend-on").text(expenseTime);
             $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
-            
+            $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
 
+            // Delete Button Listener
+            $(currentElement).find('.expense-delete-btn').click((event)=>{ 
+                let expenseId =$(event.target).attr('expense-id');
+                $('#spinner').css('display','block');
+
+                deleteTransactionsById(+expenseId).then((data)=> {
+
+                    $('#spinner').css('display','none');
+                    $('.btn-close').click();
+
+
+                    mountExpensesInDashboard();
+                });
+            })
+            // $(currentElement).find(".expense-delete-btn").attr('onclick','deleteExpense('+expense.id+')');
+
+
+            
             function newDateSection(newDate){
                 let dateSection = document.createElement("div");
                 
-                
-
                 // let date = timeOnly[0];
                 let date = newDate.split("-").reverse();
                 date[1] = months[date[1]-1];
@@ -154,12 +204,10 @@ function mountDashboard(){
                 let daysExpenseTemplate = "<span id='days-total-expense'>"+daysTotalExpense+'</span></small></div>';
 
                 
-
                 dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: ₹'+ daysExpenseTemplate;
                 dateSection.style.color = '#385170';
                 expenseContainer.appendChild(dateSection);
             }
-
 
             function formatExpenseTime(expenseTime){
                 if(groupBy=='Time' && (currTimeSpan=='Today' || currTimeSpan=='Yesterday')){
@@ -179,9 +227,11 @@ function mountDashboard(){
                 }
             }
 
+
+
         }     
 
-        // For any change in date range get expense data and findAllCategoryInfoByExpense()
+        // For any change in date range and pass it to findAllExpenseDetails
         function dateRangeChangeHandler(){
             // Date Range Selector
             let start = moment();
@@ -201,30 +251,33 @@ function mountDashboard(){
                 let expenseFrom = start.format('YYYYMMDD').split('-').join('');
                 let expenseTo = end.format('YYYYMMDD').split('-').join('');
 
-                findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>findAllCategoryInfoByExpense(data));
+                findAllExpenseDetails(expenseFrom,expenseTo);
 
 
                 $('#date-range-type').html(timeSpan);
                 currTimeSpan = timeSpan;
             }
 
-            $('#reportrange').daterangepicker({
-                startDate: start,
-                endDate: end,
-                ranges: {
+            let allDateRanges =  {
                 'Today': [moment(), moment()],
                 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
                 'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
                 'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                }
-            }, cb);
+                };
+
+            start = allDateRanges[currTimeSpan][0];
+            end = allDateRanges[currTimeSpan][1];
+
+            $('#reportrange').daterangepicker({ startDate: start, endDate: end, ranges: allDateRanges }, cb);
 
             
-            cb(start, end,'Today');
+            cb(start, end, currTimeSpan);
 
         }   
+
+
 
     }  
 
@@ -388,6 +441,8 @@ function mountDashboard(){
 
             if(usingNewCategory==true) createNewCategory();
 
+                        
+
             function createNewCategory(){
                 let newCategoryName = $('#new-category-input').val();
                 let newCategoryIcon = $('#new-category-icon').val();
@@ -404,19 +459,49 @@ function mountDashboard(){
                 })
             }
 
-            createExpenseApiCall(expenseInfo);
+            if(validateNewExpense(expenseInfo)){
+                createExpenseApiCall(expenseInfo);
+            }
 
             function createExpenseApiCall(expenseInfoo){
+                console.log("create expense api call")
                 expenseInfoo = JSON.stringify(expenseInfoo)
                 $('#spinner').css('display','block');
                 createTransactions(expenseInfoo).then((data)=> {
                     $('#spinner').css('display','none');
                     $('#newRecord .btn-close').click();
-                    // console.log(data);
+                    console.log(data);
                     mountExpensesInDashboard();
                 });
             }
+
+            function validateNewExpense(expenseInfo){
+
+                let error = false;
+
+                if(!expenseInfo.transactionInfo.reason.length>0){
+                    $('#expense-name').css('border-color', 'red');
+                    error = true;
+                }else{
+                    $('#expense-name').css('border-color', '#ced4da');
+
+                }
+
+                if(!expenseInfo.amount>0){
+                    $('#expense-amount').css('border-color', 'red');
+                    error = true;                    
+                }else{
+                    $('#expense-amount').css('border-color', '#ced4da');
+
+                }
+
+
+                return !error;
+            }
+
+
         }
+
     
     }
 
@@ -429,6 +514,11 @@ function mountWallets(){
     walletContainer.appendChild(clone);
 
     listWallets();
+
+    $('#new-wallet-type').click((event)=>{
+        mountWalletSubInforForm(event.target.value)
+    })
+
 
     async  function listWallets(){
 
@@ -463,6 +553,40 @@ function mountWallets(){
 
 
     }
+
+    function mountWalletSubInforForm(walletType){
+
+        $('#wallet-info-form').html('');
+
+        
+
+        if(walletType=='Bank Account'){
+            let bankWalletForm = $('#create-wallet-bank-account')[0];
+            let w1c = bankWalletForm.content.cloneNode(true);
+            $('#wallet-info-form').append(w1c);
+
+        }else if(walletType =='Credit Card'){
+            let creditCardForm = $('#create-wallet-credit-card')[0];
+            let w2c = creditCardForm.content.cloneNode(true);
+            $('#wallet-info-form').append(w2c);
+            
+
+        }else if(walletType == 'Bonus Account'){
+            let bonusAccountForm = $('#create-wallet-bonus-account')[0];
+            let w3c = bonusAccountForm.content.cloneNode(true);
+            $('#wallet-info-form').append(w3c);
+
+
+        }else if(walletType == 'Other'){
+            let otherWalletForm = $('#create-wallet-other')[0];
+            let w4c = otherWalletForm.content.cloneNode(true);
+            $('#wallet-info-form').append(w4c);
+
+
+        }
+    }
+
+
 }
 
 function tConvert (time) {
@@ -476,3 +600,5 @@ function tConvert (time) {
     }
     return time.join (''); // return adjusted time or original string
 }
+
+

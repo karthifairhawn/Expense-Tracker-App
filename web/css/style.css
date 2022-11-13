@@ -34,7 +34,6 @@ html, body{
 
 .form-select{
     border-radius: 0px !important;
-    background-color: #ececec !important;
 }
 
 .expense-card, .wallet-card{
@@ -164,4 +163,27 @@ select {
     position: absolute !important;
     backdrop-filter: blur(10px);
     /* z-index: 999; */
+}
+
+.modal-body .h5{
+    font-weight: 900 !important;
+}
+
+.btn-primary:hover{
+    border-color: #9fd3c7;
+    background-color: #43cead;
+    color: #142d4c;
+    transition: all ease-in-out 500ms;
+}
+
+.input-group-text{
+    width: 80px;
+    display: flex;
+    justify-content: center;
+}
+
+.daterangepicker{
+
+    
+
 }

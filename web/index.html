@@ -143,15 +143,19 @@
                 </div>
                 <div class="modal-body">
 
+                    <div id="form-errors" class="text-danger">
+
+                    </div>
+
                   <form onsubmit="return false;" >
                     <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label">Expense Reason:</label>
+                      <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
                       <input placeholder="new clothes" type="text" class="form-control" id="expense-name">
                     </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label for="message-text" class="col-form-label">Amount:</label>
-                            <span class="url">split ₹ </span>
+                    <div class="mb-3 ">
+                        <div class="d-flex justify-content-between align-items-center form-expense-amount-label">
+                            <label for="message-text" class="col-form-label ">Amount:</label>
+                            <span class="url ">split ₹ </span>
                         </div>
                       
                         <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
@@ -177,9 +181,6 @@
                         <div class="mb-3">
                             <div class="d-flex align-items-center justify-content-between">
                                 <label for="message-text" class="col-form-label" id="category-label">Category:</label>
-                                
-                                <!-- <span class="url" id="create-category-btn">create category </span> -->
-
                             </div>
 
                             <div class="d-flex">
@@ -262,7 +263,8 @@
 
 
             <div class="d-flex flex-column expense-card-left">
-                <span style="font-size: 20px" class="title">Sample Expense</span>
+                <span style="font-size: 19px" class="title">Sample Expense</span>
+                <i><span style="font-size: 15px" class="spend-on"> 5:40 AM</span></i> 
             </div>
 
 
@@ -270,8 +272,9 @@
             <span style="font-size: 20px;" class="expense-card-wallet">
                 <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> 
                 <span class="wallet-name">Isndian Bank</span>
-                |
-                <span style="font-size: 20px" class="spend-on"> 5:40 AM</span>
+                <br>
+                <i><span style="font-size: 15px" class="wallet-type"> Bank Account</span></i> 
+
             </span>
 
 
@@ -280,12 +283,12 @@
             </div>
 
 
-            <a type="button"  class="d-flex align-items-center" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                View
+            <a type="button"  class="d-flex align-items-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                view
             </a>
             
                     
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" class="view-expense-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
@@ -299,7 +302,7 @@
                         <p class="expense-note">Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias odit explicabo pariatur in, excepturi, suscipit accusantium aut sapiente officia, provident dicta? Ea, libero cumque minus doloremque quaerat veniam quas ad.</p>
 
                         <span class="h5">Created on: </span>
-                        <span class="timestamp">dfgsdg</span>
+                        <span class="timestamp"></span>
                         <br>
                         <br>
 
@@ -311,7 +314,7 @@
                         <br>
 
 
-                        <span class="h5">Wallet Splits:  </span>
+                        <span class="h5"><b>Wallet Splits:</b> </span>
                         <br>
                         <span class="wallet-splits"></span>
 
@@ -320,7 +323,9 @@
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Edit</button>
-                      <button type="button" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
+
+
+                     <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id="0""></i>
                     </div>
                   </div>
                 </div>
@@ -333,19 +338,82 @@
 </template>
 
 
-<!-- Wallet section header -->
+<!-- Wallet section  -->
 <template id="wallet-container-header">
 
     <div class="d-flex justify-content-between mt-5 mb-5 container" >
 
         <h3>All Wallets</h3>
-        
-        <span class="btn btn-success">+ New</span>
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            + Add Wallet
+        </button>
+            
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Create New Wallet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+
+                        <div class="input-group">
+                            <span class="input-group-text">Name</span>
+                            <input type="email" class="form-control" id="formControlInput" placeholder="Indian Bank Account">
+                        </div>
+                        <br>
+
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="text" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
+                            <!-- <span class="input-group-text">.00</span> -->
+                        </div>
+
+                        
+                        <br>
+
+                        <div class="input-group">
+                            <span class="input-group-text">Type</span>
+                            <select class="form-select" id="new-wallet-type" aria-label="Small select">
+                                <option selected">select account type</option>
+                                <option value="Bank Account">Bank Account</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Bonus Account">Bonus Account</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input " type="checkbox" id="formSwitchCheckChecked">
+                            <label class="form-check-label" for="formSwitchCheckChecked">Exclude from stats</label>
+                        </div>
+
+
+                        <div id="wallet-info-form"></div>
+
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary">add</button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
 
     </div>
 
 </template>
-
 
 
 <!-- Individual wallet template -->
@@ -366,6 +434,68 @@
     </div> 
 </template>
 
+
+<template id="create-wallet-bank-account">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Acc No.</span>
+        <input type="text" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+    <div class="input-group">
+        <span class="input-group-text">IFSC</span>
+        <input type="text" class="form-control" placeholder="IDIB000K129">
+    </div>
+
+</template>
+
+<template id="create-wallet-credit-card">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Limit ₹</span>
+        <input type="text" class="form-control" placeholder="30000">
+    </div>
+    <br>
+
+    <div class="input-group">
+        <span class="input-group-text">Repay date</span>
+        <input type="date" class="form-control" placeholder="30000">
+    </div>
+    
+
+</template>
+
+<template id="create-wallet-bonus-account">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Note</span>
+        <input type="text" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+</template>
+
+<template id="create-wallet-other">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Note</span>
+        <input type="text" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+</template>
 
 
 

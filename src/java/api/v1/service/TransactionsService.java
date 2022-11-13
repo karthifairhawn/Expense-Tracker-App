@@ -306,6 +306,10 @@ public class TransactionsService {
     	validatorUtil.nullValidation(expense.getReason(),errors,"Get Reason");
     	validatorUtil.nullValidation(expense.getNote(),errors,"Get Note");
     	validatorUtil.nullValidation(expense.getTagId(),errors,"Get Tag Id");
+    	
+    	
+    	if(expense.getReason().equals("")) expense.setReason(expense.getSpendOn()+"'s expense");
+    	
 
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
     	
