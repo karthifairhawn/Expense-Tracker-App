@@ -57,7 +57,7 @@ html, body{
     width: 200px;
 }
 
-.wallet-card{
+.wallet-card, .fs-20{
     font-size: 20px;
 }
 
@@ -157,12 +157,12 @@ select {
 
 
 #spinner{
-    display: none !important;
+    display: none;
     height: 100%;
     width: 100%;
     position: absolute !important;
     backdrop-filter: blur(10px);
-    /* z-index: 999; */
+    z-index: 999;   
 }
 
 .modal-body .h5{
@@ -181,21 +181,6 @@ select {
     display: flex;
     justify-content: center;
 }
-
-/* .create-tag-form{
-    position: absolute;
-
-    backdrop-filter: blur(5px);
-
-    z-index: 999;
-} */
-
-/* .backdrop-center{
-    height: 100%;
-    width: 100%;
-    position: fixed;
-
-} */
 
 .selectize-control.default.multi .selectize-input>div{
     background: none !important;;
@@ -221,4 +206,11 @@ select {
     font-size: 21px;
     transition: all ease-in-out;
 
+}
+
+
+.expense-edit-btn{
+    /* margin: 5px; */
+    background-color: #F08080;
+    color: #142d4c;
 }

@@ -19,7 +19,6 @@ import api.v1.exception.CustomException;
 import api.v1.utils.ValidatorUtil;
 
 
-
 @WebServlet("/api/v1/*")
 public class DisptacherServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -43,6 +42,7 @@ public class DisptacherServlet extends HttpServlet {
 
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
 		
 		String path[] =  request.getPathInfo().length()>0 ? request.getPathInfo().substring(1).split("/") : null ;
 		String exactPath = getExactPath(path);

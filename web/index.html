@@ -35,6 +35,16 @@
 
     </head>
 
+    <div id="spinner">
+        <div style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script>debugger;</script> -->
+
     <body>
 
         <!-- Navbar  -->
@@ -48,23 +58,15 @@
                     <div class="vr"></div>
                     <div class="nav-item" tabs="wallets"><i class="fa-solid fa-wallet"></i> Wallets</div>
                     <div class="vr"></div>
-                    <div class="nav-item" tabs="transactions"><i class="fa-solid fa-money-bill-transfer"></i> Transactions</div>
-                    <div class="vr"></div>
-                    
+            
                     <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i> Analytics</div>
                 
+
                 </div>
 
                 <h5><i class="fa-solid fa-user-tie"></i> Profile</h5>
             </div>
         </nav>
-
-        <!-- Will be enabled on loading data  -->
-        <div id="spinner" class="d-flex align-items-center justify-content-center">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
 
         <!-- DashBoard -->
         <div id="dashboard"> 
@@ -285,8 +287,13 @@
 
 
             <a type="button"  class="d-flex align-items-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                view
+                <i class="fas fa-eye"></i>
             </a>
+            &nbsp;
+            <a type="button"  class="d-flex align-items-center btn btn-primary expense-edit-btn" href="">
+                <i class="fas fa-edit"></i>
+            </a>
+
             
                     
             <div class="modal fade" class="view-expense-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -309,8 +316,6 @@
 
                         <span class="h5">Category : </span>
                         <span class="category"></span>
-
-
                         <br>
                         <br>
 
@@ -429,6 +434,53 @@
 
             <span class="balance">3000 ₹</span>
 
+            <div class="d-flex">
+                <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                    <i class="fas fa-eye"></i>
+                </a>
+
+                <!-- Modal -->
+                <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title bank-name"  id="exampleModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+
+                            <span class="h5">Type: </span>
+                            <span class="acct-type"></span>
+                            <br>
+
+                            <span class="h5">Balance: </span>
+                            <span class="wallet-type balance"></span>
+                            <br>
+
+                            <span class="h5">Exclude from stats: </span>
+                            <span class="wallet-exclude-stats"></span>
+                            <br>
+
+                            <hr>
+
+
+
+
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Edit</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+            
 
 
         </div>
@@ -442,14 +494,14 @@
 
     <div class="input-group">
         <span class="input-group-text">Acc No.</span>
-        <input type="text" class="form-control" placeholder="8746734658743">
+        <input type="text" id="new-wallet-accno" class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
     <br>
 
     <div class="input-group">
         <span class="input-group-text">IFSC</span>
-        <input type="text" class="form-control" placeholder="IDIB000K129">
+        <input type="text" id="new-wallet-ifsc" class="form-control" placeholder="IDIB000K129">
     </div>
 
 </template>
@@ -460,13 +512,13 @@
 
     <div class="input-group">
         <span class="input-group-text">Limit ₹</span>
-        <input type="text" class="form-control" placeholder="30000">
+        <input type="text" id='new-wallet-limit' class="form-control" placeholder="30000">
     </div>
     <br>
 
     <div class="input-group">
         <span class="input-group-text">Repay date</span>
-        <input type="date" class="form-control" placeholder="30000">
+        <input type="date" id="new-wallet-repay" class="form-control" placeholder="30000">
     </div>
     
 
@@ -478,7 +530,7 @@
 
     <div class="input-group">
         <span class="input-group-text">Note</span>
-        <input type="text" class="form-control" placeholder="8746734658743">
+        <input type="text" id="new-wallet-bnote" class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
     <br>
@@ -491,14 +543,12 @@
 
     <div class="input-group">
         <span class="input-group-text">Note</span>
-        <input type="text" class="form-control" placeholder="8746734658743">
+        <input type="text" id='new-wallet-onote' class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
     <br>
 
 </template>
-
-
 
 
 

@@ -1,5 +1,5 @@
 import {findTransactions,createTransactions,deleteTransactionsById} from '../apis/transactions.js';
-import {findWalletById, findWallets} from '../apis/wallets.js';
+import {findWalletById, findWallets,createWallet} from '../apis/wallets.js';
 import {findTagById,findTags,createTag} from '../apis/tags.js';
 import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
 
@@ -284,10 +284,6 @@ function mountDashboard(){
 
     }
 
-    // console.log(23);
-
-
-
     function mountCreateExpenseForm(){
 
         $('.more-expense-info').css('display', 'none'); // Making form default
@@ -394,7 +390,7 @@ function mountDashboard(){
             let allTagsHTML = '';
             for(let i=0;i<allTagsInfo.length;i++){
                 allTagsHTML+='<option value="'+allTagsInfo[i].id+'">'+allTagsInfo[i].name+'</option>'
-                allTags.push(allTagsInfo[i].id);
+                allTags.push(+(allTagsInfo[i].id));
             }
 
             // allTagsHTML+='<option class="text-warning" value="create-tag">create tag</option>'
@@ -495,7 +491,11 @@ function mountDashboard(){
             let note = $('#expense-note').val();
 
 
-            let tagInfo = formSelectedTags;
+            let tagInfo = [];
+
+            for(let i = 0; i < formSelectedTags.length; i++){
+                tagInfo.push(+(formSelectedTags[i]));
+            }
 
             
             // Setting todays date for spend on date
@@ -598,9 +598,12 @@ function mountDashboard(){
                 expenseInfoo = JSON.stringify(expenseInfoo)
                 $('#spinner').css('display','block');
                 createTransactions(expenseInfoo).then((data)=> {
-                    $('#spinner').css('display','none');
+
+                        
+                setTimeout(() => {
+                    $('#spinner').css('display', 'none');
+                }, 2000);
                     $('#newRecord .btn-close').click();
-                    console.log(data);
                     mountExpensesInDashboard();
                 });
             }
@@ -615,6 +618,9 @@ function mountDashboard(){
 }
 
 function mountWallets(){
+
+    $('#wallets').html('');
+
     let walletContainer = document.getElementById("wallets");
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
@@ -629,6 +635,13 @@ function mountWallets(){
 
     $('#create-wallet').click(()=> walletSubmissionHandler());
 
+
+
+    $('#edit-wallet-btn').click((event)=>{
+        
+        
+
+    })
 
     async  function findAllWallets(){
 
@@ -646,7 +659,7 @@ function mountWallets(){
     }
 
 
-    function populateWallets(allWallets,category){
+    async function populateWallets(allWallets,category){
 
         let walletSymbol = {
             'Bank Account': 'fa-building-columns',
@@ -663,17 +676,44 @@ function mountWallets(){
 
         for(let i = 0; i < allWallets.length; i++){
 
-            // Appenndint new card clone to the current creating section
+            // Appennd in new card clone to the current creating section
             let walletCardClone =  $('#wallet-card-template')[0].content.cloneNode(true);
             let currentWalletSection = $(newWalletSection[0]).find(selectinClassName)[0];
-            currentWalletSection.appendChild(walletCardClone);
+            
 
 
             let wallet = allWallets[i];            
             
-            $(newWalletSection).find(".bank-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
-            $(newWalletSection).find('.balance').text( wallet.balance+" ₹")
-            $(newWalletSection).find('.acct-type').text(wallet.type)   
+            $(walletCardClone).find(".bank-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
+            $(walletCardClone).find('.balance').text( wallet.balance+" ₹")
+            $(walletCardClone).find('.acct-type').text(wallet.type)   
+            $(walletCardClone).find('#open-wallet-btn').attr('wallet-id',wallet.id)
+
+            $(walletCardClone).find('#open-wallet-btn').attr('data-bs-target','#walletInfoModal'+wallet.id);
+            $(walletCardClone).find('#walletInfoModal').attr('id','walletInfoModal'+wallet.id);
+            $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
+
+            console.log($(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body')[0]);
+
+            await findWalletById(+(wallet.id)).then((data)=>{
+                
+                data = data.data.walletInfo;
+                
+                let subWalletInfoHtml = '';
+                // allObjects[obj] = data[obj]
+
+                for(const obj in data) {
+                    subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="">'+data[obj]+'</span> <br>'
+                }
+
+                $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(subWalletInfoHtml);
+                
+                console.log(subWalletInfoHtml)
+            })
+
+        
+
+            currentWalletSection.appendChild(walletCardClone);
         }
         
         walletContainer.appendChild(newWalletSection[0]); 
@@ -717,13 +757,58 @@ function mountWallets(){
 
     function walletSubmissionHandler(){
         
-        let walletName = $('#new-wallet-name').value();
-        let acctBalance = $('#new-wallet-balance').value();
-        let walletType = $('#new-wallet-type').value();
-        let walletExludeFromStats = $('#new-wallet-exclude').value();
+        let walletName = $('#new-wallet-name').val();
+        let acctBalance = $('#new-wallet-balance').val();
+        let walletType = $('#new-wallet-type').val();
+        let walletExludeFromStats = $('#new-wallet-exclude').val();
+
+        let newWalletObject = {
+            "name": walletName,
+            "type": walletType,
+            "archiveWallet": false,
+            "balance": +acctBalance,
+            "excludeFromStats": walletExludeFromStats,
+        }
+
+        if(newWalletObject.type=='Bank Account'){
+            newWalletObject['walletInfo'] = {
+                "accountNumber": +($('#new-wallet-accno').val()),
+                "ifscCode": $('#new-wallet-ifsc').val(),
+            }
+        }else if(newWalletObject.type=='Credit Card'){
+            // console.log($('#new-wallet-repay').val())
+            newWalletObject['walletInfo'] = {
+                "repayDate" : $('#new-wallet-repay').val(),
+                "limit": +($('#new-wallet-limit').val())
+             }
+        }else if(newWalletObject.type=='Bonus Account'){
+            newWalletObject['walletInfo'] = {
+                "note" : $('#new-wallet-bnote').val()
+            }
+        }else if(newWalletObject.type=='Other'){
+            newWalletObject['walletInfo'] = {
+                "note" : $('#new-wallet-onote').val()
+            }
+        }
+
+        $('#spinner').css('display', 'block');
+
+        createWallet(JSON.stringify(newWalletObject)).then((data) =>{
+            // console.log(data);  
+
+            setTimeout(() => {
+                $('#spinner').css('display', 'none');
+            }, 2000);
+            $('#wallets .btn-close').click();
+
+            mountWallets();
 
 
+        })
+        
     }
+
+ 
 
 
 }
