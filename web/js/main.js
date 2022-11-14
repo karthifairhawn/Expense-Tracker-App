@@ -1,6 +1,6 @@
 import {findTransactions,createTransactions,deleteTransactionsById} from '../apis/transactions.js';
 import {findWalletById, findWallets} from '../apis/wallets.js';
-import {findTagById,findTags} from '../apis/tags.js';
+import {findTagById,findTags,createTag} from '../apis/tags.js';
 import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
 
 
@@ -49,12 +49,6 @@ function mountDashboard(){
         dateRangeChangeHandler();
         
         $(".daterangepicker ul").find(`[data-range-key='${currTimeSpan}']`).click();
-
-        // console.log($(".daterangepicker ul").find(`[data-range-key='${currTimeSpan}']`)[0]);
-
-        // console.log(currTimeSpan);
-
-        
 
         // Fetch category info of each expense and populateExpense()
         async function findAllExpenseDetails(expenseFrom,expenseTo){ 
@@ -290,6 +284,10 @@ function mountDashboard(){
 
     }
 
+    // console.log(23);
+
+
+
     function mountCreateExpenseForm(){
 
         $('.more-expense-info').css('display', 'none'); // Making form default
@@ -303,6 +301,50 @@ function mountDashboard(){
             $('#expense-more').css('display', 'none');
         })
 
+        $('#split-wallet').click(splitWalletHandler)
+
+        function splitWalletHandler(){
+            
+            if(!IsAllWalletSplitFilled()) return;
+            
+            let formClone = $('.wallet-split1').clone().removeClass('wallet-split1')
+            formClone.find('.message-text').remove();
+            formClone.find('#expense-amount').val(0);
+            formClone.append('<i class="far fa-times-circle"></i>');
+    
+            formClone.find('.far').click((event)=>{
+                $(event.target).closest('.w-split').remove();
+            });
+    
+            $('.wallet-split1').find('#split-wallet').remove();
+    
+            formClone.appendTo($('#all-wallet-splits'));
+            $('.w-split').addClass('d-flex');
+    
+            $('.wallet-name-section').addClass('w90');
+    
+    
+            function IsAllWalletSplitFilled(){
+                let allWalletSplitValues = $('.w-split');
+    
+                for(let k=0; k<allWalletSplitValues.length; k++){
+                    let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
+                    if(amount == 0 || amount==undefined || amount==null){
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','red')
+                        return false;
+                    }else{
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','#ced4da')
+    
+                    }
+                }
+                return true;
+            }
+        }
+
+        let allTags=[];
+        let formSelectedTags = [];
+        
+
 
         listWalletsInForm();
         listCategoriesInForm()
@@ -313,33 +355,86 @@ function mountDashboard(){
         async function listWalletsInForm(){
 
 
+
+            let allWalletsInfo = [];
+
             let allWallets = null;
-            await findWallets().then((data)=> allWallets= (data.data))
-            
+            await findWallets().then((data)=>allWallets = (data.data));
+    
+    
+            for(const wallet in allWallets){
+                
+                
+                for(let kgh=0;kgh<allWallets[wallet].length;kgh++){
+                    allWalletsInfo.push(allWallets[wallet][kgh]);
+                }
+
+            }
+
+            allWallets = allWalletsInfo;
             let allWalletsHTML = '';
+
+            console.log(allWallets)
+
+
             for(let i=0;i<allWallets.length;i++){
                 allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'</option>'
             }
+
+            // console.log(allWallets);
+            
             $('#all-wallets-options').html(allWalletsHTML);
             // $("all-categories-options")
         }
     
         async function listTagsInForm(){
-            let allTags = null;
-            await findTags().then((data)=> allTags= (data.data))
+            let allTagsInfo = null;
+            await findTags().then((data)=> allTagsInfo= (data.data))
             
             let allTagsHTML = '';
-            for(let i=0;i<allTags.length;i++){
-                allTagsHTML+='<option value="'+allTags[i].id+'">'+allTags[i].name+'</option>'
+            for(let i=0;i<allTagsInfo.length;i++){
+                allTagsHTML+='<option value="'+allTagsInfo[i].id+'">'+allTagsInfo[i].name+'</option>'
+                allTags.push(allTagsInfo[i].id);
             }
+
+            // allTagsHTML+='<option class="text-warning" value="create-tag">create tag</option>'
     
             $('#locationSets').html(allTagsHTML);
     
     
             var selector = $('#locationSets');
+            // selector.selectize({
+            //     plugins: ['remove_button']
+            // });
             selector.selectize({
-                plugins: ['remove_button']
-            });
+                delimiter: ",",
+                persist: false,
+                create: function (input) {
+                  return {
+                    value: input,
+                    text: input,
+                  };
+                },
+                plugins: ['remove_button'],
+                selectOnTab : true,
+                onItemAdd: (value,obj)=>{
+                    if(allTags.includes(+value)){
+                        formSelectedTags.push(value);
+                    }else{
+                        createTag(JSON.stringify({
+                            "name":""+value,
+                            "color":"#44545"
+                        })).then((data)=>{
+                            allTags.push(data.data.id);
+                            formSelectedTags.push(data.data.id);
+                        })
+                    }
+                },
+                onItemRemove : ((value)=>{
+                    formSelectedTags = formSelectedTags.filter(e => e != value)
+                    console.log(formSelectedTags)
+                })
+              });
         }
 
         async function listCategoriesInForm(){
@@ -347,6 +442,7 @@ function mountDashboard(){
             
             await findCategories().then((data)=> allCategories= (data.data))
             
+
             let allCategoriesHTML = '';
             allCategoriesHTML+='<option value="0"> General</option>'
             for(let i=0;i<allCategories.length;i++){
@@ -357,10 +453,7 @@ function mountDashboard(){
             $('#all-categories-options').html(allCategoriesHTML);
     
             $('#all-categories-options').change((event)=>{
-    
-                // let icon = $('#all-categories-options').val();
-    
-    
+
                 let icon = $('option:selected', event.target).attr('ico');
     
     
@@ -387,25 +480,25 @@ function mountDashboard(){
                 }
     
             })
+
+
         }
 
         // Final Create Function
         function createNewExpense(){
-            let amount = $('#expense-amount').val();
+            let totalAmount = 0;
             let reason = $('#expense-name').val();
             let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
             let userSpendOn = $('#expense-time').val();
             let walletId = $('#all-wallets-options').val();
             let categoryId = $('#all-categories-options').val();
             let note = $('#expense-note').val();
-            let tagInfo = $('#locationSets').val();
 
 
-            if(tagInfo==null) tagInfo = [];
+            let tagInfo = formSelectedTags;
 
-            for(let i=0; i<tagInfo.length; i++) tagInfo[i] = +(tagInfo[i]);
             
-
+            // Setting todays date for spend on date
             if(userSpendOn.length>0){
 
                 let time =  userSpendOn.split("T")[1];
@@ -422,13 +515,27 @@ function mountDashboard(){
                 
             }
 
+            let walletSplits ={};
+            let allWalletSplitValues = $('.w-split');
+    
+            for(let k=0; k<allWalletSplitValues.length; k++){
+                let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
+                let walletId = $(allWalletSplitValues[k]).find('.form-wallet-list').val();
+                console.log(allWalletSplitValues[k])
+                if(walletSplits[walletId]>0){
+                    walletSplits[walletId]+= +amount;
+                }else{
+                    walletSplits[walletId]= +amount;
+                }
+                totalAmount+= (+amount);
+            }
 
+
+            // Expense info json
             let expenseInfo = {
                 "type" : "expense",
-                "amount" : +amount,
-                "walletSplits" : {
-                    [walletId] : +amount  
-                },
+                "amount" : +totalAmount,
+                "walletSplits" : walletSplits,
                 "transactionInfo" : {
                     "spendOn" : spendOn,
                     "categoryId" : +categoryId,
@@ -438,11 +545,10 @@ function mountDashboard(){
                 }
             }
 
+            console.log(expenseInfo)
 
+            // Create new category if category not exist
             if(usingNewCategory==true) createNewCategory();
-
-                        
-
             function createNewCategory(){
                 let newCategoryName = $('#new-category-input').val();
                 let newCategoryIcon = $('#new-category-icon').val();
@@ -459,22 +565,8 @@ function mountDashboard(){
                 })
             }
 
-            if(validateNewExpense(expenseInfo)){
-                createExpenseApiCall(expenseInfo);
-            }
-
-            function createExpenseApiCall(expenseInfoo){
-                console.log("create expense api call")
-                expenseInfoo = JSON.stringify(expenseInfoo)
-                $('#spinner').css('display','block');
-                createTransactions(expenseInfoo).then((data)=> {
-                    $('#spinner').css('display','none');
-                    $('#newRecord .btn-close').click();
-                    console.log(data);
-                    mountExpensesInDashboard();
-                });
-            }
-
+            // Validate the new expense json
+            if(validateNewExpense(expenseInfo)) createExpenseApiCall(expenseInfo);
             function validateNewExpense(expenseInfo){
 
                 let error = false;
@@ -499,6 +591,21 @@ function mountDashboard(){
                 return !error;
             }
 
+            
+            // Create expense API call to the server
+            function createExpenseApiCall(expenseInfoo){
+                console.log("create expense api call")
+                expenseInfoo = JSON.stringify(expenseInfoo)
+                $('#spinner').css('display','block');
+                createTransactions(expenseInfoo).then((data)=> {
+                    $('#spinner').css('display','none');
+                    $('#newRecord .btn-close').click();
+                    console.log(data);
+                    mountExpensesInDashboard();
+                });
+            }
+
+
 
         }
 
@@ -511,48 +618,70 @@ function mountWallets(){
     let walletContainer = document.getElementById("wallets");
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
+    let usingWalletSplitOnCreation = false;
     walletContainer.appendChild(clone);
 
-    listWallets();
+    findAllWallets();
 
     $('#new-wallet-type').click((event)=>{
         mountWalletSubInforForm(event.target.value)
     })
 
-
-    async  function listWallets(){
-
-        await findWallets().then((data)=>populateWallets(data.data));
-        
-        function populateWallets(allWallets){
-
-            let walletSymbol = {
-                'Bank Account': 'fa-building-columns',
-                'Credit Card': 'fa-credit-card',
-                'Bonus Account':'fa-gift',
-                'Other':'fa-piggy-bank'
-            }
-
-            for(let i = 0; i < allWallets.length; i++){
-                let wallet = allWallets[i];
-                let walletCard = document.getElementById("wallet-card-template");
-                let cardClone = walletCard.content.cloneNode(true);
-                walletContainer.appendChild(cardClone);
-
-                let addedElement = $('#wallets .wallet-card:last-child');
-                
-                addedElement.find(".bank-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
-                addedElement.find('.balance').text( wallet.balance+" ₹")
-                addedElement.find('.acct-type').text(wallet.type)   
-            }
+    $('#create-wallet').click(()=> walletSubmissionHandler());
 
 
+    async  function findAllWallets(){
 
+        let allWallets = null;
+        await findWallets().then((data)=>allWallets = (data.data));
 
+        // console.log(allWallets);
+
+        for(const walletCat in allWallets){
+            
+            let category = walletCat;
+            populateWallets(allWallets[walletCat],category);
         }
+
+    }
+
+
+    function populateWallets(allWallets,category){
+
+        let walletSymbol = {
+            'Bank Account': 'fa-building-columns',
+            'Credit Card': 'fa-credit-card',
+            'Bonus Account':'fa-gift',
+            'Other':'fa-piggy-bank'
+        }
+
+        let categoryAsClass = category.split(' ').join('_');
+        let newWalletSection = $('<div class=""><span class="card-body '+categoryAsClass+'">'+category+'s</span></div>');
+        let selectinClassName = "."+categoryAsClass;
+
+        // console.log(category)
+
+        for(let i = 0; i < allWallets.length; i++){
+
+            // Appenndint new card clone to the current creating section
+            let walletCardClone =  $('#wallet-card-template')[0].content.cloneNode(true);
+            let currentWalletSection = $(newWalletSection[0]).find(selectinClassName)[0];
+            currentWalletSection.appendChild(walletCardClone);
+
+
+            let wallet = allWallets[i];            
+            
+            $(newWalletSection).find(".bank-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
+            $(newWalletSection).find('.balance').text( wallet.balance+" ₹")
+            $(newWalletSection).find('.acct-type').text(wallet.type)   
+        }
+        
+        walletContainer.appendChild(newWalletSection[0]); 
+
 
 
     }
+
 
     function mountWalletSubInforForm(walletType){
 
@@ -584,6 +713,16 @@ function mountWallets(){
 
 
         }
+    }
+
+    function walletSubmissionHandler(){
+        
+        let walletName = $('#new-wallet-name').value();
+        let acctBalance = $('#new-wallet-balance').value();
+        let walletType = $('#new-wallet-type').value();
+        let walletExludeFromStats = $('#new-wallet-exclude').value();
+
+
     }
 
 

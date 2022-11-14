@@ -82,15 +82,6 @@
         <!-- #wallet-container-header template will be loaded here and all wallets will be appeneded -->
         <div id="wallets" class="container"></div>
 
-
-
-
-
-
-
- 
-
-
         
     </body>
 
@@ -152,26 +143,37 @@
                       <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
                       <input placeholder="new clothes" type="text" class="form-control" id="expense-name">
                     </div>
-                    <div class="mb-3 ">
-                        <div class="d-flex justify-content-between align-items-center form-expense-amount-label">
-                            <label for="message-text" class="col-form-label ">Amount:</label>
-                            <span class="url ">split ₹ </span>
-                        </div>
-                      
-                        <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
+
+                    <div class="d-flex flex-row justify-content-between ml-2">
+                        <label class="message-text" for="recipient-name" class="col-form-label">Amount :</label>
+                        <span class="url" id="split-wallet">split</span>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">Wallet :</label>
-                        <select class="form-select" aria-label="Default select" id="all-wallets-options">
-                            <!-- <option selected="">Open this select menu</option>
-                            <option value="1">One</option>
-                            <option value="2">Two</option>
-                            <option value="3">Three</option> -->
-                        </select>                    </div>
+                    <div id="all-wallet-splits">
+                        <div class="w-split wallet-split1 d-flex mb-2">                            
+    
+                            <div class="wallet-name-section  w-75">
+                                <select class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
+                                </select>    
+
+                            </div>
+                            <div class="m-2"></div>
+                            <div class="d-flex flex-column justify-content-center w-25">
+                                <div></div>
+                                <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
+                                
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    
 
 
-                    <div class="d-flex flex-row-reverse">
+
+
+                    <div class="d-flex flex-row-reverse mt-3">
                         <span id="expense-more">+ add more details</span>
                     </div>
                     
@@ -222,9 +224,8 @@
 
                         </div>
 
-                        
-     
-                        
+
+
                     </div>
                     <div class="modal-footer">
                         <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
@@ -364,13 +365,13 @@
 
                         <div class="input-group">
                             <span class="input-group-text">Name</span>
-                            <input type="email" class="form-control" id="formControlInput" placeholder="Indian Bank Account">
+                            <input type="text" id="new-wallet-name" class="form-control" id="formControlInput" placeholder="Indian Bank Account">
                         </div>
                         <br>
 
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
-                            <input type="text" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
+                            <input type="text" id="new-wallet-balance" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
                             <!-- <span class="input-group-text">.00</span> -->
                         </div>
 
@@ -391,7 +392,7 @@
                         <br>
 
                         <div class="form-check form-switch">
-                            <input class="form-check-input " type="checkbox" id="formSwitchCheckChecked">
+                            <input class="form-check-input " type="checkbox" id="new-wallet-exclude">
                             <label class="form-check-label" for="formSwitchCheckChecked">Exclude from stats</label>
                         </div>
 
@@ -400,7 +401,7 @@
 
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary">add</button>
+                            <button type="button" id="create-wallet" class="btn btn-primary">add</button>
                         </div>
 
                     </form>
@@ -423,7 +424,7 @@
 
             <div class="d-flex align-items-center">
                 <div class="bank-name">Indain Bank</div>
-                <div class="acct-type muted"> Bank Account</div>
+                <!-- <div class="acct-type muted"> Bank Account</div> -->
             </div>
 
             <span class="balance">3000 ₹</span>

@@ -1,5 +1,6 @@
 package api.v1.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +76,27 @@ public class WalletsService {
 	}
 	
 	
-	public List<Wallets> findAll() {
+	public Map<String, List<Wallets>> findAll() {
 		
-		return baseWalletsDaoService.findAll();
+		List<Wallets> list = new ArrayList<Wallets>();
+		list.addAll(baseWalletsDaoService.findAll());
+		
+		Map<String,List<Wallets>> allWallets = new HashMap<String, List<Wallets>>();
+		
+		allWallets.put("Bank Account", new ArrayList<Wallets>());
+		allWallets.put("Credit Card", new ArrayList<Wallets>());
+		allWallets.put("Bonus Account", new ArrayList<Wallets>());
+		allWallets.put("Other", new ArrayList<Wallets>());
+		
+		
+		for(Wallets w:list) {
+			if(w.getType().equals("Bank Account")) allWallets.get("Bank Account").add(w);
+			else if(w.getType().equals("Credit Card")) allWallets.get("Credit Card").add(w);
+			else if(w.getType().equals("Bonus Account")) allWallets.get("Bonus Account").add(w);
+			else if(w.getType().equals("Other")) allWallets.get("Other").add(w);
+		}
+		
+		return allWallets;
 	}
 
 	
