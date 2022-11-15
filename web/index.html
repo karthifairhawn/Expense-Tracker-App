@@ -54,12 +54,12 @@
 
                 <div class="d-flex">
 
-                    <div class="nav-item active" tabs="dashboard"><i class="fa-solid fa-house"></i> Dashboard</div>
+                    <div class="nav-item active" tabs="dashboard"><i class="fa-solid fa-house"></i></div>
                     <div class="vr"></div>
-                    <div class="nav-item" tabs="wallets"><i class="fa-solid fa-wallet"></i> Wallets</div>
+                    <div class="nav-item" tabs="wallets"><i class="fa-solid fa-wallet"></i></div>
                     <div class="vr"></div>
             
-                    <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i> Analytics</div>
+                    <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i></div>
                 
 
                 </div>
@@ -94,35 +94,70 @@
 
 <template id="date-range-template">
 
-    <div class="d-flex justify-content-between mt-5 mb-5 container" >
+    
+    <div class="d-flex flex-column justify-content-between mt-5 mb-5 container">
 
-        <div class="d-flex justify-content-center align-items-center">
-            <h3>Expenses</h3>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button type="button" id="new-expense-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">+ New Expense</button>
+        <div class=" mt-2 mb-2 card main-balance">
+            <div class="">
 
+                <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+                    <div class="mi-bal-right">
+                        <span>Available Balance</span>
+                        <span>( <span id="total-acct-count">3</span> accounts)</span>
+
+                        <div class="d-flex">
+                            <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+
+                            <div id="mi-bal-amount" class="display-1">
+                                10,000 ₹
+                            </div>
+                            &nbsp;&nbsp;
+                            <!-- <span class="muted">INR</span> -->
+                        </div>
+                    </div>
+
+                    <button type="button"  class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
+                        + New Expense
+                    </button>
+
+                </div>
+                
+            </div>
         </div>
 
-        <div class="d-flex">
+
+        <hr>
+
+        <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-center align-items-center">
+                <h3>Expenses</h3>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+            </div>
     
             <div class="d-flex">
-                <div class="d-flex justify-content-center align-items-center label"><i class="fa-solid fa-sort"></i></div>
-                <select class="form-select" aria-label="Default select">
-                    <option selected="">Time</option>
-                    <option value="1">Price</option>
-                </select>
+        
+                <div class="d-flex">
+                    <div class="d-flex justify-content-center align-items-center label"><i class="fa-solid fa-sort"></i></div>
+                    <select class="form-select" aria-label="Default select">
+                        <option selected="">Time</option>
+                        <option value="1">Price</option>
+                    </select>
+                </div>
+        
+                <div class="m-1"></div>
+        
+                <div id="reportrange" class="pull-right d-flex" style="background: #fff; cursor: pointer; border: 1px solid #ccc; width: auto">
+                    <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
+                    <span class="date"></span> <b class="caret"></b>
+        
+                    <span id="date-range-type">Today</span>
+                </div>
+        
             </div>
-    
-            <div class="m-1"></div>
-    
-            <div id="reportrange" class="pull-right d-flex" style="background: #fff; cursor: pointer; border: 1px solid #ccc; width: auto">
-                <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
-                <span class="date"></span> <b class="caret"></b>
-    
-                <span id="date-range-type">Today</span>
-            </div>
-    
         </div>
+
+
 
 
 
@@ -244,10 +279,6 @@
     </div>
 
 
-    <div class="container">
-
- 
-    </div>
 
 </template>
 
@@ -347,16 +378,84 @@
 <!-- Wallet section  -->
 <template id="wallet-container-header">
 
-    <div class="d-flex justify-content-between mt-5 mb-5 container" >
 
-        <h3>All Wallets</h3>
 
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-            + Add Wallet
-        </button>
+
+    <!-- <div class="w-100 mt-5 mb-2 wallet-header-balance d-flex justify-content-between align-items-center"> -->
+
+        <div class="mt-5"></div>
+
+        <div class=" mt-2 mb-2 card main-balance">
+            <div class="">
+
+                <div class="mi-bal-header">
+                    <!-- <h4>My Balance </h4> -->
+                </div>
+
+                <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+
+                    
+
+                    <div class="mi-bal-right">
+
+                        
+
+                        <span>Available Balance</span>
+                        <span>( <span id="total-acct-count">3</span> accounts)</span>
+
+                        <div class="d-flex">
+                            <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+
+                            <div id="mi-bal-amount" class="display-1">
+                                10,000 ₹
+                            </div>
+                            &nbsp;&nbsp;
+                            <!-- <span class="muted">INR</span> -->
+                        </div>
+                    </div>
+
+                    <div class="mi-bal-right">
+                        
+                        <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                            <i class="fas fa-wallet"></i>
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </button>
+                    </div>
+
+
+                </div>
+                
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="cards-section">
+            <h3>My Cards</h3>
+
+            <div class="d-flex justify-content-center">
+                <div class="credit-cards m-3 d-flex " id="credit-cards">
+
             
-        <!-- Modal -->
+                </div>    
+            </div>
+
+
+            <div class="cards-scroller card-sc-right  align-items-center justify-content-center">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="cards-scroller card-sc-left align-items-center justify-content-center">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+
+        </div>
+
+
+        
+        <!--Add Wallet Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -417,10 +516,139 @@
             </div>
         </div>
 
-    </div>
+        <!--Add Income Modal -->
+        <div class="modal fade" id="incomeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Add Income</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form class="create-expense-form" onsubmit="return false;">
+                        
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Amount</span>
+                            <input type="text"class="form-control amount" placeholder="20000">
+                        </div>
+                        
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Note</span>
+                            <input type="text" class="form-control note" aria-label="Amount (to the nearest rupee)" placeholder="October Salary...">
+                        </div>
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Wallet</span>
+                            <select class="form-select wallet-selection" name="wallet-selection" id="new-income-wallet">
+
+                            </select>
+                        </div>
+
+
+                        <div class="mt-2 d-flex flex-row-reverse">
+                            <button class="btn btn-success add-income-submit">+ add</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+
 
 </template>
 
+<template id="credit-card-template">
+
+    <div class="cards-container m-3">
+        <div class="credit-card">
+
+            <h4 class="card-name">HDFC Credit Card</h4>
+            <div class="text-danger h5 overdraft-warning">Overdrafted the limit</div>
+
+            <br>
+            <div class="mt-5 mb-5 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="amount">₹ 10,000 </span>  <span class="h3">₹</span>
+                    <div class="days-left">27 days left</div> 
+                </div>
+
+                <div class="d-flex flex-row-reverse">
+                    <div>
+
+                        <span class="display-6 credit-card-used">27</span> % Used 
+                    </div>
+                </div>
+
+            </div>
+
+            
+        </div>
+
+        <!-- Popup Modal -->
+
+        <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="acct-type-ico">
+            
+                    </div>
+                    &nbsp;
+                <h5 class="modal-title card-name wallet-info-label"  id="exampleModalLabel"></h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+
+                    <div class="mb-2">
+
+                        <span class="h5">Balance: </span>
+                        <span class="wallet-type amount wallet-info-label"></span>  ₹
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="h5">Exclude from stats: </span>
+                        <span class="wallet-exclude-stats wallet-info-label"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="h5">Repay in: </span>
+                        <span class="days-left wallet-info-label"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="h5">Card Limit: </span>
+                        <span class="card-limit wallet-info-label"></span>
+                    </div>
+
+
+
+                    <hr>
+
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-warning edit-wallet-btn" id="">Save Changes</button>
+                <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+    </div>
+
+</template>
 
 <!-- Individual wallet template -->
 <template id="wallet-card-template">
@@ -428,11 +656,14 @@
         <div class="card-body d-flex justify-content-between">
 
             <div class="d-flex align-items-center">
+
                 <div class="bank-name">Indain Bank</div>
                 <!-- <div class="acct-type muted"> Bank Account</div> -->
             </div>
 
-            <span class="balance">3000 ₹</span>
+            <div class="d-flex align-items-center justify-content-center">
+                <span class="balance">3000 </span>&nbsp;₹
+            </div> 
 
             <div class="d-flex">
                 <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
@@ -444,7 +675,11 @@
                     <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                        <h5 class="modal-title bank-name"  id="exampleModalLabel"></h5>
+                            <div class="acct-type-ico">
+                    
+                            </div>
+                            &nbsp;
+                        <h5 class="modal-title bank-name wallet-info-label"  id="exampleModalLabel"></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -455,22 +690,19 @@
                             <br>
 
                             <span class="h5">Balance: </span>
-                            <span class="wallet-type balance"></span>
+                            <span class="wallet-type balance wallet-info-label"></span>  ₹
                             <br>
 
                             <span class="h5">Exclude from stats: </span>
-                            <span class="wallet-exclude-stats"></span>
+                            <span class="wallet-exclude-stats wallet-info-label"></span>
                             <br>
 
                             <hr>
 
-
-
-
                         </div>
                         <div class="modal-footer">
-                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Edit</button>
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
+                        <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
+                        <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
                         </div>
                     </div>
                     </div>

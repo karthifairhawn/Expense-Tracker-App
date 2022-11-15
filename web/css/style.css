@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+*{
+    font-family: 'Lato', sans-serif ;
+}
+
+
 h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
 }
@@ -11,13 +18,14 @@ html, body{
 
 .nav-item{
     padding: 20px 15px;
-    font-size: 16px;
+    font-size: 25px;
     margin:0px 5px; 
 }
 
 .active {
-    border-bottom: 1px solid grey;
+    border-bottom: 2px solid #142d4c;
     border-radius: 2px;
+    /* background-color: ; */
 }
 
 
@@ -213,4 +221,193 @@ select {
     /* margin: 5px; */
     background-color: #F08080;
     color: #142d4c;
+}
+
+
+
+
+
+
+.wallet-header-balance{
+    height: 150px;
+    border-collapse: separate; 
+
+    border-radius: 50px;
+}
+
+
+
+.add-wallet-btn{
+    /* height: 40px; */
+    font-size: 30px;
+    width: 70px;
+    position: relative;
+    padding: 10px 10px !important;
+}
+
+.add-wallet-btn .fa-plus{
+    position: absolute;
+    /* top: 30px; */
+    right:0px;
+    bottom: 0px;
+}
+
+.balance-section{
+    color: white    ;
+}
+
+.main-balance{
+    background-color: #1c1d21;
+    border-radius: 15px;
+    color: white;
+}
+
+.mi-bal-body{
+    height: 150px;
+    background-color: #131519;
+    border-radius: 10px;
+}
+
+.main-balance .card-body{
+    /* padding: 20px; */
+}
+
+.mi-bal-left .fas{
+    padding: 10px;
+    background-color: #7da9e6;
+    border-radius: 13px;
+    /* padding: 7px 0px; */
+
+}
+
+.mi-bal-right{
+    padding: 0px 20px;
+    font-weight: 600;
+}
+
+#mi-bal-amount{
+    font-size: 40px;
+    /* font-weight: 500; */
+    padding: 7px 0px;
+}
+
+.credit-card{
+    width: 400px;
+    height: 210px;
+    /* background-color: #131519; */
+    background:linear-gradient(135deg, #17ead9 0%,#6078ea 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.credit-card h4{
+    font-weight: 900;
+}
+
+.credit-card:hover{
+    filter: drop-shadow(3px 10px 10px #17ead89c);
+    transition: all ease-in-out 100ms;
+    cursor: pointer;
+}
+
+.credit-card .amount{
+    font-size: 30px;
+}
+
+.credit-cards{
+    width: 95%;
+    overflow-x: scroll;
+    position: relative;
+    /* padding: 10px; */
+    /* margin: 0px; */
+}
+
+
+
+.credit-cards::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+
+.credit-cards::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: #F5F5F5;
+    height: 3px;
+}
+
+.credit-cards::-webkit-scrollbar-thumb
+{
+	background-color: #0ae;
+	
+	background-image: -webkit-gradient(linear, 0 0, 0 100%,
+	                   color-stop(.5, rgba(255, 255, 255, .2)),
+					   color-stop(.5, transparent), to(transparent));
+}
+.cards-scroller{
+    position: absolute;
+    
+    height: 70%;
+    width: 30px;
+    background-color: rgba(0, 171, 238, 0.226);
+    font-size: 40px;
+    color: rgba(255, 255, 255, 0.226);
+    border-radius: 20px 0px 0px 20px;
+    cursor: pointer;
+    top: 63px;
+}
+
+.card-sc-right {
+    right: 0px;
+    border-radius: 0px 20px 20px 0px;
+    display: flex;
+
+}
+
+.cards-scroller:hover{
+    background-color: rgba(0, 171, 238, 0.596);
+    color: rgba(255, 255, 255, 0.596);
+    transition: all ease-in-out 100ms;
+
+}
+
+.cards-section{
+    position: relative;
+}
+
+.btn-primary{
+    --bs-btn-color: #fff;
+    --bs-btn-bg : #9fd3c7;
+    --bs-btn-border-color: #9fd3c7;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #9fd3c7;
+    --bs-btn-hover-border-color: #9fd3c7;
+    --bs-btn-focus-shadow-rgb: 49,132,253;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #9fd3c7;
+    --bs-btn-active-border-color: #9fd3c7;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #9fd3c7;
+    --bs-btn-disabled-border-color: #9fd3c7;
+}
+
+.wallet-info-label .fas{
+    font-size: 15px;
+    color:orange;
+}
+
+.edit-wallet-btn{
+    display: none;
+}
+
+.card-sc-left{
+    display: none;
+}
+
+.overdraft-warning{
+    display: none;
+    position: absolute;
 }

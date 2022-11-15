@@ -75,7 +75,7 @@ public class BaseWalletsDaoService {
 		List<Wallets> allWallets = new LinkedList<Wallets>();
 		
 		// Wallet Retrivel
-		String sql = "SELECT * FROM `wallets` where user_id = '" + operatingUser.getId() + "'";
+		String sql = "SELECT * FROM `wallets` where user_id = '" + operatingUser.getId() + "' && deleted=0";
 		ResultSet rs;
 		
 		try {
@@ -141,7 +141,7 @@ public class BaseWalletsDaoService {
 		
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
-		String sql = "DELETE FROM wallets WHERE `id` = "+walletId+ " and  user_id = "+operatingUser.getId();
+		String sql = "UPDATE `wallets` SET deleted=1 WHERE `id` = "+walletId+ " and  user_id = "+operatingUser.getId();
 		int rs = dbUtil.executeDeletionionQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account",400,new Date().toLocaleString());
 		

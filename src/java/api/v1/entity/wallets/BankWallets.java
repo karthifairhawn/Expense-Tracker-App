@@ -26,3 +26,4 @@ public class BankWallets{
 //		this.id = walletInfo.get("id")!=null ? (long) walletInfo.get("id") : null;
 	}
 }
+	

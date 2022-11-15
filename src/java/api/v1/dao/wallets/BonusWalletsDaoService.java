@@ -89,7 +89,7 @@ public class BonusWalletsDaoService {
 		// Wallet Updation
 		String sql = "UPDATE `bonus_wallet` SET `note`='"+wallet.getNote()+"' WHERE wallet_id="+walletId;
 		int rs = dbUtil.executeUpdateQuery(sql);
-		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
+//		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		
 	}
 
