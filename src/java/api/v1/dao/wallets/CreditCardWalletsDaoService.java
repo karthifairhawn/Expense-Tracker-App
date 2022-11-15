@@ -39,13 +39,13 @@ public class CreditCardWalletsDaoService {
 	public CreditCardWallets save(CreditCardWallets creditCardWallet, long walletId) {
 		
 		// Getting client info
-		Date repayDate = creditCardWallet.getRepayDate();
-		String repayDatee = new SimpleDateFormat("yyyy-MM-dd").format(repayDate);
-		long limitAmount = creditCardWallet.getLimit();
+		Integer repayDate = creditCardWallet.getRepayDate();
+//		String repayDatee = new SimpleDateFormat("yyyy-MM-dd").format(repayDate);
+		Long limitAmount = creditCardWallet.getLimit();
 		
 
 		// Wallet Creation
-		String sql = "INSERT INTO `credit_card_wallet` (`repay_date`, `limit`, `wallet_id`) VALUES ('" + repayDatee+ "', '" + limitAmount + "', '" + walletId + "')";
+		String sql = "INSERT INTO `credit_card_wallet` (`repay_date`, `limit`, `wallet_id`) VALUES ('" + repayDate+ "', '" + limitAmount + "', '" + walletId + "')";
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);
 		try {
 			rs.next();
@@ -67,11 +67,12 @@ public class CreditCardWalletsDaoService {
 			rs.next();
 			creditCardWallets = new CreditCardWallets();
 			creditCardWallets.setId(Long.parseLong(rs.getString(1)));
-			Date date=new SimpleDateFormat("yyyy-MM-dd").parse(rs.getString(2));  
-			creditCardWallets.setRepayDate(date);
+//			Date date=new SimpleDateFormat("yyyy-MM-dd").parse(rs.getString(2));  
+			creditCardWallets.setRepayDate(Integer.parseInt(rs.getString(2)));
 			creditCardWallets.setLimit((Long.parseLong(rs.getString(3))));
 			
 		}catch(Exception e){
+			e.printStackTrace();
 			throw new CustomException("AN unexpected error occured in credit card retrievel",500,new Date().toLocaleString());
 		}
 		return creditCardWallets;
@@ -84,15 +85,15 @@ public class CreditCardWalletsDaoService {
 
 	
 	public void update(CreditCardWallets wallet, Long walletId) {
-		Date repayDate = wallet.getRepayDate();
-		String repayDatee = new SimpleDateFormat("yyyy-MM-dd").format(repayDate);
+		Integer repayDate = wallet.getRepayDate();
+//		String repayDatee = new SimpleDateFormat("yyyy-MM-dd").format(repayDate);
 		
 		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
 		Long walletIdd = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 
 		
 		// Wallet Updation
-		String sql = "UPDATE `credit_card_wallet` SET `repay_date`='"+repayDatee+"',`limit`='"+wallet.getLimit()+"' WHERE wallet_id="+walletIdd;
+		String sql = "UPDATE `credit_card_wallet` SET `repay_date`='"+repayDate+"',`limit`='"+wallet.getLimit()+"' WHERE wallet_id="+walletIdd;
 		int rs = dbUtil.executeUpdateQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		

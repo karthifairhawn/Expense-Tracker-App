@@ -116,7 +116,7 @@
                         </div>
                     </div>
 
-                    <button type="button"  class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
+                    <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
                         + New Expense
                     </button>
 
@@ -321,12 +321,12 @@
                 <i class="fas fa-eye"></i>
             </a>
             &nbsp;
-            <a type="button"  class="d-flex align-items-center btn btn-primary expense-edit-btn" href="">
+            <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
                 <i class="fas fa-edit"></i>
-            </a>
+            </btn>
 
             
-                    
+            <!-- View Modal         -->
             <div class="modal fade" class="view-expense-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
@@ -359,7 +359,7 @@
 
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Edit</button>
+                      <button type="button" class="btn btn-warning edit-expense-btn" data-bs-dismiss="modal">Edit</button>
 
 
                      <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id="0""></i>
@@ -367,6 +367,122 @@
                   </div>
                 </div>
             </div>
+
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editExpenseForm" class="edit-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Create New Expense</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+    
+                        <div id="form-errors" class="text-danger">
+    
+                        </div>
+    
+                      <form onsubmit="return false;" >
+                        <div class="mb-3">
+                          <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
+                          <input placeholder="new clothes" type="text" class="form-control" id="expense-name">
+                        </div>
+    
+                        <div class="d-flex flex-row justify-content-between ml-2">
+                            <label class="message-text" for="recipient-name" class="col-form-label">Amount :</label>
+                            <span class="url" id="split-wallet">split</span>
+                        </div>
+    
+                        <div id="all-wallet-splits">
+                            <div class="w-split wallet-split1 d-flex mb-2">                            
+        
+                                <div class="wallet-name-section  w-75">
+                                    <select class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
+                                    </select>    
+    
+                                </div>
+                                <div class="m-2"></div>
+                                <div class="d-flex flex-column justify-content-center w-25">
+                                    <div></div>
+                                    <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
+                                    
+                                </div>
+    
+                            </div>
+    
+                        </div>
+    
+                        
+    
+    
+    
+    
+                        <div class="d-flex flex-row-reverse mt-3">
+                            <span id="expense-more">+ add more details</span>
+                        </div>
+                        
+                        <div class="more-expense-info" style="display: none;">
+                            
+    
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <label for="message-text" class="col-form-label" id="category-label">Category:</label>
+                                </div>
+    
+                                <div class="d-flex">
+                                    <!-- <i class=""></i> -->
+                                    <div id="form-category-icon">
+                                        <i class="fa-regular fa-gem d-flex align-items-center justify-content-center"></i> 
+                                    </div>
+    
+                                    <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
+                                    </select>
+    
+                                    <input type="text"  class="form-control" id="new-category-input" placeholder="Food Expense" style="display: none;">
+    
+    
+                                    <select class="form-select" aria-label="Default select" id="all-categories-options">
+                                        <!-- <option selected="">Open this select menu</option>
+                                        <option value="1">One</option>
+                                        <option value="2">Two</option>
+                                        <option value="3">Three</option> -->
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">Spend on:</label>
+                                <input placeholder="new clothes" type="datetime-local" class="form-control" id="expense-time">
+                            </div>
+    
+                            <div class="mb-3">
+                                <label  class="col-form-label">Note:</label>
+                                <textarea placeholder="new clothes" class="form-control" id="expense-note"></textarea>  
+                            </div>
+    
+                            <div class="mb-3">
+                                <label for="message-text" class="col-form-label">Tags:</label>
+                                
+                                <select name="locationSets" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
+                                </select>
+    
+                            </div>
+    
+    
+    
+                        </div>
+                        <div class="modal-footer">
+                            <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
+                        </div>
+    
+                      </form>
+    
+                    </div>
+                  
+                  </div>
+                </div>
+            </div>
+
             
         </div>
     </div>
@@ -574,8 +690,9 @@
             <br>
             <div class="mt-5 mb-5 d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="amount">₹ 10,000 </span>  <span class="h3">₹</span>
-                    <div class="days-left">27 days left</div> 
+                    <span class="amount">₹ 10,000 </span>  <span class="h3">₹</span><br>
+                    <span class="days-left">27 days left</span> 
+                    <span> days left</span>
                 </div>
 
                 <div class="d-flex flex-row-reverse">
@@ -620,8 +737,10 @@
                     </div>
 
                     <div class="mb-2">
-                        <span class="h5">Repay in: </span>
-                        <span class="days-left wallet-info-label"></span>
+                        <span class="h5">Due date: </span>
+                        <span class="due-date wallet-info-label day-selection"></span>
+                        <!-- <span> days left</span> -->
+
                     </div>
 
                     <div class="mb-2">
@@ -702,7 +821,7 @@
                         </div>
                         <div class="modal-footer">
                         <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
-                        <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
+                        <button type="button" class="btn btn-danger delete-wallet-btn   " data-bs-dismiss="modal">Delete</button>
                         </div>
                     </div>
                     </div>
@@ -750,7 +869,41 @@
 
     <div class="input-group">
         <span class="input-group-text">Repay date</span>
-        <input type="date" id="new-wallet-repay" class="form-control" placeholder="30000">
+        <!-- <input type="number" id="new-wallet-repay" class="form-control" placeholder="30000"> -->
+        <select id="new-wallet-repay"" class="form-control">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+            <option value="21">21</option>
+            <option value="22">22</option>
+            <option value="23">23</option>
+            <option value="24">24</option>
+            <option value="25">25</option>
+            <option value="26">26</option>
+            <option value="27">27</option>
+            <option value="28">28</option>
+            <option value="29">29</option>
+            <option value="30">30</option>
+            <option value="31">31</option>
+
+        </select>
     </div>
     
 

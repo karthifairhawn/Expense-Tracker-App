@@ -47,7 +47,7 @@ function mountDashboard(){
     mountExpensesInDashboard();
 
     // Making new expense form default in reopen
-    $('#new-expense-btn').click(()=>{ mountCreateExpenseForm(); });
+    $('#create-expense-btn').click(()=>{ mountCreateExpenseForm(); });
 
     function mountExpensesInDashboard(){
 
@@ -176,6 +176,11 @@ function mountDashboard(){
             $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
             $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
 
+            $(currentElement).find('.edit-expense-btn').click(()=>{
+                    $(currentElement).find('#inExpEditForm').click();
+                console.log($(currentElement).find('.expense-edit-btn'));
+            })
+
             // Delete Button Listener
             $(currentElement).find('.expense-delete-btn').click((event)=>{ 
                 let expenseId =$(event.target).attr('expense-id');
@@ -189,6 +194,7 @@ function mountDashboard(){
 
                     mountExpensesInDashboard();
                 });
+           
             })
             // $(currentElement).find(".expense-delete-btn").attr('onclick','deleteExpense('+expense.id+')');
 
@@ -280,6 +286,7 @@ function mountDashboard(){
 
         }   
 
+        
 
 
     }  
@@ -294,6 +301,7 @@ function mountDashboard(){
     }
 
     function mountCreateExpenseForm(){
+        console.log(123)
 
         $('.more-expense-info').css('display', 'none'); // Making form default
         $('#expense-more').css('display', 'block');  // Making form default
@@ -358,7 +366,7 @@ function mountDashboard(){
         let usingNewCategory = false;
 
         async function listWalletsInForm(){
-
+            console.log(123)
 
 
             let allWalletsInfo = [];
@@ -379,7 +387,6 @@ function mountDashboard(){
             allWallets = allWalletsInfo;
             let allWalletsHTML = '';
 
-            console.log(allWallets)
 
 
             for(let i=0;i<allWallets.length;i++){
@@ -717,8 +724,19 @@ function mountWallets(){
 
             const diffDays = Math.round(Math.abs((fromDate - endDate) / oneDay));
 
-            $(walletCardClone).find('.days-left').text(diffDays+' day left');
+            $(walletCardClone).find('.days-left').text(diffDays);
+            $(walletCardClone).find('.due-date').text(subInfo.repayDate);
 
+            $(walletCardClone).find('.delete-wallet-btn').click(function(event) {
+                let walletId = event.target.getAttribute('wallet-id');
+                console.log(walletId)
+                $('#spinner').show();
+        
+                deleteWalletById(walletId).then(()=>{
+                    $('#spinner').hide();
+                    mountWallets();
+                })
+            })
 
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent    );
             // console.log((wallet.balance +"-"+ subInfo.limit)+" percentage="+(wallet.balance / subInfo.limit) * 100)
@@ -727,44 +745,148 @@ function mountWallets(){
                 $(walletCardClone).find('.overdraft-warning').css('display', 'block');
             }
 
+              // show input box on click
+            $(walletCardClone).find('.wallet-info-label').click((event)=>{
+                inputOnClick(event.target);
+                $('.edit-wallet-btn').show();
+            });
+
+
+            $(walletCardClone).find('.wallet-info-label').hover((event)=>{
+                // console.log(23);
+                $(event.target).append($('<i class="fas fa-edit m-1"></i>'));
+
+            },(event)=>{
+                $(event.target).find('.fas').remove();
+            })
+
+
+            $(walletCardClone).find('.edit-wallet-btn').click((event)=>{
+                handleEditWallet(event);
+             })
+             
+
+            function inputOnClick(element){
+                console.log(23)
+                let textBox = $(element);
+                let text = textBox.text();
+
+                let input = '';
+                if(textBox.hasClass('day-selection')){
+
+                    input = '<select type="text" class="due-date" >'
+                    for(let i=1;i<=30;i++){
+                        input += '<option value="' + i + '">'+i+"</option>";
+                    }
+                    textBox.removeClass('wallet-info-label')
+                    // textBox.parent().removeClass('')
+                    textBox.replaceWith(($(input)));
+                    // input.select();
+                }else{
+
+                    input = '<input id="attribute" class="" type="text" value="' + text + '" />';
+                    input = $(input)
+                    textBox.text('').append(input);
+                    input.select();
+                        
+                    input.blur(function() {
+                        var text = $('#attribute').val();
+                        $('#attribute').parent().text(text);
+                        $('#attribute').remove();
+                    });
+
+
+                }
+
+    
+            }
+
+
+            function handleEditWallet(event) {
+                let cardElement = $(event.target).parent().parent();
+                
+
+                let walletId =  $(event.target).attr('wallet-id');
+                console.log(event.target);
+                let walletInfo = {};
+                walletInfo['name'] = $(cardElement).find('.card-name').text().trim();
+                walletInfo['type'] = 'Credit Card'
+                walletInfo['balance'] = $(cardElement).find('.amount').text();
+                walletInfo['excludeFromStats'] = $(cardElement).find('.wallet-exclude-stats').text();
+                // walletInfo['excludeFromStats'] = false;
+                walletInfo['archiveWallet'] = false;
+    
+                walletInfo['walletInfo'] = {};
+        
+                let walletType = walletInfo['type'];
+                if(walletType=='Bank Account'){
+                    walletInfo['walletInfo']['accountNumber'] = +($(cardElement).find('.accountNumber').text());
+                    walletInfo['walletInfo']['ifscCode'] = $(cardElement).find('.ifscCode').text();
+        
+                }else if(walletType == 'Credit Card'){
+                    walletInfo['walletInfo']['repayDate'] = (($(cardElement).find('.due-date option:selected')).val());
+                    walletInfo['walletInfo']['limit'] = + (($(cardElement).find('.card-limit')).text());
+                
+                }else if(walletType == 'Bonus Account'){
+                    walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
+                }else if(walletType == 'Other'){
+                    walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
+                }
+
+    
+                $('#spinner').show();
+
+                console.log(walletInfo);
+
+                updateWalletById(walletId,JSON.stringify(walletInfo)).then((data)=>{
+                    console.log(data);
+                    $('#spinner').hide();
+                    $(event.target).hide();
+                })
+            }
+
+          
+
             $('#credit-cards').append($(walletCardClone));
              
         }
 
-        let leftWidht = 0;
-        let movedRight = true;
-        $(".card-sc-right").click(function() {
+        $(".card-sc-right").click( function() {
+
             $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() + 400) }, 300);
             
             
-            if(movedRight==true && $('.credit-cards').scrollLeft()<leftWidht){
-                // console.log(23)
+            let totalWidth =  $('.credit-cards')[0].scrollWidth - $('.credit-cards').width() ;
+            let occuredWidth =  $('.credit-cards').scrollLeft();
+
+            console.log(totalWidth + " " + occuredWidth);
+
+            if(totalWidth==occuredWidth){
                 $(".card-sc-right").hide();
             }
-            movedRight = true;
-            // $('.credit-cards').scroll(); 
-            console.log($('.credit-cards').scrollLeft()+" "+leftWidht);
-
-
-            leftWidht+=400;
-
 
         })
 
         $(".card-sc-left").click(function() {
+
             $('.card-sc-right').css('display', 'flex');
             
-            leftWidht-=400;
-            movedRight = false;
-
             $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() - 400) }, 300);
-            // $('.credit-cards').scroll(); 
+           
             if($('.credit-cards').scrollLeft()==0){
                 $('.card-sc-left').css('display', 'none');
             }
         })
 
+        let totalWidth = $('.credit-cards')[0].scrollWidth;
+        let containerWidth = $('.credit-cards').width();
+        if(totalWidth==containerWidth) $(".card-sc-right").hide();
 
+
+
+      
+        
+        
     }
 
     async function populateWallets(allWallets,category){
@@ -778,7 +900,7 @@ function mountWallets(){
 
         if(allWallets.length==0) return;
         let categoryAsClass = category.split(' ').join('_');
-        let newWalletSection = $('<div class=""><span class="card-body '+categoryAsClass+'">'+category+'s</span></div>');
+        let newWalletSection = $('<div class="h4"><span class="card-body '+categoryAsClass+'">'+category+'s</span></div>');
         let selectinClassName = "."+categoryAsClass;
 
         // console.log(category)
@@ -1052,7 +1174,7 @@ function mountWallets(){
         allWallets = allWalletsInfo;
         let allWalletsHTML = '';
 
-        console.log(allWallets)
+        // console.log(allWallets)
 
 
         for(let i=0;i<allWallets.length;i++){
@@ -1100,3 +1222,19 @@ function tConvert (time) {
 }
 
 
+function inputOnClick(element){
+
+    let textBox = $(element);
+    var text = textBox.text();
+    var input = $('<input id="attribute" type="text" value="' + text + '" />')
+    textBox.text('').append(input);
+    input.select();
+
+    input.blur(function() {
+        var text = $('#attribute').val();
+        $('#attribute').parent().text(text);
+        $('#attribute').remove();
+    });
+
+
+}
