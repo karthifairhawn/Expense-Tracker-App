@@ -86,6 +86,7 @@ public class DisptacherServlet extends HttpServlet {
 		if(pathKeys.size()>0) userId =  (Long) pathKeys.get(0);
 		
 		if(operatingUser!=null && operatingUser.getId() != userId) {
+			System.out.println(operatingUser);
 			throw new CustomException("You are not authorised to view/edit this data",500);
 		}
 		

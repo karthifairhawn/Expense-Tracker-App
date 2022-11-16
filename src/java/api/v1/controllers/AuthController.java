@@ -1,6 +1,9 @@
 package api.v1.controllers;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +15,7 @@ import api.v1.annotations.RestControllers;
 import api.v1.contexts.RequestContext;
 import api.v1.dto.CommonObjectResponse;
 import api.v1.dto.auth.LoginDto;
+import api.v1.entity.Users;
 import api.v1.service.UsersService;
 import api.v1.utils.JsonUtil;
 
@@ -51,13 +55,12 @@ public class AuthController extends RestController {
 		// Getting Client Values
 		LoginDto newLogin  = gson.fromJson((String)RequestContext.getAttribute("requestBody"), LoginDto.class); 
 		
-		String resp =  usersService.getAuthToken(newLogin);
 		
 		
 		// Response Processing
-		CommonObjectResponse<String> responseObject = new CommonObjectResponse<String>();
+		CommonObjectResponse<Map<String,String>> responseObject = new CommonObjectResponse<>();
 		responseObject.setStatusCode(200);
-		responseObject.setData(resp);
+		responseObject.setData( usersService.getAuthToken(newLogin));
 		response.setContentType("application/json");
 		response.setStatus(200);
 		response.getWriter().write(gson.toJson(responseObject));

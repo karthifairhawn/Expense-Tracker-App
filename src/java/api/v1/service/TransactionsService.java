@@ -1,6 +1,7 @@
 package api.v1.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class TransactionsService {
 	
     public Transactions save(Transactions transaction) {
     	
+    	transaction.setTimestamp(new Date());
     	transaction = baseTransactionsDaoService.save(transaction);
     	
     	String type = transaction.getType();
@@ -143,14 +145,19 @@ public class TransactionsService {
 	public Transactions findById(Long transactionId) {
 		
 		Transactions transaction = baseTransactionsDaoService.findById(transactionId);	
-		 
+		transaction.setTimestamp(new Date()); 
+		
 		// Getting walletInfo
 		String transactionType = transaction.getType();
 		
 		if(transactionType.equalsIgnoreCase("expense")) {
 			Expense t = expenseTransactionsDaoService.findByTransactionId(transaction.getId());
+			t.setTagId(expenseTransactionsDaoService.findTagMappingById(t.getId()));
+		
+			
 			transaction.setTransactionInfo(t);
 			transaction.setWalletSplits(baseWalletsDaoService.findWalletSplitsByExpenseId(t.getId()));
+			
 		}
 			
 		else if(transactionType.equalsIgnoreCase("income")) {

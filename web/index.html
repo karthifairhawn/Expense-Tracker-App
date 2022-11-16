@@ -64,7 +64,12 @@
 
                 </div>
 
-                <h5><i class="fa-solid fa-user-tie"></i> Profile</h5>
+                <div class="nav-right-options d-flex">
+                    <h5 class="nav-item"><i class="fa-solid fa-user-tie"></i></h5>
+                    &nbsp;&nbsp;&nbsp;
+                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
+                </div>
+
             </div>
         </nav>
 
@@ -82,7 +87,9 @@
 
 
         <!-- #wallet-container-header template will be loaded here and all wallets will be appeneded -->
-        <div id="wallets" class="container"></div>
+        <div id="wallets" class="container">
+
+        </div>
 
         
     </body>
@@ -128,33 +135,29 @@
 
         <hr>
 
-        <div class="d-flex justify-content-between">
-            <div class="d-flex justify-content-center align-items-center">
+        <div class="d-flex justify-content-center">
+
+            <!-- <div class="d-flex justify-content-center align-items-center">
                 <h3>Expenses</h3>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     
+            </div> -->
+
+                    
+            <div id="reportrange" class="pull-right d-flex" style="background: #fff; cursor: pointer; border: 1px solid #ccc; width: auto">
+                <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
+                <span class="date"></span> <b class="caret"></b>
+    
+                <span id="date-range-type">Today</span>
+
+                <span class="reporting-days-total d-flex align-items-center justify-content-center">20000</span>
+                <span class="reporting-total-symbol d-flex align-items-center justify-content-center">₹</span>
             </div>
     
             <div class="d-flex">
-        
-                <div class="d-flex">
-                    <div class="d-flex justify-content-center align-items-center label"><i class="fa-solid fa-sort"></i></div>
-                    <select class="form-select" aria-label="Default select">
-                        <option selected="">Time</option>
-                        <option value="1">Price</option>
-                    </select>
-                </div>
-        
-                <div class="m-1"></div>
-        
-                <div id="reportrange" class="pull-right d-flex" style="background: #fff; cursor: pointer; border: 1px solid #ccc; width: auto">
-                    <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
-                    <span class="date"></span> <b class="caret"></b>
-        
-                    <span id="date-range-type">Today</span>
-                </div>
-        
             </div>
+
+
         </div>
 
 
@@ -289,20 +292,28 @@
         <div class="card-body d-flex align-items-center">
         
 
-            <div class="d-flex flex-row align-items-center expense-card-left">
-                <span class="category-ico d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-trophy" class="category-ico"></i> </span>
-                &nbsp;<span style="font-size: 20px" class="category">Sample Expense</span>
+            <span class="category-ico d-flex align-items-center justify-content-center">
+                <i class="fa-solid fa-trophy" class="category-ico"></i>
+            </span>
+
+            <div class="d-flex flex-column  expense-card-left">
+                
+                <span style="font-size: 30px" class="title">Sample Expense</span>
+
+
+                <div class="d-flex flex-row">
+                    <div class="d-flex flex-row align-items-center" style="width: 300px;">
+                        <span style="font-size: 19px" class="category">Sample Expense</span>
+                        &nbsp;&nbsp;&nbsp;
+                        <i><span style="font-size: 15px" class="spend-on"> 5:40 AM</span></i> 
+                    </div>
+    
+                </div>
+    
+
             </div>
 
-
-            <div class="d-flex flex-column expense-card-left">
-                <span style="font-size: 19px" class="title">Sample Expense</span>
-                <i><span style="font-size: 15px" class="spend-on"> 5:40 AM</span></i> 
-            </div>
-
-
-
+                
             <span style="font-size: 20px;" class="expense-card-wallet">
                 <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> 
                 <span class="wallet-name">Isndian Bank</span>
@@ -312,18 +323,14 @@
             </span>
 
 
-            <div class="d-flex flex-column expense-card-left">
-                <span style="font-size: 20px" class="spend-amount">123 $</span>
-            </div>
-
-
-            <a type="button"  class="d-flex align-items-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <i class="fas fa-eye"></i>
-            </a>
-            &nbsp;
-            <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
+            <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn invisible" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
                 <i class="fas fa-edit"></i>
             </btn>
+
+
+
+
+
 
             
             <!-- View Modal         -->
@@ -331,8 +338,8 @@
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
-                      Amount: <span class="m-2"></span> <span class=" modal-title spend-amount text-red"> </span>
+                    </span> <span class=" modal-title spend-amount text-red"> </span>
+                    <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -373,7 +380,7 @@
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Create New Expense</h5>
+                      <h5 class="modal-title" id="exampleModalLabel">Edit Expense</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -393,7 +400,7 @@
                             <span class="url" id="split-wallet">split</span>
                         </div>
     
-                        <div id="all-wallet-splits">
+                        <div id="all-wallet-splits" class="all-wallet-splits">
                             <div class="w-split wallet-split1 d-flex mb-2">                            
         
                                 <div class="wallet-name-section  w-75">
@@ -416,14 +423,8 @@
     
     
     
-    
-                        <div class="d-flex flex-row-reverse mt-3">
-                            <span id="expense-more">+ add more details</span>
-                        </div>
-                        
-                        <div class="more-expense-info" style="display: none;">
-                            
-    
+
+                        <div class="more-expense-info" style="display:block;">
                             <div class="mb-3">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <label for="message-text" class="col-form-label" id="category-label">Category:</label>
@@ -438,15 +439,12 @@
                                     <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
                                     </select>
     
-                                    <input type="text"  class="form-control" id="new-category-input" placeholder="Food Expense" style="display: none;">
+                                    <input type="text"  class="form-control edit-category-input" id="new-category-input" placeholder="Food Expense" style="display: none;">
     
     
                                     <select class="form-select" aria-label="Default select" id="all-categories-options">
-                                        <!-- <option selected="">Open this select menu</option>
-                                        <option value="1">One</option>
-                                        <option value="2">Two</option>
-                                        <option value="3">Three</option> -->
                                     </select>
+                                    
                                 </div>
                             </div>
                             
@@ -471,6 +469,7 @@
     
     
                         </div>
+                        
                         <div class="modal-footer">
                             <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
                         </div>
@@ -484,6 +483,14 @@
             </div>
 
             
+            <div class="expense-card-bal-cont d-flex align-items-center justify-content-center">
+                <div class="spend-amount">-23 ₹</div>
+
+                
+            </div>
+            <a type="button"  class="align-items-center justify-content-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fas fa-eye"> </i> &nbsp; view 
+            </a>
         </div>
     </div>
 
@@ -494,11 +501,7 @@
 <!-- Wallet section  -->
 <template id="wallet-container-header">
 
-
-
-
     <!-- <div class="w-100 mt-5 mb-2 wallet-header-balance d-flex justify-content-between align-items-center"> -->
-
         <div class="mt-5"></div>
 
         <div class=" mt-2 mb-2 card main-balance">
@@ -536,7 +539,7 @@
                             <i class="fas fa-wallet"></i>
                             <i class="fas fa-plus"></i>
                         </button>
-                        <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
+                        <button type="button" class="btn btn-primary m-2 add-income-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
                             <i class="fas fa-hand-holding-usd"></i>
                         </button>
                     </div>
@@ -548,6 +551,13 @@
         </div>
 
         <hr>
+
+        <div class="card no-wallet-available" style="display: none;">
+            <div class="card-body d-flex align-items-center justify-content-center ">
+                <h4>No Wallet Found! &nbsp;&nbsp; </h4>
+                <span class="url h4">add wallet ?</span>
+            </div>
+        </div>
 
         <div class="cards-section">
             <h3>My Cards</h3>
@@ -775,9 +785,7 @@
         <div class="card-body d-flex justify-content-between">
 
             <div class="d-flex align-items-center">
-
                 <div class="bank-name">Indain Bank</div>
-                <!-- <div class="acct-type muted"> Bank Account</div> -->
             </div>
 
             <div class="d-flex align-items-center justify-content-center">
@@ -827,8 +835,66 @@
                     </div>
                 </div>
 
+            </div>
+            
 
 
+        </div>
+    </div> 
+
+    <div class="card wallet-card m-3" >
+        <div class="card-body d-flex justify-content-between">
+
+            <div class="d-flex align-items-center">
+                <div class="bank-name">Indain Bank</div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-center">
+                <span class="balance">3000 </span>&nbsp;₹
+            </div> 
+
+            <div class="d-flex">
+                <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                    <i class="fas fa-eye"></i>
+                </a>
+
+                <!-- Modal -->
+                <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="acct-type-ico">
+                    
+                            </div>
+                            &nbsp;
+                        <h5 class="modal-title bank-name wallet-info-label"  id="exampleModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+
+                            <span class="h5">Type: </span>
+                            <span class="acct-type"></span>
+                            <br>
+
+                            <span class="h5">Balance: </span>
+                            <span class="wallet-type balance wallet-info-label"></span>  ₹
+                            <br>
+
+                            <span class="h5">Exclude from stats: </span>
+                            <span class="wallet-exclude-stats wallet-info-label"></span>
+                            <br>
+
+                            <hr>
+
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
+                        <button type="button" class="btn btn-danger delete-wallet-btn   " data-bs-dismiss="modal">Delete</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
 
             </div>
             

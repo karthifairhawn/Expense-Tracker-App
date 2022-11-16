@@ -32,6 +32,8 @@ html, body{
 #date-range-type{
     background-color: #ececec;
     padding: 12px;
+    font-weight: 600;
+    /* font-size: 20px; */
 }
 
 .label{
@@ -44,8 +46,14 @@ html, body{
     border-radius: 0px !important;
 }
 
+.expense-card:hover{
+    /* cursor: pointer; */
+    box-shadow: 15px 15px 20px #5f5f5f57;
+    transition: all ease-in-out 150ms;
+
+}
+
 .expense-card, .wallet-card{
-    background-color: #ececec !important;
     color:#142d4c;
     margin: 15px 0px;
 }
@@ -54,16 +62,30 @@ html, body{
 
 
 .expense-card .expense-card-time, .expense-card-amount,.expense-card .title,.expense-card-left .category{
-    width: 250px;
+}
+
+.expense-card-left{
+    padding: 0px 10px;
+
+}
+
+.expense-view-btn{
+    /* display: none; */
+    position: absolute;
+    /* right:0px; */
+    width: 100%;
+    bottom: 0px;
+    height: 100%;
+    opacity: 0%;
+    border-radius: 0px;
+    transition: all ease-in-out 1050ms;
+    /* background-color: #66a2f7 !important; */
 }
 
 .expense-card-wallet{
     width: 350px;
 }
 
-.spend-amount{
-    width: 200px;
-}
 
 .wallet-card, .fs-20{
     font-size: 20px;
@@ -109,6 +131,27 @@ html, body{
     /* font-size: 20px; */
 }
 
+.modal .spend-amount{
+    background-color: #9fd3c7;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0px 10px;
+}
+.modal .title{
+    width: 60%;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0px 10px;
+    border-bottom: 1px solid black;
+
+}
+
+#new-category-icon option{
+    font-family: 'Lato', 'Font Awesome 5 Free';
+}
+
 #expense-more, .url{
     color: #3366CC;
     cursor: pointer;
@@ -151,6 +194,15 @@ select {
 .category-ico{
     width: 40px;
     overflow: hidden;
+    /* padding: 20px; */
+    width: 100px;
+    height: 100px;
+    border-radius: 0px;
+    font-size: 50px;
+}
+
+.expense-card .card-body{
+    padding: 0px;
 }
 
 .create-category-ico{
@@ -237,7 +289,7 @@ select {
 
 
 
-.add-wallet-btn{
+.add-wallet-btn, .add-income-btn{
     /* height: 40px; */
     font-size: 30px;
     width: 70px;
@@ -245,7 +297,7 @@ select {
     padding: 10px 10px !important;
 }
 
-.add-wallet-btn .fa-plus{
+.add-wallet-btn .fa-plus, .add-income-btn .fa-plus{
     position: absolute;
     /* top: 30px; */
     right:0px;
@@ -411,3 +463,37 @@ select {
     display: none;
     position: absolute;
 }
+
+
+.expense-card-bal-cont{
+    width: 200px;
+    height: 100%;
+    border-radius: 0px 5px 5px 0px;
+    background-color: #7da9e6;
+    position: absolute;
+    right: 0;
+}
+
+.expense-card-bal-cont .spend-amount{
+    font-size: 30px;
+    color: #142d4c;
+    font-weight: 900;   
+    /* top: 20px; */
+    padding: 4px;
+}
+
+.reporting-days-total{
+    padding: 10px 20px;
+    /* background-color: ; */
+}
+
+.reporting-total-symbol{
+    padding: 10px;
+    background-color: #142d4c;
+    color: white;
+    font-weight: 600;
+    /* font-weight: 40px !important; */
+    /* font-family: 'Lato', 'Font Awesome 5 Free'; */
+}
+
+

@@ -1,11 +1,11 @@
 import { server,orgin } from '../config/apiConfig.js';
 
 var myHeaders = new Headers();
-myHeaders.append("Authorization", "Bearer 2d1adb5f75376ff7b3a5feb3682590b9");
+myHeaders.append("Authorization", "Bearer "+localStorage.getItem('authToken'));
 myHeaders.append("Access-Control-Allow-Origin", orgin);
 
 
-var userId= 1;
+var userId= localStorage.getItem('userId');
 
 
 
@@ -13,7 +13,6 @@ var userId= 1;
 
 // Create Transactions
 async function createTransactions(raw) {
-    console.log(raw)
     var postRequestOptions = {method: 'POST',headers: myHeaders,body: raw,redirect: 'follow'};
     const response = await fetch(server+"/api/v1/users/"+userId+"/transactions", postRequestOptions);
     return await response.json();

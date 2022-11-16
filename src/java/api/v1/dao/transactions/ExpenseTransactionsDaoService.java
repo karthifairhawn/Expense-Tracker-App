@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import api.v1.entity.transactions.Expense;
@@ -33,6 +35,7 @@ public class ExpenseTransactionsDaoService {
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy, hh:mm:ss aa");
 		    Date parsedDate = dateFormat.parse(spendOn);
+		    
 		    Timestamp spendOnTimestamp = new Timestamp(parsedDate.getTime());
 			
 			Long categoryId = expense.getCategoryId();
@@ -101,6 +104,24 @@ public class ExpenseTransactionsDaoService {
 		return map;
 	}
 
+	public List<Long> findTagMappingById(Long id){
+		List<Long> allTags = new LinkedList<Long>();
+		
+		try {
+			String sql = "SELECT * FROM expense_tag_mapping WHERE expense_id = "+id;
+			ResultSet rs = dbUtil.executeSelectionQuery(sql);
+			
+			while(rs.next()){
+			
+				Long tagId = rs.getLong("tag_id");
+				allTags.add(tagId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new CustomException("Expense not found.",404);
+		}	
+		return allTags;
+	}
 	public void deleteExpenseSplitByExpenseId(Long expenseId) {
 		String sql = "DELETE FROM expense_split WHERE `expense_id` = "+expenseId;
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);

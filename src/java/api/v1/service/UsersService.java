@@ -40,7 +40,7 @@ public class UsersService {
     
     // Authentication Service ---------------------------------------------------------------------------------
     
-    public String getAuthToken(LoginDto loginData){
+    public Map<String, String> getAuthToken(LoginDto loginData){
     	
     
     	String authToken = "Authentication failed";
@@ -50,10 +50,14 @@ public class UsersService {
     	String s = user.getEmail()+"HelloWorl!23$#%%34"+new Date().toLocaleString();
         authToken = hashingUtil.md5(s);
         
+        Map<String,String> resp = new HashMap<String,String>();
+//		Users user = usersService.getAuthToken(newLogin);
+        resp.put("authToken",authToken);
+        resp.put("userId",""+user.getId());
         
         usersDaoService.updateAuthTokenByEmail(user.getEmail(), authToken);
         
-        return authToken;
+        return resp;
     }
 
     public Users save(Users newUser) {    
