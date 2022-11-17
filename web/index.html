@@ -580,6 +580,7 @@
         </div>
 
 
+        <div id="all-wallets-container"></div>
         
         <!--Add Wallet Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -781,7 +782,9 @@
 
 <!-- Individual wallet template -->
 <template id="wallet-card-template">
-    <div class="card wallet-card m-3" >
+
+    
+    <!-- <div class="card wallet-card m-3" >
         <div class="card-body d-flex justify-content-between">
 
             <div class="d-flex align-items-center">
@@ -798,7 +801,7 @@
                 </a>
 
                 <!-- Modal -->
-                <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+                <!-- <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -840,23 +843,34 @@
 
 
         </div>
-    </div> 
+    </div>   -->
 
     <div class="card wallet-card m-3" >
-        <div class="card-body d-flex justify-content-between">
+        <div class="card-body">
+            <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                <i class="fas fa-eye"></i>
+            </a>
 
             <div class="d-flex align-items-center">
                 <div class="bank-name">Indain Bank</div>
             </div>
 
-            <div class="d-flex align-items-center justify-content-center">
-                <span class="balance">3000 </span>&nbsp;₹
-            </div> 
+            <span class="balance">3000 </span>&nbsp; 
+            <span class="rupee-symbol">₹</span>
 
+            <div class="mt-5 mb-5"></div>
+
+            <div class="uncommon-wallet-fields">
+               
+            </div>
+<!-- 
+            <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                <i class="fas fa-eye"></i>
+            </a>
+             -->
             <div class="d-flex">
-                <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
-                    <i class="fas fa-eye"></i>
-                </a>
+
+
 
                 <!-- Modal -->
                 <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
@@ -873,11 +887,9 @@
                         <div class="modal-body">
 
 
-                            <span class="h5">Type: </span>
                             <span class="acct-type"></span>
                             <br>
 
-                            <span class="h5">Balance: </span>
                             <span class="wallet-type balance wallet-info-label"></span>  ₹
                             <br>
 

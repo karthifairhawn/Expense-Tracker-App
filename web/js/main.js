@@ -192,7 +192,6 @@ function mountDashboard(){
             
             let color = '#'+colorOne[expense.id%9];
             let colorTw = '#'+colorTwo[expense.id%9];
-            console.log(color);
             $(currentElement).find('.card-body').css('background-color',colorTw);
             $(currentElement).find('.category-ico').css('background-color',color)
 
@@ -1049,12 +1048,11 @@ function mountDashboard(){
 
 function mountWallets(){
 
-    $('#wallets').html('');
+    // $('#wallets').html('');
 
     let walletContainer = document.getElementById("wallets");
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
-    let usingWalletSplitOnCreation = false;
     walletContainer.appendChild(clone);
 
     findAllWallets();
@@ -1318,7 +1316,7 @@ function mountWallets(){
 
         if(allWallets.length==0) return;
         let categoryAsClass = category.split(' ').join('_');
-        let newWalletSection = $('<div class="h4"><span class="card-body '+categoryAsClass+'">'+category+'s</span></div>');
+        let newWalletSection = $('<span class="card-body '+categoryAsClass+'">'+''+'</span>');
         let selectinClassName = "."+categoryAsClass;
 
         // console.log(category)
@@ -1327,8 +1325,9 @@ function mountWallets(){
 
             // Appennd in new card clone to the current creating section
             let walletCardClone =  $('#wallet-card-template')[0].content.cloneNode(true);
-            let currentWalletSection = $(newWalletSection[0]).find(selectinClassName)[0];
+            let currentWalletSection = $(newWalletSection);
             
+            console.log(currentWalletSection)
 
 
             let wallet = allWallets[i];       
@@ -1354,21 +1353,29 @@ function mountWallets(){
                 // allObjects[obj] = data[obj]
 
                 for(const obj in data) {
+                    let key = obj;
+
+                    var text = obj;
+                    var result = text.replace( /([A-Z])/g, " $1" );
+                    key = result.charAt(0).toUpperCase() + result.slice(1);
+
                     if(obj=='id') continue;
-                    subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="wallet-info-label '+obj+'">'+data[obj]+'</span> <br>'
+                    if(obj=='accountNumber') key = 'Ac no';
+                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><span class="h4">'+key+': </span><span>'+data[obj]+'</span></div>';
+
+                    // subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="wallet-info-label '+obj+'">'+data[obj]+'</span> <br>'
                 }
 
                 $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(subWalletInfoHtml);
+                $(walletCardClone).find('.uncommon-wallet-fields').append(subWalletInfoHtml);
                 
             })
-
             
             // show input box on click
             $(walletCardClone).find('.wallet-info-label').click((event)=>{
                 inputOnClick(event.target);
                 $('.edit-wallet-btn').show();
             });
-
 
             // SHow edit button on hover
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
@@ -1394,9 +1401,9 @@ function mountWallets(){
                handleEditWallet(event);
             })
 
+            console.log($('#all-wallets-container'));
 
-
-            currentWalletSection.appendChild(walletCardClone);
+            $('#all-wallets-container').append(walletCardClone);
 
 
         }
@@ -1457,9 +1464,6 @@ function mountWallets(){
         }
         
         walletContainer.appendChild(newWalletSection[0]); 
-
-
-
 
     }
 
@@ -1549,7 +1553,6 @@ function mountWallets(){
     }
 
   
-
     $('.add-income-submit').click((event)=>{
         let form = $(event.target).closest('.create-expense-form');
         let income = {

@@ -497,3 +497,46 @@ select {
 }
 
 
+/* New wallet card design */
+
+.wallet-card{
+    width: 350px;
+    height: 300px;
+
+    color: white;
+
+    background-image: linear-gradient(135deg, #636262 0%, black 100%);
+    
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(120, 225, 211, 0.1);
+}
+
+.wallet-card .bank-name{
+    font-size: 26px;
+    text-transform: capitalize;
+}
+
+.wallet-card .balance{
+    font-size: 60px;
+    text-transform: capitalize;
+}
+
+.wallet-card .rupee-symbol{
+    font-size: 30px;
+}
+
+.wallet-card .modal{
+    color: black;
+}
+
+.wallet-card #open-wallet-btn{
+    width:100%;
+    height: 100%;
+    opacity: 0;
+    position: absolute;
+}
+
+#all-wallets-container{
+    display: flex;;
+}
