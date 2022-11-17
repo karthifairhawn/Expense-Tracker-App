@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&display=swap');
+
 
 *{
-    font-family: 'Lato', sans-serif ;
+    font-family: 'Lato', sans-serif;
 }
 
 
@@ -347,10 +349,13 @@ select {
     width: 400px;
     height: 210px;
     /* background-color: #131519; */
-    background:linear-gradient(135deg, #17ead9 0%,#6078ea 100%);
+    /* background:linear-gradient(135deg, #17ead9 0%,#6078ea 100%); */
     border-radius: 15px;
     padding: 20px;
     color: #ffffff;
+    background-color: #313131;
+    font-family: 'Montserrat', sans-serif;
+
 }
 
 .credit-card h4{
@@ -358,7 +363,7 @@ select {
 }
 
 .credit-card:hover{
-    filter: drop-shadow(3px 10px 10px #17ead89c);
+    filter: drop-shadow(5px 5px 10px #000);
     transition: all ease-in-out 100ms;
     cursor: pointer;
 }
@@ -375,6 +380,14 @@ select {
     /* margin: 0px; */
 }
 
+.pay-bill-btn{
+    /* width: 50px; */
+    background-color: #ffff;
+    box-shadow: 10px 10px 10px rgba(0,0,0,0);
+}
+.pay-bill-btn:hover{
+    border: 1px solid #ffff;
+}
 
 
 .credit-cards::-webkit-scrollbar-track
@@ -508,10 +521,16 @@ select {
     background-image: linear-gradient(135deg, #636262 0%, black 100%);
     
     border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+     
     border: 1px solid rgba(120, 225, 211, 0.1);
-}
+    transition: all ease-in-out 100ms;
+    font-family: 'Montserrat', sans-serif;
 
+
+}
+.wallet-card:hover{
+    transition: all ease-in-out 100ms;
+}
 .wallet-card .bank-name{
     font-size: 26px;
     text-transform: capitalize;
@@ -525,8 +544,9 @@ select {
 }
 
 .wallet-card .balance{
-    font-size: 60px;
+    font-size: 40px;
     text-transform: capitalize;
+    margin: 30px 0px;
 }
 
 .wallet-card .rupee-symbol{
