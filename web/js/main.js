@@ -1054,6 +1054,7 @@ function mountWallets(){
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
     walletContainer.appendChild(clone);
+    let allNonCardWallets = [];
 
     findAllWallets();
 
@@ -1063,7 +1064,16 @@ function mountWallets(){
 
     $('#create-wallet').click(()=> walletSubmissionHandler());
 
+    $('.add-income-btn').click(()=>{
+        // console.log(allNonCardWallets);
 
+        let walletSelection = $('#incomeModal').find('.wallet-selection');
+
+        for(let i=0;i<allNonCardWallets.length;i++){
+            walletSelection.append('<option value='+allNonCardWallets[i].id+'>'+allNonCardWallets[i].name+'</option>');
+        }
+
+    })
 
     async  function findAllWallets(){
 
@@ -1323,12 +1333,12 @@ function mountWallets(){
 
         for(let i = 0; i < allWallets.length; i++){
 
+            allNonCardWallets.push(allWallets[i]);
+
             // Appennd in new card clone to the current creating section
             let walletCardClone =  $('#wallet-card-template')[0].content.cloneNode(true);
             let currentWalletSection = $(newWalletSection);
             
-            console.log(currentWalletSection)
-
 
             let wallet = allWallets[i];       
             let icon = ('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>')     
@@ -1401,7 +1411,6 @@ function mountWallets(){
                handleEditWallet(event);
             })
 
-            console.log($('#all-wallets-container'));
 
             $('#all-wallets-container').append(walletCardClone);
 

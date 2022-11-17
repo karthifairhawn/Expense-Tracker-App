@@ -738,30 +738,20 @@
 
                     <div class="mb-2">
 
-                        <span class="h5">Balance: </span>
-                        <span class="wallet-type amount wallet-info-label"></span>  ₹
-                    </div>
-
-                    <div class="mb-2">
-                        <span class="h5">Exclude from stats: </span>
-                        <span class="wallet-exclude-stats wallet-info-label"></span>
+                        <!-- <span class="h5">Available: </span> -->
+                        <span class="wallet-type amount"></span>  of 
+                        <span class="card-limit wallet-info-label h6"></span>
+                        <span class="available-text h6">₹ available </span>
+                        
                     </div>
 
                     <div class="mb-2">
                         <span class="h5">Due date: </span>
                         <span class="due-date wallet-info-label day-selection"></span>
-                        <!-- <span> days left</span> -->
-
-                    </div>
-
-                    <div class="mb-2">
-                        <span class="h5">Card Limit: </span>
-                        <span class="card-limit wallet-info-label"></span>
                     </div>
 
 
 
-                    <hr>
 
 
 
@@ -769,8 +759,10 @@
                 </div>
 
                 <div class="modal-footer">
-                <button type="button" class="btn btn-warning edit-wallet-btn" id="">Save Changes</button>
-                <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
+                    <div class="pay-bill-btn btn btn-primary">Pay Credit Bill</div>
+                    <button type="button" class="btn btn-warning edit-wallet-btn" id="">Save Changes</button>
+
+                    <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
                 </div>
             </div>
             </div>
@@ -863,11 +855,7 @@
             <div class="uncommon-wallet-fields">
                
             </div>
-<!-- 
-            <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
-                <i class="fas fa-eye"></i>
-            </a>
-             -->
+
             <div class="d-flex">
 
 
@@ -893,9 +881,6 @@
                             <span class="wallet-type balance wallet-info-label"></span>  ₹
                             <br>
 
-                            <span class="h5">Exclude from stats: </span>
-                            <span class="wallet-exclude-stats wallet-info-label"></span>
-                            <br>
 
                             <hr>
 

@@ -517,6 +517,13 @@ select {
     text-transform: capitalize;
 }
 
+.wallet-card .modal .bank-name{
+    /* font-size: 0px; */
+    /* text-decoration: underline; */
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.384);
+}
+
 .wallet-card .balance{
     font-size: 60px;
     text-transform: capitalize;
@@ -539,4 +546,8 @@ select {
 
 #all-wallets-container{
     display: flex;;
+}
+
+.cards-container .modal .amount{
+    font-size: 40px;
 }
