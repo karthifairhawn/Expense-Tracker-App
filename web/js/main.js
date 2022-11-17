@@ -541,19 +541,23 @@ function mountDashboard(){
                 listTagsInForm(expenseData.transactionInfo.tagId);
     
                 let walletSplits = expenseData.walletSplits;
+                console.log(expenseData.walletSplits);
     
                 // console.log(walletSplits);
     
                 let  initialWalletSplit =  $(form).find('.wallet-split1');
+                // console.log($(initialWalletSplit).find('.form-wallet-list').find('option'));
                 let filledFirstWalletSplit = false;
                 for(const walletId in walletSplits){
                     if(!filledFirstWalletSplit){
+                        filledFirstWalletSplit = true;
                         $(initialWalletSplit).find('.form-wallet-list').val(walletId);
                         $(initialWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
                     }else{
-    
                         let newWalletSplit = $(initialWalletSplit).clone().removeClass('.wallet-split1');
-                        $(form).find('#all-wallet-split').append(newWalletSplit);
+                        $(newWalletSplit).find('.form-wallet-list').val(walletId);
+                        $(newWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
+                        $(form).find('#all-wallet-splits').append(newWalletSplit);
     
                     }
                 }
@@ -574,7 +578,7 @@ function mountDashboard(){
             let reason =  $(form).find('#expense-name').val();
             let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
             let userSpendOn = $(form).find('#expense-time').val();
-            console.log(userSpendOn);
+            // console.log(userSpendOn);
             spendOn = userSpendOn;
             let categoryId = $(form).find('#all-categories-options').val();
             let note =  $(form).find('#expense-note').val();
@@ -1458,11 +1462,12 @@ function mountWallets(){
 
                     var text = obj;
                     var result = text.replace( /([A-Z])/g, " $1" );
-                    key = result.charAt(0).toUpperCase() + result.slice(1);
+                    key =  result;
 
                     if(obj=='id') continue;
-                    if(obj=='accountNumber') key = 'Ac no';
-                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><span class="h4">'+key+': </span><span>'+data[obj]+'</span></div>';
+                    if(obj=='accountNumber') key = 'ac no';
+                    if(obj=='ifsc Code') key = 'ifsc';
+                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><b class="h4">'+key+': </b><span>'+data[obj]+'</span></div>';
 
                     // subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="wallet-info-label '+obj+'">'+data[obj]+'</span> <br>'
                 }
