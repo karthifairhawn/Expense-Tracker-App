@@ -1,6 +1,8 @@
 package api.v1.controllers.users;
 
 import java.io.IOException;
+import java.util.Map;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -55,15 +57,22 @@ public class UsersController extends RestController {
 		// Getting client data
 		Users newUser = gson.fromJson( (String)RequestContext.getAttribute("requestBody"), Users.class); 
 
+		LoginDto loginReq = new LoginDto();
+		loginReq.setEmail(newUser.getEmail());
+		loginReq.setPassword(newUser.getPassword());
+
 		
 		// User Creation
 		newUser =  usersService.save(newUser);
 		
 		
-		// Processing Response
-		CommonObjectResponse<Users> jsonResponse = new CommonObjectResponse<Users>(200,newUser);
+		// Response Processing
+		CommonObjectResponse<Map<String,String>> responseObject = new CommonObjectResponse<>();
+		responseObject.setStatusCode(200);
+		responseObject.setData( usersService.getAuthToken(loginReq));
 		response.setContentType("application/json");
-		response.getWriter().write(gson.toJson(jsonResponse));
+		response.setStatus(200);
+		response.getWriter().write(gson.toJson(responseObject));
 	}
 
 	public void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

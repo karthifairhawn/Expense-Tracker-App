@@ -43,8 +43,6 @@
         </div>
     </div>
 
-    <!-- <script>debugger;</script> -->
-
     <body>
 
         <!-- Navbar  -->
@@ -57,15 +55,11 @@
                     <div class="nav-item active" tabs="dashboard"><i class="fa-solid fa-house"></i></div>
                     <div class="vr"></div>
                     <div class="nav-item" tabs="wallets"><i class="fa-solid fa-wallet"></i></div>
-                    <!-- <div class="vr"></div> -->
-            
-                    <!-- <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i></div> -->
-                
 
                 </div>
 
                 <div class="nav-right-options d-flex">
-                    <h5 class="nav-item"><i class="fa-solid fa-user-tie"></i></h5>
+                    <!-- <h5 class="nav-item"><i class="fa-solid fa-user-tie"></i></h5> -->
                     &nbsp;&nbsp;&nbsp;
                     <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
                 </div>
@@ -152,7 +146,6 @@
 
         </div>
 
-
         <!-- New Record Popup modal -->
         <div class="modal fade" id="newRecord" class="new-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -167,10 +160,11 @@
 
                     </div>
 
-                  <form onsubmit="return false;" id="create-new-expense-form" >
+
+                    <form id="create-new-expense-form" onsubmit="return false;" action="">
                     <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                      <input placeholder="new clothes" required type="text" class="form-control" id="expense-name">
+                        <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
+                        <input placeholder="new clothes" maxlength="100" required type="text" class="form-control" id="expense-name">
                     </div>
 
                     <div class="d-flex flex-row justify-content-between ml-2">
@@ -180,7 +174,7 @@
 
                     <div id="all-wallet-splits">
                         <div class="w-split wallet-split1 d-flex mb-2">                            
-    
+
                             <div class="wallet-name-section  w-75">
                                 <select class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
                                 </select>    
@@ -189,7 +183,7 @@
                             <div class="m-2"></div>
                             <div class="d-flex flex-column justify-content-center w-25">
                                 <div></div>
-                                <input placeholder="0.00 ₹"type="number" min="1" class="form-control" id="expense-amount"></input>
+                                <input placeholder="0.00 ₹"type="number" required min="1" max="10000000" class="form-control" id="expense-amount"></input>
                                 
                             </div>
 
@@ -218,7 +212,7 @@
                                 <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
                                 </select>
 
-                                <input type="text"  class="form-control" id="new-category-input" placeholder="Food Expense" style="display: none;">
+                                <input type="text"  class="form-control" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
 
 
                                 <select class="form-select" aria-label="Default select" id="all-categories-options">
@@ -237,7 +231,7 @@
 
                         <div class="mb-3">
                             <label  class="col-form-label">Note:</label>
-                            <textarea placeholder="new clothes" class="form-control" id="expense-note"></textarea>  
+                            <textarea placeholder="new clothes" maxlength="500" class="form-control" id="expense-note"></textarea>  
                         </div>
 
                         <div class="mb-3">
@@ -256,7 +250,7 @@
                         <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
                     </div>
 
-                  </form>
+                    </form>
 
                 </div>
               
@@ -389,7 +383,7 @@
                       <form onsubmit="return false;" >
                         <div class="mb-3">
                           <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                          <input placeholder="new clothes" required type="text" class="form-control" id="expense-name">
+                          <input placeholder="new clothes" maxlength="100" required type="text" class="form-control" id="expense-name">
                         </div>
     
                         <div class="d-flex flex-row justify-content-between ml-2">
@@ -408,7 +402,7 @@
                                 <div class="m-2"></div>
                                 <div class="d-flex flex-column justify-content-center w-25">
                                     <div></div>
-                                    <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
+                                    <input placeholder="0.00 ₹"type="number" min="1" max="10000000" class="form-control" id="expense-amount"></input>
                                     
                                 </div>
     
@@ -431,7 +425,7 @@
                                     <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
                                     </select>
     
-                                    <input type="text"  class="form-control edit-category-input" id="new-category-input" placeholder="Food Expense" style="display: none;">
+                                    <input type="text"  class="form-control edit-category-input" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
     
     
                                     <select class="form-select" aria-label="Default select" id="all-categories-options">
@@ -453,8 +447,8 @@
                             <div class="mb-3">
                                 <label for="message-text" class="col-form-label">Tags:</label>
                                 
-                                <select name="locationSets" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
-                                </select>
+                                <input name="locationSets" maxlength="10" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
+                                </input>
     
                             </div>
     
@@ -554,7 +548,7 @@
             <div class="d-flex align-items-center">
                 <h3>My Cards</h3>
                 &nbsp;
-                <span class="btn btn-secondary">Total Spendings: <span class="card-used-amount">20000</span> ₹</span>
+                <span class="btn btn-secondary">Total Card Spendings: <span class="card-used-amount">20000</span> ₹</span>
             </div>
 
             <div class="d-flex justify-content-center">
@@ -835,8 +829,6 @@
 
             <div class="d-flex">
 
-
-
                 <!-- Modal -->
                 <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
@@ -887,14 +879,14 @@
 
     <div class="input-group">
         <span class="input-group-text">Acc No.</span>
-        <input type="text" id="new-wallet-accno" class="form-control" placeholder="8746734658743">
+        <input type="text" id="new-wallet-accno" maxlength="20" class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
     <br>
 
     <div class="input-group">
         <span class="input-group-text">IFSC</span>
-        <input type="text" id="new-wallet-ifsc" class="form-control" placeholder="IDIB000K129">
+        <input type="text" id="new-wallet-ifsc" maxlength="20" class="form-control" placeholder="IDIB000K129">
     </div>
 
 </template>
@@ -905,12 +897,12 @@
 
     <div class="input-group">
         <span class="input-group-text">Limit ₹</span>
-        <input type="text" id='new-wallet-limit' class="form-control" placeholder="30000">
+        <input type="number" id='new-wallet-limit' class="form-control" placeholder="30000">
     </div>
     <br>
 
     <div class="input-group">
-        <span class="input-group-text">Repay date</span>
+        <span class="input-group-text">Due date</span>
         <!-- <input type="number" id="new-wallet-repay" class="form-control" placeholder="30000"> -->
         <select id="new-wallet-repay"" class="form-control">
             <option value="1">1</option>
@@ -942,10 +934,11 @@
             <option value="27">27</option>
             <option value="28">28</option>
             <option value="29">29</option>
-            <option value="30">30</option>
+            <option value="30" selected>30</option>
             <option value="31">31</option>
 
         </select>
+
     </div>
     
 
@@ -956,7 +949,7 @@
     <div class="h6"><b>Wallet Info</b></div>
 
     <div class="input-group">
-        <span class="input-group-text">Note</span>
+        <span class="input-group-text" maxlength="20">Note</span>
         <input type="text" id="new-wallet-bnote" class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
@@ -970,7 +963,7 @@
 
     <div class="input-group">
         <span class="input-group-text">Note</span>
-        <input type="text" id='new-wallet-onote' class="form-control" placeholder="8746734658743">
+        <input type="text" id='new-wallet-onote' maxlength="20" class="form-control" placeholder="8746734658743">
         <!-- <span class="input-group-text">.00</span> -->
     </div>
     <br>

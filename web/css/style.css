@@ -112,9 +112,9 @@ html, body{
 
 .category-ico, .wallet-card .fa-solid {
     border-radius: 50%;
-    background-color: #9fd3c7;
-    padding: 8px;
-    color: #385170;
+    /* background-color: #9fd3c7; */
+    padding: 5px;
+    color: #fff;
 
 }
 

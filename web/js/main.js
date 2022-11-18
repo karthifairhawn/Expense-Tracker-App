@@ -14,7 +14,9 @@ if(walletInfo.statusCode == 404){
 $('.nav-item').click(function(){
     $('.navbar .active').removeClass('active');
     $(this).addClass('active');
-    mountTemplate($(this).attr('tabs'));
+    utilFunctions.navigator(($(this).attr('tabs')));
+    $('.modal-backdrop').remove();
+    $('body').css('overflow','scroll');
 });
 
 $('.logout').click(()=>{
@@ -25,35 +27,159 @@ $('.logout').click(()=>{
 // Mount Dashboard by default
 var currTimeSpan = 'Today';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-mountTemplate();
+// mountTemplate();
 balanceHeaderUpdate();
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 
 
-function mountTemplate(activeTemplate){
 
-    $('#dashboard #date-range-selector').html('');
-    $('#dashboard #expense-card-container').html('');
-    $('#wallets').html('')
-    $('.navbar .nav-item').removeClass('active');
+var utilFunctions = {
+
+    navigator: (activeTemplate) =>{ 
+
+        $('#dashboard #date-range-selector').html('');
+        $('#dashboard #expense-card-container').html('');
+        $('#wallets').html('')
+        $('.navbar .nav-item').removeClass('active');
+        
+        if(activeTemplate == 'wallets' || (localStorage.getItem('location') == 'wallets' && activeTemplate == undefined)){
+            mountWallets();
+            localStorage.setItem('location','wallets');
+            $('.navbar [tabs=wallets]').addClass('active');
+        }
+        else if(activeTemplate == 'dashboard' || (localStorage.getItem('location') == 'dashboard' && activeTemplate == undefined)){
+            mountDashboard();
+            balanceHeaderUpdate();
+            localStorage.setItem('location','dashboard');
+            $('.navbar [tabs=dashboard]').addClass('active');
     
-    if(activeTemplate == 'wallets' || (localStorage.getItem('location') == 'wallets' && activeTemplate == undefined)){
-        mountWallets();
-        localStorage.setItem('location','wallets');
-        $('.navbar [tabs=wallets]').addClass('active');
-    }
-    else if(activeTemplate == 'dashboard' || (localStorage.getItem('location') == 'dashboard' && activeTemplate == undefined)){
-        mountDashboard();
-        balanceHeaderUpdate();
-        localStorage.setItem('location','dashboard');
-        $('.navbar [tabs=dashboard]').addClass('active');
+        }else{
+            // alert('Still working at it')
+        }
+    },
 
-    }else{
-        // alert('Still working at it')
-    }
+    timeCovertor : (time) => {
+        // Check correct time format and split into components
+        time = time.toString ().match (/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+    
+        if (time.length > 1) { // If time format correct
+        time = time.slice (1);  // Remove full string match value
+        time[5] = +time[0] < 12 ? ' AM' : ' PM'; // Set AM/PM
+        time[0] = +time[0] % 12 || 12; // Adjust hours
+        }
+        return time.join (''); // return adjusted time or original string
+    },
 
+    railTimeConverter : (time) => {
+        let hours = Number(time.match(/^(\d+)/)[1]);
+        let minutes = Number(time.match(/:(\d+)/)[1]);
+        let AMPM = time.match(/\s(.*)$/)[1];
+        if(AMPM == "PM" && hours<12) hours = hours+12;
+        if(AMPM == "AM" && hours==12) hours = hours-12;
+        let sHours = hours.toString();
+        let sMinutes = minutes.toString();
+        if(hours<10) sHours = "0" + sHours;
+        if(minutes<10) sMinutes = "0" + sMinutes;
+        return (sHours + ":" + sMinutes);
+    },
+
+    validators: {
+        IsNullOrNumber : (element,value)=>{
+
+            if(value==null || value==undefined || value==0 || value=='null'){
+                $(element).css('border', '1px solid red');
+        
+                return 1;
+            }else{
+                $(element).css('border', '1px solid #ced4da');
+                return 0;
+            }
+        },
+        
+        isNumber : (element,value)=> {
+            // var reg = ;
+            // var reg = new RegExp('/^\d+$/');
+            
+            if(/\d/.test(value)){
+                $(element).css('border', '1px solid #ced4da');
+                // return 0;
+                if(value==0){
+                    $(element).css('border', '1px solid red');
+                    return 1
+                }
+                return 0;
+            }else{
+                $(element).css('border', '1px solid red');
+                return 1;
+            }
+        
+        
+        },
+        
+        isNullorNumber : (element,value)=> {
+        
+            console.log(value)
+            if(value.length==0 || value == null || value==undefined || value==0){
+                return 0;
+            }
+        
+            if(typeof value === 'number' && isFinite(value)){
+                $(element).css('border', '1px solid #ced4da');
+                // return 0;
+                if(value==0){
+                    $(element).css('border', '1px solid red');
+                    return 1
+                }
+                return 0;
+            }else{
+                $(element).css('border', '1px solid red');
+                return 1;
+            }
+        
+        
+        },
+        
+        isNullOrIfsc : (element,value)=> {
+            if(value.length==0 || value == null || value==undefined){
+                return 0;
+            }
+            var reg = /[A-Z|a-z]{4}[0][a-zA-Z0-9]{6}$/;    
+            if (value.match(reg)) {    
+                $(element).css('border', '1px solid #ced4da');
+                return 0;    
+            }    
+            else {    
+                $(element).css('border', '1px solid red'); 
+                return 1;    
+            }    
+        },
+        
+        isPositiveNumber : (element,value)=> {
+            // var reg = ;
+            // var reg = new RegExp('/^\d+$/');
+            
+            if(/\d/.test(value)){
+                $(element).css('border', '1px solid #ced4da');
+                // return 0;
+                if(value<=0){
+                    $(element).css('border', '1px solid red');
+                    return 1
+                }
+                return 0;
+            }else{
+                $(element).css('border', '1px solid red');
+                return 1;
+            }
+        
+        
+        }
+    }
+    
 }
+
+utilFunctions.navigator();
+
 
 function mountDashboard(){ 
     balanceHeaderUpdate();
@@ -289,7 +415,7 @@ function mountDashboard(){
                 if(groupBy=='Time' && (currTimeSpan=='Today' || currTimeSpan=='Yesterday')){
                     // console.log(groupBy+"   "+timeSpan);
                     let timeOnly = expenseTime.split(" ")[1].split(":");
-                    return (tConvert(timeOnly[0]+":"+timeOnly[1]));
+                    return (utilFunctions.timeCovertor(timeOnly[0]+":"+timeOnly[1]));
                 }else{
     
                     let timeOnly = expenseTime.split(" ");
@@ -355,16 +481,21 @@ function mountDashboard(){
 
     }  
 
+    function mountDateRangeSelector(){
+
+        let dateRangeContainer = document.getElementById("date-range-selector");
+        let dateRangeElement = document.getElementById("date-range-template");
+        let clone = dateRangeElement.content.cloneNode(true);
+        dateRangeContainer.appendChild(clone);  
+
+    }
+
     function mountEditExpenseForm(walletId){
-
-
-        // $('#save-expense-btn').click(()=>{ createNewExpense() });   // Save Button Handler
 
         $('#editExpenseForm  #split-wallet').click((event)=>{
             console.log();
             splitWalletHandler($(event.target).closest('#editExpenseForm'))
         })
-
 
         function splitWalletHandler(activeForm){
 
@@ -410,8 +541,6 @@ function mountDashboard(){
         let allTags=[];
         let formSelectedTags = [];
         
-
-
         listWalletsInForm();
         listCategoriesInForm()
         
@@ -441,7 +570,7 @@ function mountDashboard(){
             let allWalletsHTML = '';
 
 
-
+            
             for(let i=0;i<allWallets.length;i++){
                 allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'</option>'
             }
@@ -484,9 +613,19 @@ function mountDashboard(){
                 plugins: ['remove_button'],
                 selectOnTab : true,
                 onItemAdd: (value,obj)=>{
+
                     if(allTags.includes(+value)){
                         formSelectedTags.push(value);
                     }else{
+                                            // console.log(obj+' '+value)
+                        if(value.length<=3 || value.length>10){
+                            alert('pleas create tag in len between 3 and 15');
+                            // console.log(obj)
+                            $(obj).hide();
+                            // $(obj).css('background-color', 'red !important');
+                            return false;
+                        }
+
                         createTag(JSON.stringify({
                             "name":""+value,
                             "color":"#44545"
@@ -495,6 +634,7 @@ function mountDashboard(){
                             formSelectedTags.push(data.data.id);
                         })
                     }
+                    return false;
                 },
                 onItemRemove : ((value)=>{
                     formSelectedTags = formSelectedTags.filter(e => e != value)
@@ -562,8 +702,11 @@ function mountDashboard(){
                 $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
                 $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
                 let time = expenseData.transactionInfo.spendOn.split(" ")[1].split(":");
+
                 time = time[0]+":"+time[1];
-                time  = (expenseData.transactionInfo.spendOn.split(" ")[0]+" "+time);
+                time  = (expenseData.transactionInfo.spendOn.split(" ")[0]+"T"+time);
+
+                // console.log(time)
                 $(form).find('#expense-time').val(time);
                 $(form).find('#expense-note').val(expenseData.transactionInfo.note);
     
@@ -596,8 +739,6 @@ function mountDashboard(){
                 })
             }
 
-           
-
         }
 
         async function updateExpenseDetails(){
@@ -606,7 +747,8 @@ function mountDashboard(){
 
             let totalAmount = 0;
             let reason =  $(form).find('#expense-name').val();
-            let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
+            
+            let spendOn = null;
             let userSpendOn = $(form).find('#expense-time').val();
             // console.log(userSpendOn);
             spendOn = userSpendOn;
@@ -627,7 +769,7 @@ function mountDashboard(){
                 const dayOfMonth = userSpendOn.getDate(); // 7
 
 
-                userSpendOn = months[month]+" "+dayOfMonth+", "+year+", "+tConvert(time+":03");
+                userSpendOn = months[month]+" "+dayOfMonth+", "+year+", "+(time+":03");
                 console.log(userSpendOn);
                 spendOn = userSpendOn;
                 
@@ -654,7 +796,7 @@ function mountDashboard(){
             spendOn = spendOn.split(" ");
             let time = spendOn[3].split(":");
             time = time[0]+":"+time[1]+":"+time[2];
-            spendOn = spendOn[0]+" "+spendOn[1]+" "+spendOn[2]+" "+tConvert(time);
+            spendOn = spendOn[0]+" "+spendOn[1]+" "+spendOn[2]+" "+utilFunctions.timeCovertor(time);
             // Expense info json
             let expenseInfo = {
                 "type" : "expense",
@@ -737,17 +879,8 @@ function mountDashboard(){
     
 
     }
-
-    function mountDateRangeSelector(){
-
-        let dateRangeContainer = document.getElementById("date-range-selector");
-        let dateRangeElement = document.getElementById("date-range-template");
-        let clone = dateRangeElement.content.cloneNode(true);
-        dateRangeContainer.appendChild(clone);  
-
-    }
-
-    function mountCreateExpenseForm(){
+ 
+    function mountCreateExpenseForm(){  
 
         // $('.new-expense-form')[0].reset();
         let formSelectedTags = [];
@@ -765,7 +898,7 @@ function mountDashboard(){
 
         $('#save-expense-btn').off()
         $('#save-expense-btn').click(()=>{ 
-            createNewExpense()
+            createNewExpense();
         });   // Save Button Handler
         
 
@@ -825,7 +958,9 @@ function mountDashboard(){
         
 
 
-        listWalletsInForm();
+        if(!listWalletsInForm()){
+
+        }
         listCategoriesInForm()
         listTagsInForm();
 
@@ -852,7 +987,11 @@ function mountDashboard(){
             allWallets = allWalletsInfo;
             let allWalletsHTML = '';
 
-
+            if(allWallets.length==0){
+                // alert("Please add wallet to create expense.");
+                $('#newRecord .modal-body').html('<div class="h3">Please add wallet to create expense.<div> <br> <button onclick="$(\'.navbar [tabs=wallets]\').click()" class="btn btn-primary">Create Wallet</button>')
+                return false;
+            }
 
             for(let i=0;i<allWallets.length;i++){
                 allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'</option>'
@@ -886,18 +1025,23 @@ function mountDashboard(){
             selector.selectize({
                 delimiter: ",",
                 persist: false,
-                create: function (input) {
-                  return {
-                    value: input,
-                    text: input,
-                  };
-                },
+                create:true,
                 plugins: ['remove_button'],
                 selectOnTab : true,
                 onItemAdd: (value,obj)=>{
+
                     if(allTags.includes(+value)){
                         formSelectedTags.push(value);
                     }else{
+                                            // console.log(obj+' '+value)
+                        if(value.length<=3 || value.length>10){
+                            alert('pleas create tag in len between 3 and 15');
+                            // console.log(obj)
+                            $(obj).hide();
+                            // $(obj).css('background-color', 'red !important');
+                            return false;
+                        }
+
                         createTag(JSON.stringify({
                             "name":""+value,
                             "color":"#44545"
@@ -906,10 +1050,11 @@ function mountDashboard(){
                             formSelectedTags.push(data.data.id);
                         })
                     }
+                    return false;
                 },
                 onItemRemove : ((value)=>{
                     formSelectedTags = formSelectedTags.filter(e => e != value)
-                    console.log(formSelectedTags)
+                    // console.log(formSelectedTags)
                 })
               });
         }
@@ -967,6 +1112,7 @@ function mountDashboard(){
             let reason = $('#expense-name').val();
             let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
             let userSpendOn = $('#expense-time').val();
+            console.log(userSpendOn);
             let walletId = $('#all-wallets-options').val();
             let categoryId = $('#all-categories-options').val();
             let note = $('#expense-note').val();
@@ -990,7 +1136,7 @@ function mountDashboard(){
                 const dayOfMonth = userSpendOn.getDate(); // 7
 
 
-                userSpendOn = months[month]+" "+dayOfMonth+", "+year+", "+tConvert(time+":03");
+                userSpendOn = months[month]+" "+dayOfMonth+", "+year+", "+utilFunctions.timeCovertor(time+":03");
                 // console.log(userSpendOn);
                 spendOn = userSpendOn;
                 
@@ -1093,6 +1239,7 @@ function mountWallets(){
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
     walletContainer.appendChild(clone);
+
     let allNonCardWallets = [];
 
     findAllWallets();
@@ -1281,10 +1428,10 @@ function mountWallets(){
             // $(walletCardClone).find('.wallet-info-label').append($('<i class="fas fa-edit m-1"></i>'))
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
                 // console.log(23);
-                $(event.target).append($('<i class="fas fa-edit m-1"></i>'));
+                $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
 
             },(event)=>{
-                $(event.target).find('.fas').remove();
+                $(event.target).siblings('.fas').remove();
             })
 
 
@@ -1497,8 +1644,8 @@ function mountWallets(){
             // Populate sub wallet info
             await findWalletById(+(wallet.id)).then((data)=>{
                 
+                console.log(data);
                 data = data.data.walletInfo;
-                
                 let subWalletInfoHtml = '';
                 // allObjects[obj] = data[obj]
 
@@ -1510,11 +1657,18 @@ function mountWallets(){
                     key =  result;
 
                     if(obj=='id') continue;
-                    if(obj=='accountNumber') key = 'Account';
-                    if(obj=='ifscCode') key = 'IFSC';
+                    if(obj=='accountNumber'){
+                        key = 'Account';
+                        if(data[obj]=='0') data[obj] = "not specified";
+                    }
+                    if(obj=='ifscCode'){
+                        key = 'IFSC';
+                        if(data[obj]=='') data[obj] = "not specified";
+
+                    }
+                        
                     subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+'</div><div class="ucf-value">: '+data[obj]+'</div></div>';
 
-                    // subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="wallet-info-label '+obj+'">'+data[obj]+'</span> <br>'
                 }
 
                 $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(subWalletInfoHtml);
@@ -1530,10 +1684,10 @@ function mountWallets(){
             // SHow edit button on hover
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
                 // console.log(23);
-                $(event.target).append($('<i class="fas fa-edit m-1"></i>'));
+                $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
 
             },(event)=>{
-                $(event.target).find('.fas').remove();
+                $(event.target).siblings('.fas').remove();
             })
 
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) {
@@ -1608,6 +1762,7 @@ function mountWallets(){
             updateWalletById(walletId,JSON.stringify(walletInfo)).then((data)=>{
                 $('#spinner').hide();
                 $('.modal-backdrop').remove();
+                $('body').css('overflow','scroll');
                 mountWallets();
 
             })
@@ -1632,8 +1787,19 @@ function mountWallets(){
 
             let creditCardForm = $('#create-wallet-credit-card')[0];
             let w2c = creditCardForm.content.cloneNode(true);
-            $(w2c).find('#new-wallet-limit').val($('#new-wallet-balance').val());
+            // $(w2c).find('#new-wallet-limit').val($('#new-wallet-balance').val());
+
+
+            console.log($('#new-wallet-balance'));
+
+
             $('#wallet-info-form').append(w2c);
+
+                        
+            $('#new-wallet-balance').bind('keyup mouseup', function () {
+                $('#new-wallet-limit').val($(this).val());            
+            });
+
             
 
         }else if(walletType == 'Bonus Account'){
@@ -1867,19 +2033,6 @@ async function balanceHeaderUpdate(){
     $('#total-acct-count').text(totalWalletCount);
     // $('#mi-bal-amount').text(totalBalance +" ₹");
     $('#mi-bal-amount').text(new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(totalBalance) +" ₹");
-}
-
-
-function tConvert (time) {
-    // Check correct time format and split into components
-    time = time.toString ().match (/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-
-    if (time.length > 1) { // If time format correct
-    time = time.slice (1);  // Remove full string match value
-    time[5] = +time[0] < 12 ? ' AM' : ' PM'; // Set AM/PM
-    time[0] = +time[0] % 12 || 12; // Adjust hours
-    }
-    return time.join (''); // return adjusted time or original string
 }
 
 
