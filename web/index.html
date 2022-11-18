@@ -57,9 +57,9 @@
                     <div class="nav-item active" tabs="dashboard"><i class="fa-solid fa-house"></i></div>
                     <div class="vr"></div>
                     <div class="nav-item" tabs="wallets"><i class="fa-solid fa-wallet"></i></div>
-                    <div class="vr"></div>
+                    <!-- <div class="vr"></div> -->
             
-                    <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i></div>
+                    <!-- <div class="nav-item" tabs="analytics"><i class="fa-solid fa-chart-simple"></i></div> -->
                 
 
                 </div>
@@ -149,10 +149,6 @@
                 <span class="reporting-days-total d-flex align-items-center justify-content-center">20000</span>
                 <span class="reporting-total-symbol d-flex align-items-center justify-content-center">₹</span>
             </div>
-    
-            <div class="d-flex">
-            </div>
-
 
         </div>
 
@@ -171,10 +167,10 @@
 
                     </div>
 
-                  <form onsubmit="return false;" >
+                  <form onsubmit="return false;" id="create-new-expense-form" >
                     <div class="mb-3">
                       <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                      <input placeholder="new clothes" type="text" class="form-control" id="expense-name">
+                      <input placeholder="new clothes" required type="text" class="form-control" id="expense-name">
                     </div>
 
                     <div class="d-flex flex-row justify-content-between ml-2">
@@ -193,18 +189,13 @@
                             <div class="m-2"></div>
                             <div class="d-flex flex-column justify-content-center w-25">
                                 <div></div>
-                                <input placeholder="0.00 ₹"type="number" class="form-control" id="expense-amount"></input>
+                                <input placeholder="0.00 ₹"type="number" min="1" class="form-control" id="expense-amount"></input>
                                 
                             </div>
 
                         </div>
 
                     </div>
-
-                    
-
-
-
 
                     <div class="d-flex flex-row-reverse mt-3">
                         <span id="expense-more">+ add more details</span>
@@ -241,7 +232,7 @@
                         
                         <div class="mb-3">
                             <label for="recipient-name" class="col-form-label">Spend on:</label>
-                            <input placeholder="new clothes" type="datetime-local" class="form-control" id="expense-time">
+                            <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
                         </div>
 
                         <div class="mb-3">
@@ -260,6 +251,7 @@
 
 
                     </div>
+
                     <div class="modal-footer">
                         <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
                     </div>
@@ -312,8 +304,21 @@
                 <span class="wallet-name">Isndian Bank</span>
                 <br>
                 <i><span style="font-size: 15px" class="wallet-type"> Bank Account</span></i> 
-
             </span>
+
+            
+            <div class="d-flex align-items-center tags-section ">
+                <i class="fa-solid fa-tag"></i>
+                <div class="all-tags-section d-flex ">
+
+                </div>
+                <!-- <span class="m-1"></span> -->
+<!-- 
+                <div class="tag d-flex align-items-center justify-content-between">
+                    <span>&nbsp;</span>
+                    <span class="tag-text">upi</span>
+                </div> -->
+            </div>
 
 
             <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn invisible" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
@@ -351,6 +356,10 @@
                         <span class="wallet-splits"></span>
 
 
+                        <div class="mt-2 d-flex align-items-center all-tags-section">
+                            <b class="h5 mb-0">Tags: </b>
+                        </div>
+
 
                     </div>
                     <div class="modal-footer">
@@ -380,7 +389,7 @@
                       <form onsubmit="return false;" >
                         <div class="mb-3">
                           <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                          <input placeholder="new clothes" type="text" class="form-control" id="expense-name">
+                          <input placeholder="new clothes" required type="text" class="form-control" id="expense-name">
                         </div>
     
                         <div class="d-flex flex-row justify-content-between ml-2">
@@ -392,7 +401,7 @@
                             <div class="w-split wallet-split1 d-flex mb-2">                            
         
                                 <div class="wallet-name-section  w-75">
-                                    <select class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
+                                    <select required class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
                                     </select>    
     
                                 </div>
@@ -406,11 +415,6 @@
                             </div>
     
                         </div>
-    
-                        
-    
-    
-    
 
                         <div class="more-expense-info" style="display:block;">
                             <div class="mb-3">
@@ -438,7 +442,7 @@
                             
                             <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label">Spend on:</label>
-                                <input placeholder="new clothes" type="datetime-local" class="form-control" id="expense-time">
+                                <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
                             </div>
     
                             <div class="mb-3">
@@ -459,7 +463,7 @@
                         </div>
                         
                         <div class="modal-footer">
-                            <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
+                            <button id="update-expense-btn" type="submit" class="btn btn-primary">Save</button>
                         </div>
     
                       </form>
@@ -604,7 +608,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">₹</span>
-                            <input type="text" id="new-wallet-balance" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
+                            <input type="number" min="0" id="new-wallet-balance" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
                             <!-- <span class="input-group-text">.00</span> -->
                         </div>
 
@@ -788,12 +792,6 @@
                             <span class="h5">Due date: </span>
                             <span class="due-date wallet-info-label day-selection"></span>
                         </div>
-
-
-
-
-
-
 
                     </div>
 

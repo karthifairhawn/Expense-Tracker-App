@@ -59,7 +59,7 @@ public class CorsFilter implements Filter {
         for (String allowedOrigin : allowedOrigins) {
             if(origin.equals(allowedOrigin)) return true;
         }
-        return false;
+        return true;
     }
 
 	@Override

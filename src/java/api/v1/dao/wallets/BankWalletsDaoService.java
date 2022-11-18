@@ -59,9 +59,9 @@ public class BankWalletsDaoService {
 			rs = dbUtil.executeSelectionQuery(query);
 			rs.next();
 			bankWallet = new BankWallets();
-			bankWallet.setAccountNumber(Long.parseLong(rs.getString(1)));
-			bankWallet.setId(Integer.parseInt(rs.getString(2)));
-			bankWallet.setIfscCode(rs.getString(3));
+			bankWallet.setAccountNumber(Long.parseLong(rs.getString("account_number")));
+			bankWallet.setId(Long.parseLong(rs.getString("id")));
+			bankWallet.setIfscCode(rs.getString("ifsc_code"));
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new CustomException("AN unexpected error occured",500,new Date().toLocaleString());

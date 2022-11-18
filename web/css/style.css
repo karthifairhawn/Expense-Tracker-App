@@ -358,8 +358,26 @@ select {
 
 }
 
+.expense-card .fa-tag{
+    padding: 5px;
+    border-radius: 30px;
+    background-color: #f7b5b5;
+}
+
 .credit-card h4{
     font-weight: 900;
+}
+
+.tags-section{
+    background-color: #43cead;
+    padding: 7px 10px 7px 7px;
+    border-radius: 30px;
+}
+
+.tags-section .tag-text{
+    background-color: #fff;
+    padding: 1px 10px;
+    border-radius: 10px;
 }
 
 .credit-card:hover{
@@ -570,4 +588,14 @@ select {
 
 .cards-container .modal .amount{
     font-size: 40px;
+}
+
+.uncommon-wallet-field .ucf-key{
+    width: 100px;
+    font-weight: bold;
+    /* background-color: red; */
+}
+
+.uncommon-wallet-field{
+    display: flex;
 }

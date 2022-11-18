@@ -115,7 +115,7 @@ public class WalletsService {
 		else if(walletType.equals("Other")) 			subWallet = otherWalletsDaoService.findById(walletId);
 
 		wallet.setWalletInfo(subWallet);
-		
+		System.out.println(wallet);
 		return wallet;
 	}
 	

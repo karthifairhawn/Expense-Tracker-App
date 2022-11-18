@@ -25,9 +25,10 @@ $('.logout').click(()=>{
 // Mount Dashboard by default
 var currTimeSpan = 'Today';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-mountDashboard();
+mountTemplate();
 balanceHeaderUpdate();
-
+let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
+let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 
 
 function mountTemplate(activeTemplate){
@@ -35,22 +36,27 @@ function mountTemplate(activeTemplate){
     $('#dashboard #date-range-selector').html('');
     $('#dashboard #expense-card-container').html('');
     $('#wallets').html('')
-
-
-    if(activeTemplate == 'wallets'){
+    $('.navbar .nav-item').removeClass('active');
+    
+    if(activeTemplate == 'wallets' || (localStorage.getItem('location') == 'wallets' && activeTemplate == undefined)){
         mountWallets();
-        balanceHeaderUpdate();
-
+        localStorage.setItem('location','wallets');
+        $('.navbar [tabs=wallets]').addClass('active');
     }
-    else if(activeTemplate == 'dashboard'){
+    else if(activeTemplate == 'dashboard' || (localStorage.getItem('location') == 'dashboard' && activeTemplate == undefined)){
         mountDashboard();
         balanceHeaderUpdate();
+        localStorage.setItem('location','dashboard');
+        $('.navbar [tabs=dashboard]').addClass('active');
+
+    }else{
+        // alert('Still working at it')
     }
 
 }
 
-function mountDashboard(){
-
+function mountDashboard(){ 
+    balanceHeaderUpdate();
     mountDateRangeSelector();
     mountExpensesInDashboard();
 
@@ -60,12 +66,10 @@ function mountDashboard(){
 
     function mountExpensesInDashboard(){
 
+        
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
-        
-        let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
-        let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
-        
+      
         let groupBy= 'Time';
         dateRangeChangeHandler();
         
@@ -113,7 +117,17 @@ function mountDashboard(){
         }
 
         // Fetch Wallet Split and tag info then populateExpense
-        function populateExpense(walletInfo,expense,categoryInfo){
+        async function populateExpense(walletInfo,expense,categoryInfo){
+
+            let allTagsInfo = [];
+
+            let tagsIds = expense.transactionInfo.tagId;
+
+            for(let i=0;i<tagsIds.length;i++){
+                await findTagById(tagsIds[i]).then((data) =>{
+                    allTagsInfo.push(data);
+                })
+            }
 
             let expenseTemplate = $("#expense-card-template")[0];
             let expenseContainer = $("#expense-card-container")[0];
@@ -220,6 +234,22 @@ function mountDashboard(){
                 mountEditExpenseForm(walletId);
             })
 
+            let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
+            let allTagsSection = $(currentElement).find('.all-tags-section');
+
+
+            for(let i=0;i<allTagsInfo.length;i++){
+                let newElement = newTag.clone();
+                console.log(allTagsInfo[i])
+                newElement.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
+                allTagsSection.append(newElement);
+                // console.log('0000000')
+            }
+
+            // $(currentElement).find('.tags-section').append($(allTagsSection));
+            // console.log(allTagsSection)
+            // console.log($(currentElement).find('.tags-section').append());
+
             // Edit button inside expense view
             $(currentElement).find('.edit-expense-btn').click(()=>{
                 $(currentElement).find('#inExpEditForm').click();
@@ -322,9 +352,6 @@ function mountDashboard(){
             cb(start, end, currTimeSpan);
 
         }   
-
-
-
 
     }  
 
@@ -534,7 +561,10 @@ function mountDashboard(){
 
                 $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
                 $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
-                $(form).find('#expense-time').val(expenseData.transactionInfo.spendOn);
+                let time = expenseData.transactionInfo.spendOn.split(" ")[1].split(":");
+                time = time[0]+":"+time[1];
+                time  = (expenseData.transactionInfo.spendOn.split(" ")[0]+" "+time);
+                $(form).find('#expense-time').val(time);
                 $(form).find('#expense-note').val(expenseData.transactionInfo.note);
     
     
@@ -561,7 +591,7 @@ function mountDashboard(){
     
                     }
                 }
-                $(form).find('#save-expense-btn').click(()=>{
+                $(form).find('#update-expense-btn').click(()=>{
                     updateExpenseDetails();
                 })
             }
@@ -670,10 +700,10 @@ function mountDashboard(){
                     error = true;
                 }else{
                     $('#expense-name').css('border-color', '#ced4da');
-
                 }
 
-                if(!expenseInfo.amount>0){
+                console.log(validateValueIsPositive(expenseInfo.amount));
+                if(!validateValueIsPositive(expenseInfo.amount)){
                     $('#expense-amount').css('border-color', 'red');
                     error = true;                    
                 }else{
@@ -697,6 +727,8 @@ function mountDashboard(){
                     console.log(data);
                     mountExpensesInDashboard();
                 });
+                $('body').css('overflow', 'scroll');
+
             }
 
     
@@ -717,17 +749,34 @@ function mountDashboard(){
 
     function mountCreateExpenseForm(){
 
+        // $('.new-expense-form')[0].reset();
+        let formSelectedTags = [];
+
+        $('#expense-name').val('');
+        $('#expense-time').val('');
+        $('#all-wallets-options').val();
+        $('#all-categories-options').val(0);
+        $('#expense-note').val('');
+        $('#expense-amount').val('')
+        $('.selectize-input').val('')
+
         $('.more-expense-info').css('display', 'none'); // Making form default
         $('#expense-more').css('display', 'block');  // Making form default
-        $('#save-expense-btn').click(()=>{ createNewExpense() });   // Save Button Handler
+
+        $('#save-expense-btn').off()
+        $('#save-expense-btn').click(()=>{ 
+            createNewExpense()
+        });   // Save Button Handler
         
 
         // Displaying more input option for expense creation handler
+        $('#expense-more').off()
         $('#expense-more').click(function(){
             $('.more-expense-info').css('display', 'block');
             $('#expense-more').css('display', 'none');
         })
 
+        $('#split-wallet').off()
         $('#split-wallet').click(splitWalletHandler)
 
 
@@ -773,7 +822,6 @@ function mountDashboard(){
         }
 
         let allTags=[];
-        let formSelectedTags = [];
         
 
 
@@ -913,8 +961,8 @@ function mountDashboard(){
 
         }
 
-        // Final Create Function
-        async function createNewExpense(){
+        async function createNewExpense(e){
+            // e.preventDefault();
             let totalAmount = 0;
             let reason = $('#expense-name').val();
             let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
@@ -1003,46 +1051,30 @@ function mountDashboard(){
             // Validate the new expense json
             function validateNewExpense(expenseInfo){
 
-                let error = false;
+                let error = 0;
+                error+=validateValueIsPositive($('#expense-amount'),expenseInfo.amount);
+                error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)
+                // error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)
 
-                if(!expenseInfo.transactionInfo.reason.length>0){
-                    $('#expense-name').css('border-color', 'red');
-                    error = true;
-                }else{
-                    $('#expense-name').css('border-color', '#ced4da');
+                return error>0 ? false :true
 
-                }
-
-                if(!expenseInfo.amount>0){
-                    $('#expense-amount').css('border-color', 'red');
-                    error = true;                    
-                }else{
-                    $('#expense-amount').css('border-color', '#ced4da');
-
-                }
-
-
-                return !error;
             }
 
             
             // Create expense API call to the server
-            function createExpenseApiCall(expenseInfoo){
+            async function createExpenseApiCall(expenseInfoo){
                 expenseInfoo = JSON.stringify(expenseInfoo)
                 $('#spinner').css('display','block');
-                createTransactions(expenseInfoo).then((data)=> {
-
-                        
-                setTimeout(() => {
-                    $('#spinner').css('display', 'none');
-                }, 2000);
+                await createTransactions(expenseInfoo).then((data)=> {
                     $('#newRecord .btn-close').click();
+                    $('#spinner').css('display','none');
                     mountExpensesInDashboard();
-                });
+                    balanceHeaderUpdate();
+                })
             }
 
 
-
+            // return false;
         }
 
     
@@ -1051,6 +1083,10 @@ function mountDashboard(){
 }
 
 function mountWallets(){
+    balanceHeaderUpdate();
+
+    $('#wallets').html('');
+
 
     let walletContainer = document.getElementById("wallets");
     // walletContainer.innerHTML = '';
@@ -1066,6 +1102,7 @@ function mountWallets(){
     })
 
     $('#create-wallet').click(()=> walletSubmissionHandler());
+
 
     $('.add-income-btn').click(()=>{
         // console.log(allNonCardWallets);
@@ -1158,6 +1195,7 @@ function mountWallets(){
             $(walletCardClone).find('.pay-bill-btn').attr('payment',subInfo.limit- wallet.balance);
 
 
+           
             // console.log(subInfo.limit)
             let currentDate = new Date().getDate();
             let repayDate =  subInfo.repayDate;
@@ -1254,7 +1292,13 @@ function mountWallets(){
                 handleEditWallet(event);
              })
 
+            
+            let bg1 = colorOne[wallet.id%9+1];
+            let bg2 = colorTwo[wallet.id%9];
 
+
+           
+            // $(walletCardClone).find('.credit-card').css('background-color','red')
              
 
             function inputOnClick(element){
@@ -1265,7 +1309,7 @@ function mountWallets(){
                 if(textBox.hasClass('day-selection')){
 
                     input = '<select type="text" class="due-date" >'
-                    for(let i=1;i<=30;i++){
+                    for(let i=1;i<=31;i++){
                         input += '<option value="' + i + '">'+i+"</option>";
                     }
                     textBox.removeClass('wallet-info-label')
@@ -1400,6 +1444,7 @@ function mountWallets(){
             createTransactions(JSON.stringify(income)).then((data)=>{
                 $('#spinner').hide();   
                 // findAllWallets();
+                mountWallets();
             })
     
             $('.credit-bill-close-btn').click();
@@ -1465,9 +1510,9 @@ function mountWallets(){
                     key =  result;
 
                     if(obj=='id') continue;
-                    if(obj=='accountNumber') key = 'ac no';
-                    if(obj=='ifsc Code') key = 'ifsc';
-                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><b class="h4">'+key+': </b><span>'+data[obj]+'</span></div>';
+                    if(obj=='accountNumber') key = 'Account';
+                    if(obj=='ifscCode') key = 'IFSC';
+                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+'</div><div class="ucf-value">: '+data[obj]+'</div></div>';
 
                     // subWalletInfoHtml+= '<span class="h5">'+obj+': </span><span class="wallet-info-label '+obj+'">'+data[obj]+'</span> <br>'
                 }
@@ -1482,7 +1527,6 @@ function mountWallets(){
                 inputOnClick(event.target);
                 $('.edit-wallet-btn').show();
             });
-
             // SHow edit button on hover
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
                 // console.log(23);
@@ -1498,7 +1542,7 @@ function mountWallets(){
         
                 deleteWalletById(walletId).then(()=>{
                     $('#spinner').hide();
-                    // mountWallets();
+                    mountWallets();
                 })
             })
 
@@ -1560,10 +1604,12 @@ function mountWallets(){
     
 
             $('#spinner').show();
+
             updateWalletById(walletId,JSON.stringify(walletInfo)).then((data)=>{
-                console.log(data);
                 $('#spinner').hide();
-                $(event.target).hide();
+                $('.modal-backdrop').remove();
+                mountWallets();
+
             })
         }
         
@@ -1629,7 +1675,9 @@ function mountWallets(){
                 "accountNumber": +($('#new-wallet-accno').val()),
                 "ifscCode": $('#new-wallet-ifsc').val(),
             }
-            isValid += validateValueIsNumber( $('#new-wallet-accno'),($('#new-wallet-accno').val()));
+            // if($('#new-wallet-accno').val().length>0)
+            isValid += IsNullOrNumber( $('#new-wallet-accno'),Number($('#new-wallet-accno').val()));
+            isValid += isNullOrIfsc(  $('#new-wallet-ifsc'), $('#new-wallet-ifsc').val());
 
         }else if(newWalletObject.type=='Credit Card'){
             // console.log($('#new-wallet-repay').val())
@@ -1650,9 +1698,8 @@ function mountWallets(){
             }
         }
 
-
-        console.log(typeof acctBalance)
-        isValid += validateValueIsNumber( $('#new-wallet-balance'),acctBalance);
+        
+        isValid += validateValueIsPositive( $('#new-wallet-balance'),acctBalance);
         isValid += validateValueNull( $('#new-wallet-name'),walletName);
         isValid += validateValueNull( $('#new-wallet-type'),walletType);
 
@@ -1664,18 +1711,15 @@ function mountWallets(){
         createWallet(JSON.stringify(newWalletObject)).then((data) =>{
             // console.log(data);  
 
-            setTimeout(() => {
-                $('#spinner').css('display', 'none');
-            }, 2000);
+            $('#spinner').css('display', 'none');
             $('#wallets .btn-close').click();
 
-            // mountWallets();
+            mountWallets();
 
 
         })
         
     }
-
 
     $('.card-sc-right').click(()=>{
         $('.card-sc-left').css('display', 'flex');
@@ -1718,6 +1762,7 @@ function validateValueNull(element,value){
 
     if(value==null || value==undefined || value==0 || value=='null'){
         $(element).css('border', '1px solid red');
+
         return 1;
     }else{
         $(element).css('border', '1px solid #ced4da');
@@ -1745,7 +1790,63 @@ function validateValueIsNumber(element,value){
 
 }
 
+function IsNullOrNumber(element,value){
 
+    console.log(value)
+    if(value.length==0 || value == null || value==undefined || value==0){
+        return 0;
+    }
+
+    if(typeof value === 'number' && isFinite(value)){
+        $(element).css('border', '1px solid #ced4da');
+        // return 0;
+        if(value==0){
+            $(element).css('border', '1px solid red');
+            return 1
+        }
+        return 0;
+    }else{
+        $(element).css('border', '1px solid red');
+        return 1;
+    }
+
+
+}
+
+function isNullOrIfsc(element,value){
+    if(value.length==0 || value == null || value==undefined){
+        return 0;
+    }
+    var reg = /[A-Z|a-z]{4}[0][a-zA-Z0-9]{6}$/;    
+    if (value.match(reg)) {    
+        $(element).css('border', '1px solid #ced4da');
+        return 0;    
+    }    
+    else {    
+        $(element).css('border', '1px solid red'); 
+        return 1;    
+    }    
+}
+
+function validateValueIsPositive(element,value){
+    // var reg = ;
+    // var reg = new RegExp('/^\d+$/');
+    
+    if(/\d/.test(value)){
+        $(element).css('border', '1px solid #ced4da');
+        // return 0;
+        if(value<=0){
+            $(element).css('border', '1px solid red');
+            return 1
+        }
+        return 0;
+    }else{
+        $(element).css('border', '1px solid red');
+        return 1;
+    }
+
+
+}
 
 // Set balance in header container
 async function balanceHeaderUpdate(){     
@@ -1764,8 +1865,10 @@ async function balanceHeaderUpdate(){
         }
     }
     $('#total-acct-count').text(totalWalletCount);
-    $('#mi-bal-amount').text(totalBalance +" ₹");
+    // $('#mi-bal-amount').text(totalBalance +" ₹");
+    $('#mi-bal-amount').text(new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(totalBalance) +" ₹");
 }
+
 
 function tConvert (time) {
     // Check correct time format and split into components
@@ -1778,3 +1881,5 @@ function tConvert (time) {
     }
     return time.join (''); // return adjusted time or original string
 }
+
+
