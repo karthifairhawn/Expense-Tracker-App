@@ -596,6 +596,10 @@ select {
     /* background-color: red; */
 }
 
+.uncommon-wallet-field .ucf-value:hover{
+    border-bottom: 1px solid black;
+}
+
 .uncommon-wallet-field{
     display: flex;
 }

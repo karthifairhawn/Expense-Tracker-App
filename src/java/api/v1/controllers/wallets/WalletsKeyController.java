@@ -82,12 +82,13 @@ public class WalletsKeyController extends RestController {
 	public void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
-		Long tagId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
+		Long walletId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 		
 		// Getting Client Side Info
 		String bodyString = (String)RequestContext.getAttribute("requestBody");
 		Wallets<?> newWallet = gson.fromJson(bodyString, new TypeToken<Wallets<?>>(){}.getType());
 		newWallet.setUserId(userId);
+		newWallet.setId(walletId);
 		
 		// Update Wallets
 		Wallets wallet = walletsService.update(newWallet);

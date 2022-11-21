@@ -187,8 +187,11 @@ function mountDashboard(){
     mountExpensesInDashboard();
 
     // Making new expense form default in reopen
-    $('#create-expense-btn').click(()=>{ mountCreateExpenseForm(); });
-
+    $('#create-expense-btn').click(()=>{ 
+        let newExpenseFormClone = document.getElementById('tt-new-expense-form').content.cloneNode(true);
+        $('#newRecord .modal-content').html($(newExpenseFormClone));
+        mountCreateExpenseForm(); 
+    });
 
     function mountExpensesInDashboard(){
 
@@ -277,8 +280,8 @@ function mountDashboard(){
             // Findign wallet Split
             let walletSplitHtml = '';
             for(let i=0; i<walletInfo.length;i++){
-                walletSplitHtml+=''+walletInfo[i].data.name+'';
                 let id = walletInfo[i].data.id;
+                walletSplitHtml+=''+walletInfo[i].data.name+'';
                 walletSplitHtml+=" - "+expense.walletSplits[id]+" ₹ <br>";
             }
 
@@ -298,20 +301,20 @@ function mountDashboard(){
             // Format expense time
             let expenseTime = expense.transactionInfo.spendOn;
             expenseTime = formatExpenseTime(expenseTime);
-
-            
+            let fullExpenseTime = formatExpenseTime(expense.transactionInfo.spendOn,'sdfsd')
+                    
             // Setting expense data to the dom
             if(categoryInfo.imagePath == undefined) categoryInfo.imagePath = 'f543';
 
 
             // find wallet type
-            let walletType = null;
-            if(walletInfo.length==1){
-                walletType = walletInfo[0].data.type;
-            }else{
-                walletType = 'Multiple Wallet Split'
-            }
+            let walletType = walletInfo.length == 1 ? walletInfo[0].data.type : 'Multiple Wallet Split';
 
+
+            let color = '#'+colorOne[expense.id%9];
+            let colorTw = '#'+colorTwo[expense.id%9];
+            $(currentElement).find('.card-body').css('background-color',colorTw);
+            $(currentElement).find('.category-ico').css('background-color',color)
             $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
             $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".title").text(expense.transactionInfo.reason);
@@ -321,19 +324,14 @@ function mountDashboard(){
             $(currentElement).find(".category").text(categoryInfo.name);
             $(currentElement).find(".wallet-splits").html(walletSplitHtml);
             $(currentElement).find(".wallet-name").html(walletName);
-
             $(currentElement).find(".wallet-type").text(walletType);
-
-            $(currentElement).find(".spend-on").text(expenseTime);
+            $(currentElement).find(".spend-on").text(fullExpenseTime);
             $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
             $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
             $(currentElement).find(".edit-expense-btn").attr('expense-id',expense.id);
             $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
             
-            let color = '#'+colorOne[expense.id%9];
-            let colorTw = '#'+colorTwo[expense.id%9];
-            $(currentElement).find('.card-body').css('background-color',colorTw);
-            $(currentElement).find('.category-ico').css('background-color',color)
+
 
             // Delete Button Listener
             $(currentElement).find('.expense-delete-btn').click((event)=>{ 
@@ -350,7 +348,6 @@ function mountDashboard(){
                 });
            
             })
-            // $(currentElement).find(".expense-delete-btn").attr('onclick','deleteExpense('+expense.id+')');
 
 
             // Edit button inside expense lisiting
@@ -360,16 +357,28 @@ function mountDashboard(){
                 mountEditExpenseForm(walletId);
             })
 
+            $(currentElement).find('.modal-title').click((event)=>{
+                $(currentElement).find('.expense-edit-btn').click();
+            });
+
             let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
             let allTagsSection = $(currentElement).find('.all-tags-section');
-
-
-            for(let i=0;i<allTagsInfo.length;i++){
+            let modelAllTagsSection = $(currentElement).find('.all-tags-msection');
+            if(allTagsInfo.length>0){
                 let newElement = newTag.clone();
-                console.log(allTagsInfo[i])
-                newElement.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
+                newElement.find('.tag-text').text(allTagsInfo[0].data.name.toLowerCase());
+                allTagsSection.append(newElement.clone());
+                modelAllTagsSection.append(newElement.clone());
+            }
+            if(allTagsInfo.length>1){
+                let newElement = $('<div class="d-flex align-items-center justify-content-between" style="color:white;font-weight:600"> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
+                newElement.find('.tty').text('+ '+ (allTagsInfo.length -1) + ' more');
                 allTagsSection.append(newElement);
-                // console.log('0000000')
+            }
+            for(let i=1;i<allTagsInfo.length;i++){
+                let newTagClone = newTag.clone();
+                newTagClone.find('.tag-text').text(", "+allTagsInfo[i].data.name.toLowerCase());
+                modelAllTagsSection.append(newTagClone);
             }
 
             // $(currentElement).find('.tags-section').append($(allTagsSection));
@@ -377,21 +386,14 @@ function mountDashboard(){
             // console.log($(currentElement).find('.tags-section').append());
 
             // Edit button inside expense view
-            $(currentElement).find('.edit-expense-btn').click(()=>{
-                $(currentElement).find('#inExpEditForm').click();
-            })
+            $(currentElement).find('.edit-expense-btn').click(()=>{ $(currentElement).find('#inExpEditForm').click(); })
 
             $(currentElement).hover(()=>{
                 $(currentElement).find('.expense-view-btn').css('display', 'flex');
-            },
-            ()=>{
+            },()=>{
                 $(currentElement).find('.expense-view-btn').css('display', 'none');
             }
             )
-            // $(currentElement).click((event)=>{
-            //     console.log($(event.target));
-            //     $(event.target).closest('.card').find('.expense-view-btn').click();
-            // })
             
             function newDateSection(newDate){
                 let dateSection = document.createElement("div");
@@ -411,7 +413,7 @@ function mountDashboard(){
                 expenseContainer.appendChild(dateSection);
             }
 
-            function formatExpenseTime(expenseTime){
+            function formatExpenseTime(expenseTime,groupBy){
                 if(groupBy=='Time' && (currTimeSpan=='Today' || currTimeSpan=='Yesterday')){
                     // console.log(groupBy+"   "+timeSpan);
                     let timeOnly = expenseTime.split(" ")[1].split(":");
@@ -428,8 +430,6 @@ function mountDashboard(){
     
                 }
             }
-
-
 
         }     
 
@@ -493,7 +493,8 @@ function mountDashboard(){
     function mountEditExpenseForm(walletId){
 
         $('#editExpenseForm  #split-wallet').click((event)=>{
-            console.log();
+            // console.log(123);
+            // console.log($(event.target).closest('#editExpenseForm'));
             splitWalletHandler($(event.target).closest('#editExpenseForm'))
         })
 
@@ -501,8 +502,6 @@ function mountDashboard(){
 
             
             if(!IsAllWalletSplitFilled()) return;
-            
-            console.log(123);
 
             let formClone = $(activeForm).find('.wallet-split1').clone().removeClass('wallet-split1')
             formClone.find('.message-text').remove();
@@ -523,14 +522,14 @@ function mountDashboard(){
     
             function IsAllWalletSplitFilled(){
                 let allWalletSplitValues = $(activeForm).find('.w-split');
-    
+                
                 for(let k=0; k<allWalletSplitValues.length; k++){
                     let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
                     if(amount == 0 || amount==undefined || amount==null){
-                        $(allWalletSplitValues[k]).find('#editExpenseForm #expense-amount').css('border-color','red')
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','red')
                         return false;
                     }else{
-                        $(allWalletSplitValues[k]).find('#editExpenseForm #expense-amount').css('border-color','#ced4da')
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','#ced4da')
     
                     }
                 }
@@ -543,7 +542,6 @@ function mountDashboard(){
         
         listWalletsInForm();
         listCategoriesInForm()
-        
         insertExpenseData(walletId);
 
         let usingNewCategory = false;
@@ -558,8 +556,6 @@ function mountDashboard(){
     
     
             for(const wallet in allWallets){
-                
-                
                 for(let kgh=0;kgh<allWallets[wallet].length;kgh++){
                     allWalletsInfo.push(allWallets[wallet][kgh]);
                 }
@@ -569,8 +565,6 @@ function mountDashboard(){
             allWallets = allWalletsInfo;
             let allWalletsHTML = '';
 
-
-            
             for(let i=0;i<allWallets.length;i++){
                 allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'</option>'
             }
@@ -591,8 +585,7 @@ function mountDashboard(){
                 allTags.push(+(allTagsInfo[i].id));
             }
 
-            // allTagsHTML+='<option class="text-warning" value="create-tag">create tag</option>'
-    
+
             $('#editExpenseForm #locationSets').html(allTagsHTML);
     
     
@@ -618,8 +611,8 @@ function mountDashboard(){
                         formSelectedTags.push(value);
                     }else{
                                             // console.log(obj+' '+value)
-                        if(value.length<=3 || value.length>10){
-                            alert('pleas create tag in len between 3 and 15');
+                        if(value.length<=3 || value.length>14){
+                            alert('pleas create tag in len between 3 and 14');
                             // console.log(obj)
                             $(obj).hide();
                             // $(obj).css('background-color', 'red !important');
@@ -641,6 +634,9 @@ function mountDashboard(){
                     console.log(formSelectedTags)
                 })
               });
+
+            $('.selectize-control input').attr('maxlength','14')
+
         }
 
         async function listCategoriesInForm(){
@@ -696,30 +692,26 @@ function mountDashboard(){
                 insertExpenseDataToForm(data.data);
             })
 
-            function insertExpenseDataToForm(expenseData){
+            async function insertExpenseDataToForm(expenseData){
+
+
                 let form = $('#editExpenseForm');
-
-                $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
-                $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
                 let time = expenseData.transactionInfo.spendOn.split(" ")[1].split(":");
-
                 time = time[0]+":"+time[1];
                 time  = (expenseData.transactionInfo.spendOn.split(" ")[0]+"T"+time);
 
-                // console.log(time)
+
                 $(form).find('#expense-time').val(time);
+                $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
+                $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
                 $(form).find('#expense-note').val(expenseData.transactionInfo.note);
-    
-    
-                listTagsInForm(expenseData.transactionInfo.tagId);
-    
+
+
+                await listTagsInForm(expenseData.transactionInfo.tagId);
+
+
                 let walletSplits = expenseData.walletSplits;
-                console.log(expenseData.walletSplits);
-    
-                // console.log(walletSplits);
-    
                 let  initialWalletSplit =  $(form).find('.wallet-split1');
-                // console.log($(initialWalletSplit).find('.form-wallet-list').find('option'));
                 let filledFirstWalletSplit = false;
                 for(const walletId in walletSplits){
                     if(!filledFirstWalletSplit){
@@ -727,16 +719,24 @@ function mountDashboard(){
                         $(initialWalletSplit).find('.form-wallet-list').val(walletId);
                         $(initialWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
                     }else{
-                        let newWalletSplit = $(initialWalletSplit).clone().removeClass('.wallet-split1');
+                        let newWalletSplit = $(initialWalletSplit).clone();
+                        newWalletSplit.removeClass('wallet-split1');
                         $(newWalletSplit).find('.form-wallet-list').val(walletId);
                         $(newWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
-                        $(form).find('#all-wallet-splits').append(newWalletSplit);
+                        $(newWalletSplit).append('<i class="far fa-times-circle"></i>');
     
+                        $(newWalletSplit).find('.far').click((event)=>{
+                            $(event.target).closest('.w-split').remove();
+                        });
+                        
+                        $(form).find('#all-wallet-splits').append(newWalletSplit);
+
                     }
                 }
-                $(form).find('#update-expense-btn').click(()=>{
-                    updateExpenseDetails();
-                })
+
+                $(form).find('#update-expense-btn').off();
+                $(form).find('#update-expense-btn').click(()=>{ updateExpenseDetails(); })
+
             }
 
         }
@@ -778,10 +778,9 @@ function mountDashboard(){
             let walletSplits ={};
             let allWalletSplitValues =  $(form).find('.all-wallet-splits').find('.w-split');
     
-            for(let k=0; k<allWalletSplitValues.length; k++){
+            for(let k=0; k<allWalletSplitValues.length; k++){   
                 let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
                 let walletId = $(allWalletSplitValues[k]).find('.form-wallet-list').val();
-                console.log(allWalletSplitValues[k])
                 if(walletSplits[walletId]>0){
                     walletSplits[walletId]+= +amount;
                 }else{
@@ -812,12 +811,11 @@ function mountDashboard(){
             }
 
 
-
             // Create new category if category not exist
-            if(usingNewCategory==true) createNewCategory();
-            function createNewCategory(){
-                let newCategoryName = $('#new-category-input').val();
-                let newCategoryIcon = $('#new-category-icon').val();
+            if(usingNewCategory==true) await createNewCategory();
+            async function createNewCategory(){
+                let newCategoryName = $(form).find('#new-category-input').val();
+                let newCategoryIcon = $(form).find('#new-category-icon').val();
 
                 let raw = {
                     "name": newCategoryName,
@@ -825,36 +823,19 @@ function mountDashboard(){
                 }
                 raw = JSON.stringify(raw)
 
-                createCategory(raw).then((data)=>{
+                await createCategory(raw).then((data)=>{
                     expenseInfo.transactionInfo.categoryId = data.data.id;
-                    
+                    console.log(expenseInfo)
                 })
             }
 
             // Validate the new expense json
             if(validateNewExpense(expenseInfo)) updateExpenseApiCall(expenseInfo);
             function validateNewExpense(expenseInfo){
-
-                let error = false;
-
-                if(!expenseInfo.transactionInfo.reason.length>0){
-                    $('#expense-name').css('border-color', 'red');
-                    error = true;
-                }else{
-                    $('#expense-name').css('border-color', '#ced4da');
-                }
-
-                console.log(validateValueIsPositive(expenseInfo.amount));
-                if(!validateValueIsPositive(expenseInfo.amount)){
-                    $('#expense-amount').css('border-color', 'red');
-                    error = true;                    
-                }else{
-                    $('#expense-amount').css('border-color', '#ced4da');
-
-                }
-
-
-                return !error;
+                let error = 0;
+                error+=validateValueIsPositive($('#expense-amount'),expenseInfo.amount);
+                error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)
+                return error>0 ? false :true;
             }
 
             
@@ -876,69 +857,18 @@ function mountDashboard(){
     
     
         }
+
     
 
     }
  
     function mountCreateExpenseForm(){  
 
-        // $('.new-expense-form')[0].reset();
-        let formSelectedTags = [];
+        let splitWalletHandler = ()=>{
 
-        $('#expense-name').val('');
-        $('#expense-time').val('');
-        $('#all-wallets-options').val();
-        $('#all-categories-options').val(0);
-        $('#expense-note').val('');
-        $('#expense-amount').val('')
-        $('.selectize-input').val('')
+            let IsAllWalletSplitFilled = ()=> {
 
-        $('.more-expense-info').css('display', 'none'); // Making form default
-        $('#expense-more').css('display', 'block');  // Making form default
-
-        $('#save-expense-btn').off()
-        $('#save-expense-btn').click(()=>{ 
-            createNewExpense();
-        });   // Save Button Handler
-        
-
-        // Displaying more input option for expense creation handler
-        $('#expense-more').off()
-        $('#expense-more').click(function(){
-            $('.more-expense-info').css('display', 'block');
-            $('#expense-more').css('display', 'none');
-        })
-
-        $('#split-wallet').off()
-        $('#split-wallet').click(splitWalletHandler)
-
-
-        function splitWalletHandler(){
-
-            
-            if(!IsAllWalletSplitFilled()) return;
-            
-            console.log(123);
-
-            let formClone = $('#newRecord .wallet-split1').clone().removeClass('wallet-split1')
-            formClone.find('.message-text').remove();
-            formClone.find('#expense-amount').val(0);
-            formClone.append('<i class="far fa-times-circle"></i>');
-    
-            formClone.find('.far').click((event)=>{
-                $(event.target).closest('.w-split').remove();
-            });
-    
-            $('.wallet-split1').find('#split-wallet').remove();
-    
-            formClone.appendTo($('#all-wallet-splits'));
-            $('.w-split').addClass('d-flex');
-    
-            $('.wallet-name-section').addClass('w90');
-    
-    
-            function IsAllWalletSplitFilled(){
-                let allWalletSplitValues = $('.new-expense-form .w-split');
+                let allWalletSplitValues = $('#create-new-expense-form .w-split');
     
                 for(let k=0; k<allWalletSplitValues.length; k++){
                     let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
@@ -952,18 +882,56 @@ function mountDashboard(){
                 }
                 return true;
             }
+   
+            if(!IsAllWalletSplitFilled()) return;
+
+            // console.log(123);
+
+            let walletSplitAdditional = $('#newRecord .wallet-split1').clone().removeClass('wallet-split1')
+            walletSplitAdditional.find('.message-text').remove();
+            walletSplitAdditional.find('#expense-amount').val(0);
+            walletSplitAdditional.append('<i class="far fa-times-circle"></i>');
+    
+            walletSplitAdditional.find('.far').click((event)=>{
+                $(event.target).closest('.w-split').remove();
+            });
+    
+            $('.wallet-split1').find('#split-wallet').remove();
+    
+            walletSplitAdditional.appendTo($('#all-wallet-splits'));
+            $('.w-split').addClass('d-flex');
+    
+            $('.wallet-name-section').addClass('w90');
+    
+    
+
         }
 
-        let allTags=[];
+        let formSelectedTags = [];
+        let currDateTime = (moment().format('YYYY-MM-DD HH:mm').split(" ").join("T"));
+        $('#expense-time').val(currDateTime);
+
+
+        $('#save-expense-btn').click(()=>{ 
+            createNewExpense();
+        });   // Save Button Handler
         
 
+        $('#expense-more').click(function(){
+            $('.more-expense-info').css('display', 'block');
+            $('#expense-more').css('display', 'none');
+        })
 
+        $('#split-wallet').click(splitWalletHandler)
+
+
+
+        let allTags=[];
         if(!listWalletsInForm()){
 
         }
         listCategoriesInForm()
         listTagsInForm();
-
         let usingNewCategory = false;
 
         async function listWalletsInForm(){
@@ -1034,8 +1002,8 @@ function mountDashboard(){
                         formSelectedTags.push(value);
                     }else{
                                             // console.log(obj+' '+value)
-                        if(value.length<=3 || value.length>10){
-                            alert('pleas create tag in len between 3 and 15');
+                        if(value.length<=3 || value.length>14){
+                            alert('pleas create tag in len between 3 and 14');
                             // console.log(obj)
                             $(obj).hide();
                             // $(obj).css('background-color', 'red !important');
@@ -1057,6 +1025,9 @@ function mountDashboard(){
                     // console.log(formSelectedTags)
                 })
               });
+
+            $('.selectize-control input').attr('maxlength','14')
+
         }
 
         async function listCategoriesInForm(){
@@ -1112,11 +1083,11 @@ function mountDashboard(){
             let reason = $('#expense-name').val();
             let spendOn = moment().format('MMM D, YYYY, h:mm:ss a');
             let userSpendOn = $('#expense-time').val();
-            console.log(userSpendOn);
             let walletId = $('#all-wallets-options').val();
             let categoryId = $('#all-categories-options').val();
             let note = $('#expense-note').val();
 
+            // if(!splitWalletHandler.IsAllWalletSplitFilled()) return; 
 
             let tagInfo = [];
 
@@ -1148,6 +1119,7 @@ function mountDashboard(){
             for(let k=0; k<allWalletSplitValues.length; k++){
                 let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
                 let walletId = $(allWalletSplitValues[k]).find('.form-wallet-list').val();
+                if(amount == 0 ) continue;
                 if(walletSplits[walletId]>0){
                     walletSplits[walletId]+= +amount;
                 }else{
@@ -1196,17 +1168,29 @@ function mountDashboard(){
 
             // Validate the new expense json
             function validateNewExpense(expenseInfo){
-
                 let error = 0;
                 error+=validateValueIsPositive($('#expense-amount'),expenseInfo.amount);
+                error+=isLessThanCrored($('#expense-amount'),expenseInfo.amount);
                 error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)
-                // error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)
+
+                let allWalletSplitValues = $('#create-new-expense-form .w-split');
+    
+                for(let k=0; k<allWalletSplitValues.length; k++){
+                    let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
+                    if(amount == 0 || amount==undefined || amount==null){
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','red')
+                        error+=1;
+                        // return false;
+                    }else{
+                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','#ced4da')
+                    }
+                }
+                // return true;
+
 
                 return error>0 ? false :true
-
             }
 
-            
             // Create expense API call to the server
             async function createExpenseApiCall(expenseInfoo){
                 expenseInfoo = JSON.stringify(expenseInfoo)
@@ -1219,9 +1203,9 @@ function mountDashboard(){
                 })
             }
 
-
-            // return false;
         }
+
+
 
     
     }
@@ -1651,11 +1635,11 @@ function mountWallets(){
 
                 for(const obj in data) {
                     let key = obj;
-
                     var text = obj;
                     var result = text.replace( /([A-Z])/g, " $1" );
                     key =  result;
 
+                    let className = obj;
                     if(obj=='id') continue;
                     if(obj=='accountNumber'){
                         key = 'Account';
@@ -1667,7 +1651,7 @@ function mountWallets(){
 
                     }
                         
-                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+'</div><div class="ucf-value">: '+data[obj]+'</div></div>';
+                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value '+obj+'">'+data[obj]+'</div></div>';
 
                 }
 
@@ -1678,6 +1662,11 @@ function mountWallets(){
             
             // show input box on click
             $(walletCardClone).find('.wallet-info-label').click((event)=>{
+                inputOnClick(event.target);
+                $('.edit-wallet-btn').show();
+            });
+
+            $(walletCardClone).find('.ucf-value').click((event)=>{
                 inputOnClick(event.target);
                 $('.edit-wallet-btn').show();
             });
@@ -1703,7 +1692,6 @@ function mountWallets(){
             $(walletCardClone).find('.edit-wallet-btn').click((event)=>{
                handleEditWallet(event);
             })
-
 
             $('#all-wallets-container').append(walletCardClone);
 
@@ -1731,14 +1719,12 @@ function mountWallets(){
             let cardElement = $(event.target).parent().parent();
 
             let walletId =  $(event.target).attr('wallet-id');
-            console.log(event.target);
             let walletInfo = {};
             walletInfo['name'] = $(cardElement).find('.bank-name').text();
             walletInfo['type'] = $(cardElement).find('.acct-type').text();
             walletInfo['balance'] = $(cardElement).find('.balance').text();
             walletInfo['excludeFromStats'] = $(cardElement).find('.wallet-exclude-stats').text();
             walletInfo['archiveWallet'] = false;
-
             walletInfo['walletInfo'] = {};
     
             let walletType = walletInfo['type'];
@@ -1835,7 +1821,6 @@ function mountWallets(){
         }
 
         let isValid = 0;
-
         if(newWalletObject.type=='Bank Account'){
             newWalletObject['walletInfo'] = {
                 "accountNumber": +($('#new-wallet-accno').val()),
@@ -1852,6 +1837,8 @@ function mountWallets(){
                 "limit": +($('#new-wallet-limit').val())
              }
              isValid += validateValueIsNumber( $('#new-wallet-repay'),acctBalance);
+             isValid += validateValueIsPositive( $('#new-wallet-repay'),acctBalance);
+             isValid += isLessThanCrored( $('#new-wallet-repay'),acctBalance);
              isValid += validateValueNull( $('#new-wallet-limit'),+($('#new-wallet-limit').val()));
 
         }else if(newWalletObject.type=='Bonus Account'){
@@ -1866,6 +1853,7 @@ function mountWallets(){
 
         
         isValid += validateValueIsPositive( $('#new-wallet-balance'),acctBalance);
+        isValid += isLessThanCrored( $('#new-wallet-balance'),acctBalance);
         isValid += validateValueNull( $('#new-wallet-name'),walletName);
         isValid += validateValueNull( $('#new-wallet-type'),walletType);
 
@@ -2011,6 +1999,22 @@ function validateValueIsPositive(element,value){
         return 1;
     }
 
+
+}
+
+function isLessThanCrored(element,value){
+    if(/\d/.test(value)){
+        $(element).css('border', '1px solid #ced4da');
+        // return 0;
+        if(value<=0 || value>=10000000){
+            $(element).css('border', '1px solid red');
+            return 1
+        }
+        return 0;
+    }else{
+        $(element).css('border', '1px solid red');
+        return 1;
+    }
 
 }
 
