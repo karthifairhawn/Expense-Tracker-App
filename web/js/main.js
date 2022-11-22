@@ -281,8 +281,17 @@ function mountDashboard(){
             let walletSplitHtml = '';
             for(let i=0; i<walletInfo.length;i++){
                 let id = walletInfo[i].data.id;
-                walletSplitHtml+=''+walletInfo[i].data.name+'';
-                walletSplitHtml+=" - "+expense.walletSplits[id]+" ₹ <br>";
+                let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
+                $(newWalletSplit).find('.account-name').text(walletInfo[i].data.name);
+                $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
+
+                let colorId = (walletInfo[i].data.id)%9;
+                console.log(colorId);
+
+                // $(newWalletSplit).find('.account-name').css('background-color','#'+colorOne[colorId])
+                // $(newWalletSplit).find('.account-spend').css('background-color','#'+colorTwo[colorId])
+
+                $(currentElement).find(".wallet-splits").append(newWalletSplit);
             }
 
 
@@ -322,7 +331,10 @@ function mountDashboard(){
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
             $(currentElement).find(".timestamp").text(expense.timestamp);
             $(currentElement).find(".category").text(categoryInfo.name);
-            $(currentElement).find(".wallet-splits").html(walletSplitHtml);
+            $(currentElement).find(".view-expense-modal .category-ico").css('background-color', '#'+colorOne[categoryInfo.id%9]);  
+            $(currentElement).find(".view-expense-modal .category-ico").css('color', 'black');  
+            // $(currentElement).find(".view-expense-modal .category-ico").css('background-color', '#'+colorTwo[categoryInfo.id%9]);  
+            $(currentElement).find(".view-expense-modal .category").css('background-color', '#'+colorTwo[categoryInfo.id%9]);  
             $(currentElement).find(".wallet-name").html(walletName);
             $(currentElement).find(".wallet-type").text(walletType);
             $(currentElement).find(".spend-on").text(fullExpenseTime);
@@ -491,6 +503,9 @@ function mountDashboard(){
     }
 
     function mountEditExpenseForm(walletId){
+
+        $('#editExpenseForm').find('#all-wallet-splits').html('<div class="w-split wallet-split1 d-flex mb-2"> <div class="wallet-name-section  w-75"> <select required class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" > </select> </div> <div class="m-2"></div> <div class="d-flex flex-column justify-content-center w-25"> <div></div> <input placeholder="0.00 ₹"type="number" min="1" max="10000000" class="form-control" id="expense-amount"></input> </div> </div>');
+
 
         $('#editExpenseForm  #split-wallet').click((event)=>{
             // console.log(123);
@@ -730,7 +745,6 @@ function mountDashboard(){
                         });
                         
                         $(form).find('#all-wallet-splits').append(newWalletSplit);
-
                     }
                 }
 
@@ -1631,9 +1645,11 @@ function mountWallets(){
                 console.log(data);
                 data = data.data.walletInfo;
                 let subWalletInfoHtml = '';
+                let formWalletInfo = $('<div></div>');
                 // allObjects[obj] = data[obj]
 
                 for(const obj in data) {
+                    let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label">Spend on : </div> <div class="spend-on value"></div> </div>');
                     let key = obj;
                     var text = obj;
                     var result = text.replace( /([A-Z])/g, " $1" );
@@ -1650,12 +1666,15 @@ function mountWallets(){
                         if(data[obj]=='') data[obj] = "not specified";
 
                     }
-                        
-                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value '+obj+'">'+data[obj]+'</div></div>';
 
+                    $(newWalletInfo).find('.label').text(key);   
+                    $(newWalletInfo).find('.value').text(data[obj]);   
+                    
+                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value '+obj+'">'+data[obj]+'</div></div>';
+                    $(formWalletInfo).append(newWalletInfo);
                 }
 
-                $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(subWalletInfoHtml);
+                $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(formWalletInfo);
                 $(walletCardClone).find('.uncommon-wallet-fields').append(subWalletInfoHtml);
                 
             })

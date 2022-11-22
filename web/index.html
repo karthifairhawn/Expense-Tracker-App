@@ -221,55 +221,56 @@
 
             
             <!-- View Modal         -->
-            <div class="modal fade" class="view-expense-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade view-expense-modal"  id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
-                    <div class="modal-header">
-                    </span> <span class=" modal-title spend-amount text-red"> </span>
-                    <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header d-flex flex-column w-100">
+
+                        <div class="d-flex w-100">
+                            <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
+                            <span class=" modal-title spend-amount text-red"> </span>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="category-section w-100 mt-3 d-flex align-items-center">
+                            <div class="category-ico d-flex align-items-center justify-content-center"></div>
+                            <div class="category"></div>
+                        </div>
+
                     </div>
                     <div class="modal-body">
-                      
-                        <h3>Note</h3>
-                        <p class="expense-note">Lorem quaerat veniam quas ad.</p>
-
-                        <div class="mb-2 d-flex align-items-center">
-                            <span class="h5">Created on: </span>
-                            <span class="timestamp"></span>
-                        </div>
-                        
-                        <div class="mb-2 d-flex align-items-center">
-                            <span class="h5">Spend on : </span>
-                            <span class="spend-on"></span>
-                        </div>
-                        
-                        
-                        <div class="mb-2 d-flex align-items-center">
-                            <span class="h5">Category : </span>
-                            <span class="category"></span>
-                        </div>
-                        
 
                         <div class="mb-2 d-flex flex-column">
-                            <span class="h5"><b>Wallet Splits:</b> </span>
-                            <span class="wallet-splits">
-                                <div class="wallet-split">
-                                    <div class="w-50">
-                                        Indian Bank
-                                    </div>
-                                    <div class="w-50">
-                                        500 ₹
-                                    </div>
-                                </div>
+                            <span class="h5"><b>Expense Amount</b> </span>
+                            <span class="wallet-splits ">
+
                             </span>
                         </div>
-
-
-                        <div class="mt-2 d-flex align-items-center all-tags-msection">
-                            <b class="h5 mb-0">Tags: </b>
+                      
+                        
+                        <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
+                         
+                        <div class="mb-2 d-flex align-items-center card-field">
+                            <div class="label">Spend on : </div>
+                            <div class="spend-on value"></div>
                         </div>
 
+                        <div class="mb-2 d-flex align-items-center card-field">
+                            <div class="label">Created on: </div>
+                            <div class="timestamp value"></div>
+                        </div>
+                        
+
+
+
+                        <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
+                            <div class="label w-100">Note: </div>
+                            <div class="expense-note value w-100"></div>
+                        </div>
+
+                        <div class="mt-2 d-flex align-items-center all-tags-msection mb-2 mt-3">
+                            <i class="fas fa-tags"></i>
+                        </div>
 
                     </div>
                     <div class="modal-footer">
@@ -774,14 +775,19 @@
 
                             <!-- <span class="h5">Available: </span> -->
                             <span class="wallet-type amount"></span>  of 
-                            <span class="card-limit wallet-info-label h6"></span>
+                            <span class="card-limit h6"></span>
                             <span class="available-text h6">₹ available </span>
                             
                         </div>
 
-                        <div class="mb-2">
-                            <span class="h5">Due date: </span>
-                            <span class="due-date wallet-info-label day-selection"></span>
+                        <div class="mb-2 card-field d-flex">
+                            <div class="label">Due date: </div>
+                            <div class="due-date wallet-info-label day-selection value"></div>
+                        </div>
+
+                        <div class="mb-2 card-field d-flex">
+                            <div class="label">Limit: </div>
+                            <div class="card-limit value wallet-info-label"></div>
                         </div>
 
                     </div>

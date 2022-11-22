@@ -198,7 +198,6 @@ select {
     overflow: hidden;
     /* padding: 20px; */
     width: 100px;
-    height: 100px;
     border-radius: 0px;
     font-size: 50px;
 }
@@ -602,4 +601,58 @@ select {
 
 .uncommon-wallet-field{
     display: flex;
+}
+
+
+.wallet-split .account-name{
+    padding: 10px;
+}
+
+.wallet-split .account-spend{
+    padding: 10px;
+
+}
+
+.view-expense-modal  .category{
+    padding: 10px 10px;
+    font-size: 25px;
+    width: 100% ;
+}
+
+.category-section .category-ico{
+    font-size: 25px;
+    padding: 10px 10px;
+}
+
+.card-field{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.459);
+
+}
+
+.card-field div{
+    width: 50%;
+    padding: 10px;
+}
+
+.card-field .label{
+    color: #142d4c;
+    background-color: #43cead;
+}
+
+.card-field .value{
+    color: #142d4c;
+    background-color: #43ceae70;
+}
+
+.all-tags-msection .fas{
+    background-color: #43cead;
+    border: 5px solid #F08080;
+    padding: 7px;
+    border-radius: 50%;
+    /* font-weight: ; */
+    font-size: 13px;
+}
+
+.card-field .expense-note{
+    height: 100px;
 }
