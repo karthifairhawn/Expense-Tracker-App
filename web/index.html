@@ -505,40 +505,30 @@
         <div class="mt-5"></div>
 
         <div class=" mt-2 mb-2 card main-balance">
-            <div class="">
+            <div class="mi-bal-header"></div>
 
-                <div class="mi-bal-header"></div>
-
-                <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
-
-
-                    <div class="mi-bal-right">
-
-                        <span>Available Balance</span>
-                        <span>( <span id="total-acct-count">3</span> accounts)</span>
-
-                        <div class="d-flex">
-                            <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
-                            <div id="mi-bal-amount" class="display-1">10,000 ₹</div>
-                            &nbsp;&nbsp;
-                        </div>
-                        
+            <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+                <div class="mi-bal-right">
+                    <span>Available Balance</span>
+                    <span>( <span id="total-acct-count">3</span> accounts)</span>
+                    <div class="d-flex">
+                        <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+                        <div id="mi-bal-amount" class="display-1">10,000 ₹</div>
+                        &nbsp;&nbsp;
                     </div>
-
-                    <div class="mi-bal-right">
-                        
-                        <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                            <i class="fas fa-wallet"></i>
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <button type="button" class="btn btn-primary m-2 add-income-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
-                            <i class="fas fa-hand-holding-usd"></i>
-                        </button>
+                    <div type="button" class="" data-bs-toggle="modal" data-bs-target="#allIncomes">
+                        <div class="view-income-btn url mt-2">View Income Transactions</div>
                     </div>
-
-
                 </div>
-                
+                <div class="mi-bal-right">
+                    <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="fas fa-wallet"></i>
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary m-2 add-income-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -669,6 +659,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- All Incomes Model -->
+        <div class="modal fade" id="allIncomes" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">All Incomes</h5>
+                        <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <table class="table table-striped income-table-view">
+                            <thead>
+                              <tr>
+                                <th scope="col">Note</th>
+                                <th scope="col">Time</th>
+                                <th scope="col">Wallet</th>
+                                <th scope="col">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody class="tbody">
+
+                              <tr>
+                                <th scope="row">2</th>
+                                <td>Jacob</td>
+                                <td>Thornton</td>
+                                <td>@fat</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">3</th>
+                                <td colspan="2">Larry the Bird</td>
+                                <td>@twitter</td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
 
@@ -850,8 +881,10 @@
                             <hr>
                         </div>
                         <div class="modal-footer">
-                        <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
-                        <button type="button" class="btn btn-danger delete-wallet-btn   " data-bs-dismiss="modal">Delete</button>
+
+                            <!-- <button type="button" class="btn btn-success edit-wallet-btn" id=""></button> -->
+                            <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
+                            <button type="button" class="btn btn-danger delete-wallet-btn   " data-bs-dismiss="modal">Delete</button>
                         </div>
                     </div>
                     </div>
@@ -863,6 +896,8 @@
     </div> 
 </template>
 
+
+<!-- Create Wallet Form Templates -->
 <template id="create-wallet-bank-account">
     <hr>
     <div class="h6"><b>Wallet Info</b></div>

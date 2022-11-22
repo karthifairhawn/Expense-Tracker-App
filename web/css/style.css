@@ -656,3 +656,12 @@ select {
 .card-field .expense-note{
     height: 100px;
 }
+
+/* #allIncomes{
+    width: 700px;
+} */
+
+#allIncomes .modal-body{
+    height: 400px !important;
+    overflow: scroll;
+}

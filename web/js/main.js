@@ -27,8 +27,6 @@ $('.logout').click(()=>{
 // Mount Dashboard by default
 var currTimeSpan = 'Today';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-// mountTemplate();
-balanceHeaderUpdate();
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 
@@ -178,9 +176,12 @@ var utilFunctions = {
     
 }
 
+
+// Route Engine
 utilFunctions.navigator();
 
 
+// Pages Mounters
 function mountDashboard(){ 
     balanceHeaderUpdate();
     mountDateRangeSelector();
@@ -479,7 +480,7 @@ function mountDashboard(){
                 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
                 'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                };
+            };
 
             start = allDateRanges[currTimeSpan][0];
             end = allDateRanges[currTimeSpan][1];
@@ -925,12 +926,9 @@ function mountDashboard(){
         let currDateTime = (moment().format('YYYY-MM-DD HH:mm').split(" ").join("T"));
         $('#expense-time').val(currDateTime);
 
-
-        $('#save-expense-btn').click(()=>{ 
-            createNewExpense();
-        });   // Save Button Handler
+        // Save Button Handler
+        $('#save-expense-btn').click(()=>{  createNewExpense();  });   
         
-
         $('#expense-more').click(function(){
             $('.more-expense-info').css('display', 'block');
             $('#expense-more').css('display', 'none');
@@ -950,20 +948,14 @@ function mountDashboard(){
 
         async function listWalletsInForm(){
 
-
             let allWalletsInfo = [];
-
             let allWallets = null;
             await findWallets().then((data)=>allWallets = (data.data));
-    
-    
+        
             for(const wallet in allWallets){
-                
-                
                 for(let kgh=0;kgh<allWallets[wallet].length;kgh++){
                     allWalletsInfo.push(allWallets[wallet][kgh]);
                 }
-
             }
 
             allWallets = allWalletsInfo;
@@ -1226,6 +1218,7 @@ function mountDashboard(){
 
 }
 
+
 function mountWallets(){
     balanceHeaderUpdate();
 
@@ -1233,7 +1226,6 @@ function mountWallets(){
 
 
     let walletContainer = document.getElementById("wallets");
-    // walletContainer.innerHTML = '';
     let walletContainerTemplate = document.getElementById("wallet-container-header");
     let clone = walletContainerTemplate.content.cloneNode(true);
     walletContainer.appendChild(clone);
@@ -1250,7 +1242,6 @@ function mountWallets(){
 
 
     $('.add-income-btn').click(()=>{
-        // console.log(allNonCardWallets);
 
         let walletSelection = $('#incomeModal').find('.wallet-selection');
 
@@ -1260,11 +1251,56 @@ function mountWallets(){
 
     })
 
+    let allWallets = null;
+    $('.view-income-btn').click(async ()=>{
+
+        let allDateRanges =  {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        };
+
+
+        let start = allDateRanges['This Month'][0];
+        let end = allDateRanges['This Month'][1];
+
+        start = start.format('YYYYMMDD').split('-').join('');
+        end = end.format('YYYYMMDD').split('-').join('');
+
+        let incomeData = null;
+        await findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
+
+        $('#allIncomes .income-table-view .tbody').html('');
+
+        for(let i = 0; i < incomeData.length; i++){
+            let newRow = $('<tr> <th scope="row" class="note">1</th> <td class="time">Mark</td> <td class="wallet">Otto</td> <td class="amount">@mdo</td> </tr>');
+
+            let walletInfo = null;
+            await findWalletById(incomeData[i]['transactionInfo']['walletId']).then((wallet)=>{
+                walletInfo = wallet;
+            });
+
+            walletInfo.data[incomeData[i]['transactionInfo']['walletId']]
+
+            newRow.find('.note').text(incomeData[i]['transactionInfo']['note']);
+            newRow.find('.time').text(incomeData[i]['timestamp']);
+            newRow.find('.wallet').text((walletInfo.data.name));
+            newRow.find('.amount').text(incomeData[i]['amount']+" ₹");
+
+            $('.income-table-view .tbody').append(newRow);
+        }
+
+        if(incomeData.length==0){
+            $('.income-table-view .tbody').append('<h3>No Income Transactions</h3>');
+        }
+    })
 
 
     async  function findAllWallets(){
 
-        let allWallets = null;
         await findWallets().then((data)=>allWallets = (data.data));
 
         // console.log(allWallets);
@@ -1642,14 +1678,16 @@ function mountWallets(){
             // Populate sub wallet info
             await findWalletById(+(wallet.id)).then((data)=>{
                 
-                console.log(data);
                 data = data.data.walletInfo;
                 let subWalletInfoHtml = '';
                 let formWalletInfo = $('<div></div>');
                 // allObjects[obj] = data[obj]
 
                 for(const obj in data) {
-                    let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label">Spend on : </div> <div class="spend-on value"></div> </div>');
+                    let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label"></div><div class="spend-on value wallet-info-label '+obj+'"></div> </div>');
+                    if(obj=='note'){
+                        newWalletInfo = $('<div class="mb-2 d-flex align-items-center flex-column w-100 card-field"> <div class="label w-100"></div><span class="w-100 d-flex align-items-center"><div class="w-100 spend-on value wallet-info-label '+obj+'" type="textarea"></div></span> </div>');
+                    }
                     let key = obj;
                     var text = obj;
                     var result = text.replace( /([A-Z])/g, " $1" );
@@ -1670,7 +1708,7 @@ function mountWallets(){
                     $(newWalletInfo).find('.label').text(key);   
                     $(newWalletInfo).find('.value').text(data[obj]);   
                     
-                    subWalletInfoHtml += ' <div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value '+obj+'">'+data[obj]+'</div></div>';
+                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value">'+data[obj]+'</div></div>';
                     $(formWalletInfo).append(newWalletInfo);
                 }
 
@@ -1722,6 +1760,12 @@ function mountWallets(){
             let textBox = $(element);
             var text = textBox.text();
             var input = $('<input id="attribute" type="text" value="' + text + '" />')
+
+            let type = $(element).attr('type');
+            if(type=='textarea'){
+                input = $('<textarea id="attribute" style="width:100%" type="text" value="' + text + '" />');
+                input.val(text)
+            }
             textBox.text('').append(input);
             input.select();
 
@@ -1753,8 +1797,7 @@ function mountWallets(){
     
             }else if(walletType == 'Credit Card'){
                 walletInfo['walletInfo']['repayDate'] = $(cardElement).find('.repayDate').text();
-                walletInfo['walletInfo']['limit'] = $(cardElement).find('.limit').text();
-            
+                walletInfo['walletInfo']['limit'] = $(cardElement).find('.limit').text();   
             }else if(walletType == 'Bonus Account'){
                 walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
             }else if(walletType == 'Other'){
@@ -1931,6 +1974,8 @@ function mountWallets(){
 
 }
 
+
+// Validator Functions
 function validateValueNull(element,value){
 
     if(value==null || value==undefined || value==0 || value=='null'){
