@@ -65,7 +65,7 @@ $( function() {
                 localStorage.setItem('location','dashboard');
 
                 console.log(localStorage);
-                window.location.href = "/index.html"
+                window.location.href = "index.html"
             }
         }
   
@@ -78,7 +78,7 @@ $( function() {
 
 
 
-    $(function() {
+$(function() {
 
     $("form[name='registration']").validate({
         rules: {
@@ -135,7 +135,7 @@ $( function() {
                 localStorage.setItem('location','dashboard');
 
                 console.log(localStorage);
-                window.location.href = "/index.html"
+                window.location.href = "index.html"                
             }
         }
   

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Wallets</title>
+
+          <!-- Bootstap CDN -->
+          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+          <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+  
+          <!-- Font Awesome CDN -->
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  
+  
+          <!-- Include Required Prerequisites -->
+          <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+          <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+          
+          <!-- Include Date Range Picker -->
+          <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+          <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+  
+          <link rel="stylesheet" href="https://s.cdpn.io/55638/selectize.0.6.9.css">
+          <script src="https://s.cdpn.io/55638/selectize.min.0.6.9.js"></script>
+
+          <link rel="stylesheet" href="./css/style.css">
+    </head>
+
+    <body>
+
+        <div id="spinner">
+            <div style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar  -->
+        <nav class="navbar navbar-expand-xl navbar-light bg-light">
+            <div class="container-fluid d-flex">
+                <h4><i class="fa-solid fa-chart-pie"></i> Expense Tracker App</h4>
+
+                <div class="d-flex">
+                    <a class="nav-item" href="index.html" tabs="dashboard"><i class="fa-solid fa-house"></i></a>
+                    <div class="vr"></div>
+                    <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
+                </div>
+
+                <div class="nav-right-options d-flex">
+                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
+                </div>
+
+            </div>
+        </nav>
+
+    
+        <div id="wallets" class="container"></div>
+
+    </body>
+
+</html>
+
+
+
+
+
+<!-- Wallet section  -->
+<template id="wallet-container-header">
+
+    <!-- Available Balance Container -->
+    <div class=" mt-5 mb-2 card main-balance">
+        <div class="mi-bal-header"></div>
+
+        <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+            <div class="mi-bal-right">
+                <span>Available Balance</span>
+                <span>( <span id="total-acct-count">3</span> accounts)</span>
+                <div class="d-flex">
+                    <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+                    <div id="mi-bal-amount" class="display-1">10,000 ₹</div>
+                    &nbsp;&nbsp;
+                </div>
+                <div type="button" class="" data-bs-toggle="modal" data-bs-target="#allIncomes">
+                    <div class="view-income-btn url mt-2">View Income Transactions</div>
+                </div>
+            </div>
+            <div class="mi-bal-right">
+                <button type="button" class="btn btn-primary m-2 add-wallet-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    <i class="fas fa-wallet"></i>
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button type="button" class="btn btn-primary m-2 add-income-btn" data-bs-toggle="modal" data-bs-target="#incomeModal">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Information to show when no wallet is added -->
+    <div class="card no-wallet-available" style="display: none;">
+        <div class="card-body d-flex align-items-center justify-content-center ">
+            <h4>No Wallet Found! &nbsp;&nbsp; </h4>
+            <span class="url h4">add wallet ?</span>
+        </div>
+    </div>
+
+
+    <!-- Card Wallet Section -->
+    <div class="cards-section">
+        <div class="d-flex align-items-center">
+            <h3>My Cards</h3>
+            &nbsp;
+            <span class="btn btn-secondary">Total Card Spendings: <span class="card-used-amount">20000</span> ₹</span>
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <div class="credit-cards m-3 d-flex " id="credit-cards">
+            </div>    
+        </div>
+
+
+        <div class="cards-scroller card-sc-right  align-items-center justify-content-center">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <div class="cards-scroller card-sc-left align-items-center justify-content-center">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+
+    </div>
+
+    
+    <!-- Non Card Wallet Section -->
+    <div id="all-wallets-container"></div>
+    
+    <!--Add Wallet Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Create New Wallet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="return false;" action="">
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Type</span>
+                        <select class="form-select" id="new-wallet-type" aria-label="Small select">
+                            <option selected value="null" >select account type</option>
+                            <option value="Bank Account">Bank Account</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Bonus Account">Bonus Account</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Name</span>
+                        <input type="text" required maxlength="35" id="new-wallet-name" class="form-control" id="formControlInput" placeholder="Indian Bank Account">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" required min="0" max="10000000" id="new-wallet-balance" class="form-control" aria-label="Amount (to the nearest rupee)" placeholder="Amount available">
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input " type="checkbox" id="new-wallet-exclude">
+                        <label class="form-check-label" for="formSwitchCheckChecked">Exclude from stats</label>
+                    </div>
+
+                    <div id="wallet-info-form"></div>
+
+                    <div class="modal-footer">
+                        <button type="submit" id="create-wallet" class="btn btn-primary">add</button>
+                    </div>
+
+                </form>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!--Add Income Modal -->
+    <div class="modal fade" id="incomeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Add Income</h5>
+                <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form class="create-expense-form" onsubmit="return false;">
+                    
+
+                    <div class="input-group mb-4">
+                        <span class="input-group-text">Amount</span>
+                        <input type="text"class="form-control amount" placeholder="20000">
+                    </div>
+                    
+
+                    <div class="input-group mb-4">
+                        <span class="input-group-text">Note</span>
+                        <input type="text" class="form-control note" aria-label="Amount (to the nearest rupee)" placeholder="October Salary...">
+                    </div>
+
+                    <div class="input-group mb-4">
+                        <span class="input-group-text">Wallet</span>
+                        <select class="form-select wallet-selection" name="wallet-selection" id="new-income-wallet">
+
+                        </select>
+                    </div>
+
+
+                    <div class="mt-2 d-flex flex-row-reverse">
+                        <button class="btn btn-success add-income-submit">+ add</button>
+                    </div>
+                </form>
+
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- All Incomes Model -->
+    <div class="modal fade" id="allIncomes" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">All Incomes</h5>
+                    <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <table class="table table-striped income-table-view">
+                        <thead>
+                          <tr>
+                            <th scope="col">Note</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Wallet</th>
+                            <th scope="col">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody class="tbody">
+
+                          <tr>
+                            <th scope="row">2</th>
+                            <td>Jacob</td>
+                            <td>Thornton</td>
+                            <td>@fat</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">3</th>
+                            <td colspan="2">Larry the Bird</td>
+                            <td>@twitter</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- <div class="w- mt-5 mb-2 wallet-header-balance d-flex justify-content-between align-items-center"> -->
+
+</template>
+
+
+<!-- Credit Card Template -->
+<template id="credit-card-template">
+
+    <div class="cards-container m-3">
+        <div class="credit-card">
+
+            <h5 class="card-name">HDFC Credit Card</h5>
+            <div class="text-danger h5 overdraft-warning">Overdrafted the limit</div>
+
+            <br>
+            <div class="mt-3 mb-5 d-flex justify-content-between align-items-center">
+                <div>
+                    <span>Due Date</span>
+                    <b class="days-left">27</b> 
+
+                    <div>
+                       <span class="h4">₹</span>  <span class="amount">₹ 10,000 </span>
+                    </div> 
+                </div>
+
+                <div class="d-flex flex-column">
+                    <div class="mb-2">
+                        <span class="h4 credit-card-used">27</span> % Used 
+                    </div>
+                    <span class="btn pay-bill-btn" data-bs-toggle="modal" data-bs-target="#creditBillModal">Pay</span>
+                </div>
+
+ 
+            </div>
+
+
+
+            
+        </div>
+
+        <!--Pay Bill Modal -->
+        <div class="modal fade" id="creditBillModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Pay Bill</h5>
+                    <button type="button" class="btn-close credit-bill-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form class="create-expense-form" onsubmit="return false;">
+                        
+                        Total Bill: <span id="total-bill"></span>
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Pay</span>
+                            <input type="text"class="form-control amount" placeholder="20000">
+                        </div>
+                        
+
+                        <div class="input-group">
+                            <span class="input-group-text">Note</span>
+                            <input type="text" class="form-control note" aria-label="Amount (to the nearest rupee)" placeholder="Bill Payment...">
+                        </div>
+
+
+                        <div class="input-group invisible">
+                            <span class="input-group-text">Wallet</span>
+                            <input class="form-select wallet-selection " name="wallet-selection" id="new-income-wallet">
+
+                            </input>
+                        </div>
+
+
+                        <div class="mt-2 d-flex flex-row-reverse">
+                            <button class="btn btn-success add-income-submit">add record</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Modal -->
+        <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="acct-type-ico">
+                
+                        </div>
+                        &nbsp;
+                    <h5 class="modal-title card-name wallet-info-label"  id="exampleModalLabel"></h5>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+
+                        <div class="mb-2">
+
+                            <!-- <span class="h5">Available: </span> -->
+                            <span class="wallet-type amount"></span>  of 
+                            <span class="card-limit h6"></span>
+                            <span class="available-text h6">₹ available </span>
+                            
+                        </div>
+
+                        <div class="mb-2 card-field d-flex">
+                            <div class="label">Due date: </div>
+                            <div class="due-date wallet-info-label day-selection value"></div>
+                        </div>
+
+                        <div class="mb-2 card-field d-flex">
+                            <div class="label">Limit: </div>
+                            <div class="card-limit value wallet-info-label"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-warning edit-wallet-btn" id="">Save Changes</button>
+
+                        <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</template>
+
+<!-- Non Card Wallet template -->
+<template id="wallet-card-template">   
+    <div class="card wallet-card m-3" >
+        <div class="card-body">
+            <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                <i class="fas fa-eye"></i>
+            </a>
+
+            <div class="d-flex align-items-center">
+                <span class="acct-type-ico"></span>
+                &nbsp;&nbsp;&nbsp;
+                <div class="bank-name">Indain Bank</div>
+            </div>
+
+            <span class="balance">3000 </span>&nbsp; 
+            <span class="rupee-symbol">₹</span>
+
+            <div class="mt-5 mb-5"></div>
+
+            <div class="uncommon-wallet-fields">
+               
+            </div>
+
+            <div class="d-flex">
+
+                <!-- Modal -->
+                <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="acct-type-ico">
+                    
+                            </div>
+                            &nbsp;
+                        <h5 class="modal-title bank-name wallet-info-label"  id="exampleModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <span class="acct-type"></span>
+                            <br>
+                            <span class="wallet-type balance wallet-info-label"></span>  ₹
+                            <br>
+                            <hr>
+                        </div>
+                        <div class="modal-footer">
+
+                            <!-- <button type="button" class="btn btn-success edit-wallet-btn" id=""></button> -->
+                            <button type="button" class="btn btn-success edit-wallet-btn" id="">Save Changes</button>
+                            <button type="button" class="btn btn-danger delete-wallet-btn   " data-bs-dismiss="modal">Delete</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div> 
+</template>
+
+  
+
+<!-- Create Wallet Form Templates -->
+<template id="create-wallet-bank-account">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Acc No.</span>
+        <input type="text" id="new-wallet-accno" maxlength="20" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+    <div class="input-group">
+        <span class="input-group-text">IFSC</span>
+        <input type="text" id="new-wallet-ifsc" maxlength="20" class="form-control" placeholder="IDIB000K129">
+    </div>
+
+</template>
+
+<template id="create-wallet-credit-card">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Limit ₹</span>
+        <input type="number" required min="1" max="10000000" id='new-wallet-limit' class="form-control" placeholder="30000">
+    </div>
+    <br>
+
+    <div class="input-group">
+        <span class="input-group-text">Due date</span>
+        <select id="new-wallet-repay" required class="form-control">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+            <option value="21">21</option>
+            <option value="22">22</option>
+            <option value="23">23</option>
+            <option value="24">24</option>
+            <option value="25">25</option>
+            <option value="26">26</option>
+            <option value="27">27</option>
+            <option value="28">28</option>
+            <option value="29">29</option>
+            <option value="30" selected>30</option>
+            <option value="31">31</option>
+
+        </select>
+
+    </div>
+    
+
+</template>
+
+<template id="create-wallet-bonus-account">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text" maxlength="20">Note</span>
+        <input type="text" id="new-wallet-bnote" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+</template>
+
+<template id="create-wallet-other">
+    <hr>
+    <div class="h6"><b>Wallet Info</b></div>
+
+    <div class="input-group">
+        <span class="input-group-text">Note</span>
+        <input type="text" id='new-wallet-onote' maxlength="20" class="form-control" placeholder="8746734658743">
+        <!-- <span class="input-group-text">.00</span> -->
+    </div>
+    <br>
+
+</template>
+
+
+
+<script type="module" src="./js/wallets.js"></script>
+<script  type="module" src="./js/common.js"></script>     
+
