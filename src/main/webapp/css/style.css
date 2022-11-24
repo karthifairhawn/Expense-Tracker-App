@@ -696,3 +696,9 @@ select {
     height: 400px !important;
     overflow: scroll;
 }
+
+.pending-bill-btn{
+    background-color: #9fd3c7;
+    padding: 10px 20px;
+    border-radius: 5px;
+}

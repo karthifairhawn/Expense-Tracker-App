@@ -165,7 +165,7 @@ async function balanceHeaderUpdate(){
         return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
     }
     
-    
+
     let totalWalletCount = 0;
     let totalBalance = 0;
     for(const walletCat in allWallets){
@@ -189,9 +189,7 @@ function mountWallets(){
     let clone = walletContainerTemplate.content.cloneNode(true);
     walletContainer.appendChild(clone);
 
-
     let allNonCardWallets = [];
-
     findAllWallets();
 
     $('#new-wallet-type').click((event)=>{
@@ -205,12 +203,14 @@ function mountWallets(){
 
         let walletSelection = $('#incomeModal').find('.wallet-selection');
 
+        $('#incomeModal').find('.wallet-selection').html('');
         for(let i=0;i<allNonCardWallets.length;i++){
             walletSelection.append('<option value='+allNonCardWallets[i].id+'>'+allNonCardWallets[i].name+'</option>');
         }
 
     })
 
+    // List Incomes
     let allWallets = null;
     $('.view-income-btn').click(async ()=>{
 
@@ -233,10 +233,12 @@ function mountWallets(){
         let incomeData = null;
         await findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
 
+        console.log(incomeData);
+
         $('#allIncomes .income-table-view .tbody').html('');
 
         for(let i = 0; i < incomeData.length; i++){
-            let newRow = $('<tr> <th scope="row" class="note">1</th> <td class="time">Mark</td> <td class="wallet">Otto</td> <td class="amount">@mdo</td> </tr>');
+            let newRow = $('<tr> <th scope="row" class="wallet">1</th> <td class="time">Mark</td> <td class="amount">Otto</td> <td class="note">@mdo</td> </tr>');
 
             let walletInfo = null;
             await findWalletById(incomeData[i]['transactionInfo']['walletId']).then((wallet)=>{
@@ -245,6 +247,9 @@ function mountWallets(){
 
             walletInfo.data[incomeData[i]['transactionInfo']['walletId']]
 
+            if(incomeData[i]['transactionInfo']['note']==''){
+                incomeData[i]['transactionInfo']['note'] = "-"
+            }
             newRow.find('.note').text(incomeData[i]['transactionInfo']['note']);
             newRow.find('.time').text(incomeData[i]['timestamp']);
             newRow.find('.wallet').text((walletInfo.data.name));
@@ -277,9 +282,12 @@ function mountWallets(){
         }
         if(totalWalletCount == 0 ){
             $('.no-wallet-available').show();
+            $('.my-wallets-title').hide();
             $('.no-wallet-available .url').click(()=>{
                 $('.add-wallet-btn').click();
             })
+            $('.add-income-btn').remove();
+
         }
         $('#total-acct-count').text(totalWalletCount);
     }
@@ -306,44 +314,24 @@ function mountWallets(){
                 subInfo = data.data.walletInfo;
              })
 
-
-            
-            
             let wallet = allWallets[i];            
             let creditCardUsagePercent = ((subInfo.limit- wallet.balance) / subInfo.limit) * 100;
 
             $(walletCardClone).find(".card-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
-
-
             $(walletCardClone).find('.amount').text(wallet.balance)
-
-            // console.log();
-
             $(walletCardClone).find('#open-wallet-btn').attr('wallet-id',wallet.id)
-
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
-
             $(walletCardClone).find('.delete-wallet-btn').attr('wallet-id',wallet.id);
-
             $(walletCardClone).find('.credit-card').attr('data-bs-toggle','modal');
             $(walletCardClone).find('.credit-card').attr('data-bs-target','#walletInfoModal'+wallet.id);
             $(walletCardClone).find('#walletInfoModal').attr('id','walletInfoModal'+wallet.id);
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
             $(walletCardClone).find('.card-limit').text(subInfo.limit)
-
             $(walletCardClone).find('.pay-bill-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.pay-bill-btn').attr('payment',subInfo.limit- wallet.balance);
 
 
-           
-            // console.log(subInfo.limit)
-            let currentDate = new Date().getDate();
-            let repayDate =  subInfo.repayDate;
-
-
-
             const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
             let isDateTOne = false;
             if(subInfo.repayDate=='31'){
                 isDateTOne = true;
@@ -448,73 +436,68 @@ function mountWallets(){
                 let input = '';
                 if(textBox.hasClass('day-selection')){
 
-                    input = '<select type="text" class="due-date" >'
+                    input = $('<select type="text" id="inputOnClick" class="due-date"></select>');
                     for(let i=1;i<=31;i++){
-                        input += '<option value="' + i + '">'+i+"</option>";
+                        $(input).append($('<option value="' + i + '">'+i+"</option>"));
                     }
-                    textBox.removeClass('wallet-info-label')
-                    // textBox.parent().removeClass('')
-                    textBox.replaceWith(($(input)));
-                    // input.select();
-                }else{
+                    // textBox.removeClass('wallet-info-label')
+                    textBox.replaceWith(input);
 
-                    input = '<input id="attribute" class="" type="text" value="' + text + '" />';
+
+
+                }else{
+                    input = '<input id="inputOnClick" class="" type="text" value="' + text + '" />';
                     input = $(input)
                     textBox.text('').append(input);
                     input.select();
-                        
+
                     input.blur(function() {
-                        var text = $('#attribute').val();
-                        $('#attribute').parent().text(text);
-                        $('#attribute').remove();
+                        console.log("lost focus")
+                        var text = $('#inputOnClick').val();
+                        $('#inputOnClick').parent().text(text);
+                        $('#inputOnClick').remove();
                     });
-
-
                 }
+
+
 
     
             }
 
-
             function handleEditWallet(event) {
-                let cardElement = $(event.target).parent().parent();
-                
 
+                let cardElement = $(event.target).parent().parent();
                 let walletId =  $(event.target).attr('wallet-id');
                 let walletInfo = {};
                 walletInfo['name'] = $(cardElement).find('.card-name').text().trim();
                 walletInfo['type'] = 'Credit Card'
                 walletInfo['balance'] = $(cardElement).find('.amount').text();
                 walletInfo['excludeFromStats'] = $(cardElement).find('.wallet-exclude-stats').text();
-                // walletInfo['excludeFromStats'] = false;
                 walletInfo['archiveWallet'] = false;
-    
                 walletInfo['walletInfo'] = {};
-        
-                let walletType = walletInfo['type'];
-                if(walletType=='Bank Account'){
-                    walletInfo['walletInfo']['accountNumber'] = +($(cardElement).find('.accountNumber').text());
-                    walletInfo['walletInfo']['ifscCode'] = $(cardElement).find('.ifscCode').text();
-        
-                }else if(walletType == 'Credit Card'){
-                    walletInfo['walletInfo']['repayDate'] = (($(cardElement).find('.due-date option:selected')).val());
-                    walletInfo['walletInfo']['limit'] = + (($(cardElement).find('.card-limit')).text());
-                
-                }else if(walletType == 'Bonus Account'){
-                    walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
-                }else if(walletType == 'Other'){
-                    walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
-                }
+
+
+                 
+
+                let dueDate= (($(cardElement).find('.due-date option:selected')).val());
+                if(typeof dueDate === "undefined") dueDate = (($(cardElement).find('.due-date')).text());
+                walletInfo['walletInfo']['repayDate'] = dueDate;
+                walletInfo['walletInfo']['limit'] = + (($(cardElement).find('.card-field .card-limit')).text());
+
+                $('#inputOnClick').replaceWith($('<div class="due-date wallet-info-label day-selection value">'+dueDate+'</div>'))
+
+
 
     
                 $('#spinner').show();
 
                 console.log(walletInfo);
-
                 updateWalletById(walletId,JSON.stringify(walletInfo)).then((data)=>{
-                    console.log(data);
+                    if(data.statusCode != 200) alert('Edit Failed, Invalid data')
                     $('#spinner').hide();
                     $(event.target).hide();
+                    $('.btn-close').click();
+                    mountWallets();
                 })
             }
 
@@ -561,8 +544,10 @@ function mountWallets(){
             let paymentAmount = +($(form).find('.amount').val());
             let note = $(form).find('.note').val();
             let walletId =  +($(form).find('.wallet-selection').val());
+
             let isValid = 0;
             isValid += validateValueIsNumber($(form).find('.amount'),paymentAmount);
+            isValid += isLessThanCrored($(form).find('.amount'),paymentAmount);
             isValid +=validateValueIsNumber($(form).find('.wallet-selection'),walletId);
 
     
@@ -577,6 +562,7 @@ function mountWallets(){
                 }
             }
     
+            console.log(income);
             $('#spinner').show();
             createTransactions(JSON.stringify(income)).then((data)=>{
                 $('#spinner').hide();   
@@ -604,6 +590,8 @@ function mountWallets(){
         if(allWallets.length==0) return;
         let categoryAsClass = category.split(' ').join('_');
         let newWalletSection = $('<span class="card-body '+categoryAsClass+'">'+''+'</span>');
+
+
 
         for(let i = 0; i < allWallets.length; i++){
 
@@ -753,10 +741,10 @@ function mountWallets(){
             if(walletType=='Bank Account'){
                 walletInfo['walletInfo']['accountNumber'] = +($(cardElement).find('.accountNumber').text());
                 walletInfo['walletInfo']['ifscCode'] = $(cardElement).find('.ifscCode').text();
-    
             }else if(walletType == 'Credit Card'){
-                walletInfo['walletInfo']['repayDate'] = $(cardElement).find('.repayDate').text();
-                walletInfo['walletInfo']['limit'] = $(cardElement).find('.limit').text();   
+                console.log($(cardElement).find('.card-field .due-date'));
+                walletInfo['walletInfo']['repayDate'] = $(cardElement).find('.card-field .due-date').text();
+                walletInfo['walletInfo']['limit'] = $(cardElement).find('.card-field .card-limit').text();   
             }else if(walletType == 'Bonus Account'){
                 walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
             }else if(walletType == 'Other'){
@@ -826,8 +814,6 @@ function mountWallets(){
 
     function walletSubmissionHandler(){
 
-        
-        
         let walletName = $('#new-wallet-name').val();
         let acctBalance = ($('#new-wallet-balance').val());
         let walletType = $('#new-wallet-type').val();

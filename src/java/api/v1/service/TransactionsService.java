@@ -117,14 +117,7 @@ public class TransactionsService {
 		}else {
 			allTransactions =  baseTransactionsDaoService.findAll(queryParams);
 		}
-		 
-		System.out.println("");
-		System.out.println("");
-		System.out.println("");
-		System.out.println(allTransactions);
-		System.out.println("");
-		System.out.println("");
-		System.out.println("");
+
 		 
 		for(Map.Entry<String,List<Transactions>> e: allTransactions.entrySet()) {
 			 List<Transactions> transactions = e.getValue();
@@ -137,6 +130,11 @@ public class TransactionsService {
 			 allTransactions.put(e.getKey(),completeTransaction);
 		 }
 
+		System.out.println();
+		System.out.println();
+		System.out.println(allTransactions);
+		System.out.println();
+		System.out.println();
 		 return allTransactions;
 		 
 
@@ -145,7 +143,6 @@ public class TransactionsService {
 	public Transactions findById(Long transactionId) {
 		
 		Transactions transaction = baseTransactionsDaoService.findById(transactionId);	
-		transaction.setTimestamp(new Date()); 
 		
 		// Getting walletInfo
 		String transactionType = transaction.getType();

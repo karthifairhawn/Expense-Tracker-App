@@ -87,13 +87,14 @@ public class BaseTransactionsDaoService {
 				transaction.setTimestamp(rs.getTimestamp("timestamp"));
 				
 				String type = transaction.getType();
-				
-				
+								
 				if(type.equals("expense")) expenses.add(transaction);
-				else if(type.equals("income")) incomes.add(transaction);
-				else if(type.equals("transfer")) transfers.add(transaction);
+				else if(type.equals("income")) {
 
-				System.out.println(transaction);
+					incomes.add(transaction);
+				}
+				else if(type.equals("transfer")) transfers.add(transaction);
+				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

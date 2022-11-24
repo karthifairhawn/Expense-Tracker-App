@@ -88,6 +88,16 @@ public class UsersService {
     	validatorUtil.nullValidation(newUser.getPhoneNumber(),errors,"Phone Number");
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
     	
+    	// Type Validation
+    	if(!validatorUtil.isNumeric(newUser.getPhoneNumber())){
+    		errors.put("PhoneNumber","Must be numeric");
+    	}
+    	
+    	if(!validatorUtil.isValidEmail(newUser.getEmail())){
+    		errors.put("Email","Email invalid");
+    	}
+    	
+    	
     	// Authorization
     	if(usersDaoService.isEmailInUse(newUser.getEmail())) errors.put("Email","Already in use");
     	if(usersDaoService.isPhoneInUse(newUser.getPhoneNumber()))  errors.put("Phone Number","Already in use");
