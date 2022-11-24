@@ -161,7 +161,11 @@ async function balanceHeaderUpdate(){
     let allWallets =[];
     await findWallets().then((data)=>allWallets = (data.data));
 
-
+    function formatMoney(n) {
+        return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
+    }
+    
+    
     let totalWalletCount = 0;
     let totalBalance = 0;
     for(const walletCat in allWallets){
@@ -171,7 +175,7 @@ async function balanceHeaderUpdate(){
         }
     }
     $('#total-acct-count').text(totalWalletCount);
-    $('#mi-bal-amount').text(new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(totalBalance) +" ₹");
+    $('#mi-bal-amount').text(formatMoney(totalBalance));
 }
 
 
@@ -281,7 +285,6 @@ function mountWallets(){
     }
 
     async function populateCreditCards(allWallets){
-        let creditCardTemplate = $('#credit-card-template').clone(); 
         let totalCardExpense = 0;
 
         let walletSymbol = {
@@ -555,16 +558,13 @@ function mountWallets(){
         $('.add-income-submit').click((event)=>{
 
             let form = $(event.target).closest('.create-expense-form');
-    
-    
             let paymentAmount = +($(form).find('.amount').val());
             let note = $(form).find('.note').val();
             let walletId =  +($(form).find('.wallet-selection').val());
-    
             let isValid = 0;
             isValid += validateValueIsNumber($(form).find('.amount'),paymentAmount);
             isValid +=validateValueIsNumber($(form).find('.wallet-selection'),walletId);
-            // validateValue();
+
     
             if(isValid>0) return;
     
@@ -586,7 +586,7 @@ function mountWallets(){
     
             $('.credit-bill-close-btn').click();
             $('.income-model-close-btn').click();
-            // mountWallets();
+
         })
     
 
@@ -634,7 +634,11 @@ function mountWallets(){
                 // allObjects[obj] = data[obj]
 
                 for(const obj in data) {
+
+                    if(obj=='id') continue;
+
                     let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label"></div><div class="spend-on value wallet-info-label '+obj+'"></div> </div>');
+                    
                     if(obj=='note'){
                         newWalletInfo = $('<div class="mb-2 d-flex align-items-center flex-column w-100 card-field"> <div class="label w-100"></div><span class="w-100 d-flex align-items-center"><div class="w-100 spend-on value wallet-info-label '+obj+'" type="textarea"></div></span> </div>');
                     }
@@ -643,8 +647,7 @@ function mountWallets(){
                     var result = text.replace( /([A-Z])/g, " $1" );
                     key =  result;
 
-                    let className = obj;
-                    if(obj=='id') continue;
+
                     if(obj=='accountNumber'){
                         key = 'Account';
                         if(data[obj]=='0') data[obj] = "not specified";
@@ -655,11 +658,17 @@ function mountWallets(){
 
                     }
 
+                    if(obj!='note'){
+                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value">'+data[obj]+'</div></div>';
+                    }else{
+                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
+                    }
+
+
                     $(newWalletInfo).find('.label').text(key);   
                     $(newWalletInfo).find('.value').text(data[obj]);   
-                    
-                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value">'+data[obj]+'</div></div>';
                     $(formWalletInfo).append(newWalletInfo);
+
                 }
 
                 $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(formWalletInfo);
@@ -677,7 +686,8 @@ function mountWallets(){
                 inputOnClick(event.target);
                 $('.edit-wallet-btn').show();
             });
-            // SHow edit button on hover
+
+            // Show edit button on hover
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
                 // console.log(23);
                 $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
@@ -689,16 +699,15 @@ function mountWallets(){
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) {
                 let walletId = event.target.getAttribute('wallet-id');
                 $('#spinner').show();
-        
                 deleteWalletById(walletId).then(()=>{
                     $('#spinner').hide();
                     mountWallets();
                 })
             })
 
-            $(walletCardClone).find('.edit-wallet-btn').click((event)=>{
-               handleEditWallet(event);
-            })
+
+            $(walletCardClone).find('.edit-wallet-btn').click((event)=>{ handleEditWallet(event);})
+
 
             $('#all-wallets-container').append(walletCardClone);
 

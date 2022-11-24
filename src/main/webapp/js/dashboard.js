@@ -3,48 +3,19 @@ import {findWalletById, findWallets,createWallet,deleteWalletById,updateWalletBy
 import {findTagById,findTags,createTag} from '../apis/tags.js';
 import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
 
-$('.nav-item[tabs=dashboard]').addClass('active')
-
-
-let walletInfo = await findWallets();
-if(walletInfo.statusCode == 404){
-    localStorage.clear();
-    window.location.href = './login.html';
-}
-
-
 // Mount Dashboard by default
 var currTimeSpan = 'Today';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 
+$('.nav-item[tabs=dashboard]').addClass('active')
+mountDashboard();
+
+
 
 
 var utilFunctions = {
-
-    navigator: (activeTemplate) =>{ 
-
-        $('#dashboard #date-range-selector').html('');
-        $('#dashboard #expense-card-container').html('');
-        $('#wallets').html('')
-        $('.navbar .nav-item').removeClass('active');
-        
-        if(activeTemplate == 'wallets' || (localStorage.getItem('location') == 'wallets' && activeTemplate == undefined)){
-            mountWallets();
-            localStorage.setItem('location','wallets');
-            $('.navbar [tabs=wallets]').addClass('active');
-        }
-        else if(activeTemplate == 'dashboard' || (localStorage.getItem('location') == 'dashboard' && activeTemplate == undefined)){
-            mountDashboard();
-            balanceHeaderUpdate();
-            localStorage.setItem('location','dashboard');
-            $('.navbar [tabs=dashboard]').addClass('active');
-    
-        }else{
-            // alert('Still working at it')
-        }
-    },
 
     timeCovertor : (time) => {
         // Check correct time format and split into components
@@ -171,6 +142,10 @@ async function balanceHeaderUpdate(){
     let allWallets =[];
     await findWallets().then((data)=>allWallets = (data.data));
 
+    function formatMoney(n) {
+        return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
+    }
+    
 
     let totalWalletCount = 0;
     let totalBalance = 0;
@@ -181,11 +156,11 @@ async function balanceHeaderUpdate(){
         }
     }
     $('#total-acct-count').text(totalWalletCount);
-    $('#mi-bal-amount').text(new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(totalBalance) +" ₹");
+    $('#mi-bal-amount').text(formatMoney(totalBalance));
 }
 
 
-// Pages Mounters
+
 function mountDashboard(){ 
     balanceHeaderUpdate();
     mountDateRangeSelector();
@@ -328,7 +303,8 @@ function mountDashboard(){
             let color = '#'+colorOne[expense.id%9];
             let colorTw = '#'+colorTwo[expense.id%9];
             $(currentElement).find('.card-body').css('background-color',colorTw);
-            $(currentElement).find('.category-ico').css('background-color',color)
+            $(currentElement).find('.category-ico').css('background-color','#43cead');
+            $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
             $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
             $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".title").text(expense.transactionInfo.reason);
@@ -336,10 +312,10 @@ function mountDashboard(){
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
             $(currentElement).find(".timestamp").text(expense.timestamp);
             $(currentElement).find(".category").text(categoryInfo.name);
-            $(currentElement).find(".view-expense-modal .category-ico").css('background-color', '#'+colorOne[categoryInfo.id%9]);  
-            $(currentElement).find(".view-expense-modal .category-ico").css('color', 'black');  
-            // $(currentElement).find(".view-expense-modal .category-ico").css('background-color', '#'+colorTwo[categoryInfo.id%9]);  
-            $(currentElement).find(".view-expense-modal .category").css('background-color', '#'+colorTwo[categoryInfo.id%9]);  
+            // $(currentElement).find(".view-expense-modal .category-ico").css('background-color', '#'+colorOne[categoryInfo.id%9]);  
+            // $(currentElement).find(".view-expense-modal .category").css('background-color', '#'+colorTwo[categoryInfo.id%9]);  
+            $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
+            $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
             $(currentElement).find(".wallet-name").html(walletName);
             $(currentElement).find(".wallet-type").text(walletType);
             $(currentElement).find(".spend-on").text(fullExpenseTime);
@@ -388,7 +364,7 @@ function mountDashboard(){
                 modelAllTagsSection.append(newElement.clone());
             }
             if(allTagsInfo.length>1){
-                let newElement = $('<div class="d-flex align-items-center justify-content-between" style="color:white;font-weight:600"> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
+                let newElement = $('<div class="d-flex align-items-center justify-content-between" style=""> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
                 newElement.find('.tty').text('+ '+ (allTagsInfo.length -1) + ' more');
                 allTagsSection.append(newElement);
             }
@@ -1237,64 +1213,6 @@ function validateValueNull(element,value){
     }
 }
 
-function validateValueIsNumber(element,value){
-    // var reg = ;
-    // var reg = new RegExp('/^\d+$/');
-    
-    if(/\d/.test(value)){
-        $(element).css('border', '1px solid #ced4da');
-        // return 0;
-        if(value==0){
-            $(element).css('border', '1px solid red');
-            return 1
-        }
-        return 0;
-    }else{
-        $(element).css('border', '1px solid red');
-        return 1;
-    }
-
-
-}
-
-function IsNullOrNumber(element,value){
-
-    console.log(value)
-    if(value.length==0 || value == null || value==undefined || value==0){
-        return 0;
-    }
-
-    if(typeof value === 'number' && isFinite(value)){
-        $(element).css('border', '1px solid #ced4da');
-        // return 0;
-        if(value==0){
-            $(element).css('border', '1px solid red');
-            return 1
-        }
-        return 0;
-    }else{
-        $(element).css('border', '1px solid red');
-        return 1;
-    }
-
-
-}
-
-function isNullOrIfsc(element,value){
-    if(value.length==0 || value == null || value==undefined){
-        return 0;
-    }
-    var reg = /[A-Z|a-z]{4}[0][a-zA-Z0-9]{6}$/;    
-    if (value.match(reg)) {    
-        $(element).css('border', '1px solid #ced4da');
-        return 0;    
-    }    
-    else {    
-        $(element).css('border', '1px solid red'); 
-        return 1;    
-    }    
-}
-
 function validateValueIsPositive(element,value){
     // var reg = ;
     // var reg = new RegExp('/^\d+$/');
@@ -1331,6 +1249,5 @@ function isLessThanCrored(element,value){
 
 }
 
-// Set balance in header container
 
 

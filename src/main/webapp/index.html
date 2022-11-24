@@ -160,19 +160,18 @@
     <div class="card expense-card">
         <div class="card-body d-flex align-items-center">
         
-
             <span class="category-ico d-flex align-items-center justify-content-center">
                 <i class="fa-solid fa-trophy" class="category-ico"></i>
             </span>
 
             <div class="d-flex flex-column  expense-card-left">
                 
-                <span style="font-size: 30px" class="title">Sample Expense</span>
+                <span style="font-size: 22px" class="title">Sample Expense</span>
 
 
                 <div class="d-flex flex-row">
                     <div class="d-flex flex-row align-items-center" style="width: 300px;">
-                        <span style="font-size: 19px" class="category">Sample Expense</span>
+                        <span style="font-size: 17px" class="category">Sample Expense</span>
                         &nbsp;&nbsp;&nbsp;
                         <i><span style="font-size: 15px" class="spend-on"> 5:40 AM</span></i> 
                     </div>
@@ -183,7 +182,7 @@
             </div>
 
                 
-            <span style="font-size: 20px;" class="expense-card-wallet">
+            <span style="font-size: 18px;" class="expense-card-wallet">
                 <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> 
                 <span class="wallet-name">Isndian Bank</span>
                 <br>
@@ -210,163 +209,7 @@
             </btn>
 
             
-            <!-- View Modal         -->
-            <div class="modal fade view-expense-modal"  id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header d-flex flex-column w-100">
 
-                        <div class="d-flex w-100">
-                            <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
-                            <span class=" modal-title spend-amount text-red"> </span>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <div class="category-section w-100 mt-3 d-flex align-items-center">
-                            <div class="category-ico d-flex align-items-center justify-content-center"></div>
-                            <div class="category"></div>
-                        </div>
-
-                    </div>
-                    <div class="modal-body">
-
-                        <div class="mb-2 d-flex flex-column">
-                            <span class="h5"><b>Expense Amount</b> </span>
-                            <span class="wallet-splits ">
-
-                            </span>
-                        </div>
-                      
-                        
-                        <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
-                         
-                        <div class="mb-2 d-flex align-items-center card-field">
-                            <div class="label">Spend on : </div>
-                            <div class="spend-on value"></div>
-                        </div>
-
-                        <div class="mb-2 d-flex align-items-center card-field">
-                            <div class="label">Created on: </div>
-                            <div class="timestamp value"></div>
-                        </div>
-                        
-
-
-
-                        <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
-                            <div class="label w-100">Note: </div>
-                            <div class="expense-note value w-100"></div>
-                        </div>
-
-                        <div class="mt-2 d-flex align-items-center all-tags-msection mb-2 mt-3">
-                            <i class="fas fa-tags"></i>
-                        </div>
-
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-warning edit-expense-btn" data-bs-dismiss="modal">Edit</button>
-
-
-                     <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id="0""></i>
-                    </div>
-                  </div>
-                </div>
-            </div>
-
-            <!-- Edit Modal -->
-            <div class="modal fade" id="editExpenseForm" class="edit-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Edit Expense</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <form onsubmit="return false;" action="" >
-                        <div class="mb-3">
-                          <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                          <input placeholder="new clothes" maxlength="50" required type="text" class="form-control" id="expense-name">
-                        </div>
-    
-                        <div class="d-flex flex-row justify-content-between ml-2">
-                            <label class="message-text" for="recipient-name" class="col-form-label">Amount :</label>
-                            <span class="url" id="split-wallet">split</span>
-                        </div>
-    
-                        <div id="all-wallet-splits" class="all-wallet-splits">
-                            <div class="w-split wallet-split1 d-flex mb-2">                            
-        
-                                <div class="wallet-name-section  w-75">
-                                    <select required class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
-                                    </select>    
-    
-                                </div>
-                                <div class="m-2"></div>
-                                <div class="d-flex flex-column justify-content-center w-25">
-                                    <div></div>
-                                    <input placeholder="0.00 ₹"type="number" min="1" max="10000000" class="form-control" id="expense-amount"></input>
-                                    
-                                </div>
-    
-                            </div>
-    
-                        </div>
-
-                        <div class="more-expense-info" style="display:block;">
-
-                            <div class="mb-3 d-flex flex-column">
-                                <label for="message-text" class="col-form-label" id="category-label">Category:</label>
-    
-                                <div class="d-flex">
-                                    
-                                    <div id="form-category-icon">
-                                        <i class="fa-regular fa-gem d-flex align-items-center justify-content-center"></i> 
-                                    </div>
-
-    
-                                    <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
-                                    </select>
-    
-                                    <input type="text"  class="form-control edit-category-input" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
-    
-    
-                                    <select class="form-select" aria-label="Default select" id="all-categories-options">
-                                    </select>
-                                    
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label">Spend on:</label>
-                                <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
-                            </div>
-    
-                            <div class="mb-3">
-                                <label  class="col-form-label">Note:</label>
-                                <textarea placeholder="new clothes" class="form-control" id="expense-note"></textarea>  
-                            </div>
-    
-                            <div class="mb-3">
-                                <label for="message-text" class="col-form-label">Tags:</label>
-                                
-                                <select name="locationSets" maxlength="10" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
-                                </select>
-    
-                            </div>
-
-                        </div>
-                        
-                        <div class="modal-footer">
-                            <button id="update-expense-btn" type="submit" class="btn btn-primary">Save</button>
-                        </div>
-    
-                      </form>
-    
-                    </div>
-                  
-                  </div>
-                </div>
-            </div>
 
             
             <div class="expense-card-bal-cont d-flex align-items-center justify-content-center">
@@ -377,7 +220,167 @@
             <a type="button"  class="align-items-center justify-content-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <i class="fas fa-eye"> </i> &nbsp; view 
             </a>
+
         </div>
+
+        <!-- View Modal         -->
+        <div class="modal fade view-expense-modal"  id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header d-flex flex-column w-100">
+
+                    <div class="d-flex w-100">
+                        <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
+                        <span class=" modal-title spend-amount text-red"> </span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="category-section w-100 mt-3 d-flex align-items-center">
+                        <div class="category-ico d-flex align-items-center justify-content-center"></div>
+                        <div class="category"></div>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-2 d-flex flex-column">
+                        <span class="h5"><b>Expense Amount</b> </span>
+                        <span class="wallet-splits ">
+
+                        </span>
+                    </div>
+                    
+                    
+                    <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
+                        
+                    <div class="mb-2 d-flex align-items-center card-field">
+                        <div class="label">Spend on : </div>
+                        <div class="spend-on value"></div>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-center card-field">
+                        <div class="label">Created on: </div>
+                        <div class="timestamp value"></div>
+                    </div>
+                    
+
+
+
+                    <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
+                        <div class="label w-100">Note: </div>
+                        <div class="expense-note value w-100"></div>
+                    </div>
+
+                    <div class="mt-2 d-flex align-items-center all-tags-msection mb-2 mt-3">
+                        <i class="fas fa-tags"></i>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning edit-expense-btn" data-bs-dismiss="modal">Edit</button>
+
+
+                    <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id="0""></i>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editExpenseForm" class="edit-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Expense</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="return false;" action="" >
+                    <div class="mb-3">
+                        <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
+                        <input placeholder="new clothes" maxlength="50" required type="text" class="form-control" id="expense-name">
+                    </div>
+
+                    <div class="d-flex flex-row justify-content-between ml-2">
+                        <label class="message-text" for="recipient-name" class="col-form-label">Amount :</label>
+                        <span class="url" id="split-wallet">split</span>
+                    </div>
+
+                    <div id="all-wallet-splits" class="all-wallet-splits">
+                        <div class="w-split wallet-split1 d-flex mb-2">                            
+    
+                            <div class="wallet-name-section  w-75">
+                                <select required class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
+                                </select>    
+
+                            </div>
+                            <div class="m-2"></div>
+                            <div class="d-flex flex-column justify-content-center w-25">
+                                <div></div>
+                                <input placeholder="0.00 ₹"type="number" min="1" max="10000000" class="form-control" id="expense-amount"></input>
+                                
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="more-expense-info" style="display:block;">
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="message-text" class="col-form-label" id="category-label">Category:</label>
+
+                            <div class="d-flex">
+                                
+                                <div id="form-category-icon">
+                                    <i class="fa-regular fa-gem d-flex align-items-center justify-content-center"></i> 
+                                </div>
+
+
+                                <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
+                                </select>
+
+                                <input type="text"  class="form-control edit-category-input" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
+
+
+                                <select class="form-select" aria-label="Default select" id="all-categories-options">
+                                </select>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Spend on:</label>
+                            <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
+                        </div>
+
+                        <div class="mb-3">
+                            <label  class="col-form-label">Note:</label>
+                            <textarea placeholder="new clothes" class="form-control" id="expense-note"></textarea>  
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Tags:</label>
+                            
+                            <select name="locationSets" maxlength="10" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
+                            </select>
+
+                        </div>
+
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button id="update-expense-btn" type="submit" class="btn btn-primary">Save</button>
+                    </div>
+
+                    </form>
+
+                </div>
+                
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -555,7 +558,9 @@
 
         </div>
 
-        <div id="all-wallets-container"></div>
+        <div id="all-wallets-container">
+            <div class="display-6">My Wallets</div>
+        </div>
         
         <!--Add Wallet Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -696,7 +701,6 @@
 </template>
 
 <template id="credit-card-template">
-
     <div class="cards-container m-3">
         <div class="credit-card">
 
@@ -728,8 +732,6 @@
 
             
         </div>
-
-
         <!--Pay Bill Modal -->
         <div class="modal fade" id="creditBillModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     
@@ -823,7 +825,6 @@
         </div>
 
     </div>
-
 </template>
 
 <!-- Individual wallet template -->

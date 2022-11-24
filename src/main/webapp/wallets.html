@@ -115,12 +115,13 @@
     <!-- Card Wallet Section -->
     <div class="cards-section">
         <div class="d-flex align-items-center">
-            <h3>My Cards</h3>
-            &nbsp;
-            <span class="btn btn-secondary">Total Card Spendings: <span class="card-used-amount">20000</span> ₹</span>
+            <div class="rounded border p-3 d-flex w-100 justify-content-between section-title">     
+                <h3>My Cards</h3>
+                <span class="btn btn-secondary">Pending Bill: <span class="card-used-amount">20000</span> ₹</span>
+            </div>
         </div>
 
-        <div class="d-flex justify-content-center">
+        <div class="d-flex">
             <div class="credit-cards m-3 d-flex " id="credit-cards">
             </div>    
         </div>
@@ -137,7 +138,9 @@
 
     
     <!-- Non Card Wallet Section -->
-    <div id="all-wallets-container"></div>
+    <div class="h3 rounded border p-3 section-title">My Wallets</div>
+    <div id="all-wallets-container">
+    </div>
     
     <!--Add Wallet Modal -->
     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

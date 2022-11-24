@@ -25,6 +25,10 @@ html, body{
     color: #000;
 }
 
+.nav-item:hover{
+    color: black;
+}
+
 .active {
     border-bottom: 2px solid #142d4c;
     border-radius: 2px;
@@ -195,10 +199,15 @@ select {
     font-weight: 900;
    
 }
-.category-ico{
+.expense-card .card-body .category-ico{
+
+    background-color: #131519 !important;
+
+}
+
+.expense-card .category-ico{
     width: 40px;
     overflow: hidden;
-    /* padding: 20px; */
     width: 100px;
     border-radius: 0px;
     font-size: 50px;
@@ -206,6 +215,12 @@ select {
 
 .expense-card .card-body{
     padding: 0px;
+    background-color: #363636 !important;
+    color: #fff;
+}
+
+.expense-card .card-body .tags-section{
+    color: #000 !important;
 }
 
 .create-category-ico{
@@ -392,9 +407,7 @@ select {
 }
 
 .credit-cards{
-    width: 95%;
     overflow-x: scroll;
-    position: relative;
     /* padding: 10px; */
     /* margin: 0px; */
 }
@@ -430,31 +443,39 @@ select {
 	                   color-stop(.5, rgba(255, 255, 255, .2)),
 					   color-stop(.5, transparent), to(transparent));
 }
+
+.section-title{
+    /* background-color: #9fd3c77c; */
+}
+
 .cards-scroller{
     position: absolute;
-    
-    height: 70%;
+    height: 60%;
     width: 30px;
-    background-color: rgba(0, 171, 238, 0.226);
+    /* background-color: #27272773; */
     font-size: 40px;
-    color: rgba(255, 255, 255, 0.226);
+    color: rgba(0, 0, 0, 0.719);
     border-radius: 20px 0px 0px 20px;
     cursor: pointer;
-    top: 63px;
+    top: 30%;
+    /* right: 30px; */
+    /* margin: 0px 20px; */
+
 }
 
 .card-sc-right {
-    right: 0px;
+    right: -25px;
     border-radius: 0px 20px 20px 0px;
     display: flex;
-
+}
+.card-sc-left{
+    left: -9px;
 }
 
 .cards-scroller:hover{
     background-color: rgba(0, 171, 238, 0.596);
     color: rgba(255, 255, 255, 0.596);
     transition: all ease-in-out 100ms;
-
 }
 
 .cards-section{
@@ -501,9 +522,14 @@ select {
     width: 200px;
     height: 100%;
     border-radius: 0px 5px 5px 0px;
-    background-color: #7da9e6;
+    background-color: #272727;
+    color: #fff !important;
     position: absolute;
     right: 0;
+}
+
+.expense-card-bal-cont .spend-amount{
+    color: #fff !important;
 }
 
 .expense-card-bal-cont .spend-amount{
@@ -585,6 +611,7 @@ select {
 
 #all-wallets-container{
     display: flex;;
+    flex-wrap: wrap;
 }
 
 .cards-container .modal .amount{
@@ -603,6 +630,8 @@ select {
 
 .uncommon-wallet-field{
     display: flex;
+    overflow: hidden;
+    max-height: 90px;
 }
 
 
