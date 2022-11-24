@@ -603,7 +603,6 @@ function mountWallets(){
             let icon = ('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>')     
             $(walletCardClone).find(".acct-type-ico").html(icon);
             $(walletCardClone).find(".bank-name").text(wallet.name)
-            $(walletCardClone).find('.balance').text( wallet.balance)
             $(walletCardClone).find('.acct-type').text(wallet.type)   
             $(walletCardClone).find('#open-wallet-btn').attr('wallet-id',wallet.id)
             $(walletCardClone).find('#open-wallet-btn').attr('data-bs-target','#walletInfoModal'+wallet.id);
@@ -611,7 +610,12 @@ function mountWallets(){
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.delete-wallet-btn').attr('wallet-id',wallet.id);
+            $(walletCardClone).find('.balance').text( wallet.balance)
 
+
+            if(wallet.balance <0 ){
+                $(walletCardClone).find('.uncommon-wallet-fields').before($('<div class="text-danger">account is overdrafted</div>'))
+            }
 
             // Populate sub wallet info
             await findWalletById(+(wallet.id)).then((data)=>{

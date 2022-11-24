@@ -702,3 +702,12 @@ select {
     padding: 10px 20px;
     border-radius: 5px;
 }
+
+.expired-expense-ico{
+    color: rgba(255, 0, 0, 0.461) !important;
+    font-size: 17px;
+}
+
+.expired-expense-ico:hover::after{
+    content: 'asfs';
+}

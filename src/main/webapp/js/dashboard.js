@@ -178,8 +178,7 @@ function mountDashboard(){
         
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
-      
-        let groupBy= 'Time';
+
         dateRangeChangeHandler();
         
         $(".daterangepicker ul").find(`[data-range-key='${currTimeSpan}']`).click();
@@ -206,9 +205,11 @@ function mountDashboard(){
                 
                 let wallets = new Array();
 
+                // Find all wallets
                 for (const [key, value] of Object.entries(expenses[i].walletSplits)) {
                     await  findWalletById(`${key}`).then((resp)=> wallets.push(resp));
                 }
+                console.log(wallets)
 
                 let categoryInfo = {};
                 if(expenses[i].transactionInfo.categoryId==0){
@@ -264,20 +265,16 @@ function mountDashboard(){
 
 
             // Findign wallet Split;
+            let archieveWallet =  null;
             for(let i=0; i<walletInfo.length;i++){
+                archieveWallet = walletInfo[i].data.archiveWallet;
                 let id = walletInfo[i].data.id;
                 let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
                 $(newWalletSplit).find('.account-name').text(walletInfo[i].data.name);
                 $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
-
-                let colorId = (walletInfo[i].data.id)%9;
-                console.log(colorId);
-
-                // $(newWalletSplit).find('.account-name').css('background-color','#'+colorOne[colorId])
-                // $(newWalletSplit).find('.account-spend').css('background-color','#'+colorTwo[colorId])
-
                 $(currentElement).find(".wallet-splits").append(newWalletSplit);
             }
+            if(archieveWallet !== null) archieveWallet = $('<i class="fas expired-expense-ico fa-ban"></i>');
 
 
             // Finding wallet name
@@ -287,7 +284,6 @@ function mountDashboard(){
             }else{
                 // console.log(walletInfo.length-1+"pp-")
                 let accounts = walletInfo.length;
-                let html = "<a></a>";
                 walletName = +accounts+" Accounts "+'<i class="fa-solid fa-arrows-split-up-and-left"></i> '
             }
 
@@ -312,7 +308,8 @@ function mountDashboard(){
             $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
             $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
             $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
-            $(currentElement).find(".title").text(expense.transactionInfo.reason);
+            $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
+            $(currentElement).find(".title").append(archieveWallet);
             $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
             $(currentElement).find(".timestamp").text(expense.timestamp);
@@ -346,11 +343,16 @@ function mountDashboard(){
             })
 
             // Edit button inside expense lisiting
+            if(archieveWallet !== null) $(currentElement).find('.edit-expense-btn').remove();
+            if(archieveWallet !== null) $(currentElement).find('.expense-edit-btn').remove();
+            if(archieveWallet !== null) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.</div>');
             $(currentElement).find('.expense-edit-btn').click((event)=>{
                 // setTimeout(()=>{})
                 let walletId = $(event.target).attr('expense-id');
                 mountEditExpenseForm(walletId);
             })
+            if(archieveWallet !== null) $(currentElement).find('.expense-edit-btn').off()
+
 
             // Open edit on clicking title
             $(currentElement).find('.modal-title').click((event)=>{
@@ -938,8 +940,11 @@ function mountDashboard(){
                 return false;
             }
 
+            
             for(let i=0;i<allWallets.length;i++){
-                allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'</option>'
+                let overdraft = "";
+                if(allWallets[i].balance<0) overdraft = "overdraft";
+                allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('+overdraft+')</option>'
             }
 
             // console.log(allWallets);
