@@ -248,7 +248,6 @@ function mountDashboard(){
             $(expenseTemplateClone).find('#editExpenseForm').attr('id','editExpenseForm'+expense.id);
             $(expenseTemplateClone).find('#inExpEditForm').attr('data-bs-target','#'+'editExpenseForm'+expense.id)
 
-
             // Grouping multiple days expense with dates and calculating per days's expense 
             if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
                 console.log(expense.transactionInfo.spendOn.split(" ")[0]);
@@ -265,17 +264,18 @@ function mountDashboard(){
 
 
             // Findign wallet Split;
-            let archieveWallet =  null;
+            let walletArchiveIndicator =  null;
             for(let i=0; i<walletInfo.length;i++){
-                archieveWallet = walletInfo[i].data.archiveWallet;
+                walletArchiveIndicator = walletInfo[i].data.archiveWallet;
                 let id = walletInfo[i].data.id;
                 let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
                 $(newWalletSplit).find('.account-name').text(walletInfo[i].data.name);
                 $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
                 $(currentElement).find(".wallet-splits").append(newWalletSplit);
             }
-            console.log(archieveWallet);
-            if(archieveWallet === true) archieveWallet = $('<i class="fas expired-expense-ico fa-ban"></i>');
+
+            
+            
 
 
             // Finding wallet name
@@ -310,7 +310,6 @@ function mountDashboard(){
             $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
             $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
-            $(currentElement).find(".title").append(archieveWallet);
             $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
             $(currentElement).find(".timestamp").text(expense.timestamp);
@@ -324,6 +323,22 @@ function mountDashboard(){
             $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
             $(currentElement).find(".edit-expense-btn").attr('expense-id',expense.id);
             $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
+
+
+
+
+
+            // Detection of isDeleted Wallets Expense
+            if(walletArchiveIndicator === true) $(currentElement).find('.edit-expense-btn').remove();
+            if(walletArchiveIndicator === true) $(currentElement).find('.expense-edit-btn').remove();
+            if(walletArchiveIndicator === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.</div>');
+            $(currentElement).find('.expense-edit-btn').click((event)=>{
+                // setTimeout(()=>{})
+                let walletId = $(event.target).attr('expense-id');
+                mountEditExpenseForm(walletId);
+            })
+            if(walletArchiveIndicator === true) $(currentElement).find('.expense-edit-btn').off()
+            if(walletArchiveIndicator === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
             
 
 
@@ -337,23 +352,11 @@ function mountDashboard(){
                     $('#spinner').css('display','none');
                     $('.btn-close').click();
 
-
+                    balanceHeaderUpdate();
                     mountExpensesInDashboard();
                 });
-           
+            
             })
-
-            // Edit button inside expense lisiting
-            if(archieveWallet !== null) $(currentElement).find('.edit-expense-btn').remove();
-            if(archieveWallet !== null) $(currentElement).find('.expense-edit-btn').remove();
-            if(archieveWallet !== null) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.</div>');
-            $(currentElement).find('.expense-edit-btn').click((event)=>{
-                // setTimeout(()=>{})
-                let walletId = $(event.target).attr('expense-id');
-                mountEditExpenseForm(walletId);
-            })
-            if(archieveWallet !== null) $(currentElement).find('.expense-edit-btn').off()
-
 
             // Open edit on clicking title
             $(currentElement).find('.modal-title').click((event)=>{
@@ -563,6 +566,7 @@ function mountDashboard(){
             for(let i=0;i<allTagsInfo.length;i++){
                 allTagsHTML+='<option value="'+allTagsInfo[i].id+'">'+allTagsInfo[i].name+'</option>'
                 allTags.push(+(allTagsInfo[i].id));
+                formSelectedTags.push(+(allTagsInfo[i].id))
             }
 
 
@@ -590,12 +594,9 @@ function mountDashboard(){
                     if(allTags.includes(+value)){
                         formSelectedTags.push(value);
                     }else{
-                                            // console.log(obj+' '+value)
                         if(value.length<=3 || value.length>14){
                             alert('pleas create tag in len between 3 and 14');
-                            // console.log(obj)
                             $(obj).hide();
-                            // $(obj).css('background-color', 'red !important');
                             return false;
                         }
 
@@ -624,24 +625,24 @@ function mountDashboard(){
             
             await findCategories().then((data)=> allCategories= (data.data))
             
-            let allCategoriesHTML = '';
-            allCategoriesHTML+='<option value="0"> General</option>'
+            let allCategoriesHTML ='<option ico="f219" value="0">General Expense</option>';
             for(let i=0;i<allCategories.length;i++){
-    
                 allCategoriesHTML+='<option class="category-list-option" ico="'+allCategories[i].imagePath+'" value="'+allCategories[i].id+'">'+allCategories[i].name+'</option>'
             }
+
             allCategoriesHTML+='<option ico="create-cat" class="create-category-option">+ create new category</option>'
             $(newEditFormSelector+' #all-categories-options').html(allCategoriesHTML);
     
+            let icon = $('#all-categories-options option:selected').attr('ico');
+            $('#form-category-icon').html('<span class="create-category-ico" >&#x'+icon+'</span>')
+            
             $(newEditFormSelector+' #all-categories-options').change((event)=>{
 
-                console.log(123)
                 let icon = $('option:selected', event.target).attr('ico');
-    
+                console.log(icon);
+
                 if(icon=='create-cat'){
-                    
                     usingNewCategory = true;
-    
                     $(newEditFormSelector+' #category-label').text('Create Category');
                     $(newEditFormSelector+' #all-categories-options').hide();  
                     $(newEditFormSelector+' #create-category-btn').hide();
@@ -657,10 +658,11 @@ function mountDashboard(){
                     }
                     $(newEditFormSelector+' #new-category-icon').html(fontAwesomeIconeHtml);
                 }else{
-                    $('#editExpenseForm  #form-category-icon').html('<span class="create-category-ico" >&#x'+icon+'</span>')
+                    $('#form-category-icon').html('<span class="create-category-ico" >&#x'+icon+'</span>')
                 }
     
             })
+
         }
 
         async function insertExpenseData(expenseId){
@@ -873,8 +875,6 @@ function mountDashboard(){
    
             if(!IsAllWalletSplitFilled()) return;
 
-            // console.log(123);
-
             let walletSplitAdditional = $('#newRecord .wallet-split1').clone().removeClass('wallet-split1')
             walletSplitAdditional.find('.message-text').remove();
             walletSplitAdditional.find('#expense-amount').val(0);
@@ -902,7 +902,6 @@ function mountDashboard(){
         // Save Button Handler
         $('#save-expense-btn').click(()=>{  
             createNewExpense();  
-            $('#save-expense-btn').off()
         });   
         
         $('#expense-more').click(function(){
@@ -945,8 +944,8 @@ function mountDashboard(){
             
             for(let i=0;i<allWallets.length;i++){
                 let overdraft = "";
-                if(allWallets[i].balance<0) overdraft = "overdraft";
-                allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('+overdraft+')</option>'
+                if(allWallets[i].balance<0) overdraft = "(overdraft)";
+                allWalletsHTML+='<option value="'+allWallets[i].id+'">'+allWallets[i].name+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+overdraft+'</option>'
             }
 
             // console.log(allWallets);
@@ -1021,15 +1020,18 @@ function mountDashboard(){
             
 
             let allCategoriesHTML = '';
-            allCategoriesHTML+='<option value="0">General Expense</option>'
+            allCategoriesHTML+='<option ico="f219" value="0">General Expense</option>'
             for(let i=0;i<allCategories.length;i++){
-    
                 allCategoriesHTML+='<option class="category-list-option" ico="'+allCategories[i].imagePath+'" value="'+allCategories[i].id+'">'+allCategories[i].name+'</option>'
             }
+
             allCategoriesHTML+='<option ico="create-cat" class="create-category-option">+ create new category</option>'
             
             $('#all-categories-options').html(allCategoriesHTML);
-    
+
+            let icon = $('#all-categories-options option:selected').attr('ico');
+            $('#form-category-icon').html('<span class="create-category-ico" >&#x'+icon+'</span>')
+
             $('#all-categories-options').change((event)=>{
 
                 let icon = $('option:selected', event.target).attr('ico');
@@ -1126,9 +1128,11 @@ function mountDashboard(){
 
             // Validate the new expense json
             if(validateNewExpense(expenseInfo)){
-                createExpenseApiCall(expenseInfo) 
-                if(usingNewCategory==true) await createNewCategory();            
-            }           
+                let categoryCreated = true;
+                if(usingNewCategory==true) categoryCreated = await createNewCategory();            
+                if(categoryCreated) createExpenseApiCall(expenseInfo);
+            }   
+
             function validateNewExpense(expenseInfo){
                 let error = 0;
                 error+=validateValueIsPositive($('#expense-amount'),expenseInfo.amount);
@@ -1160,15 +1164,20 @@ function mountDashboard(){
                     "name": newCategoryName,
                     "imagePath": newCategoryIcon
                 }
+                let categoryCreated = false;
                 raw = JSON.stringify(raw)
 
                 await createCategory(raw).then((data)=>{
+                    respHandling(data, "Category Creation Failed");
                     expenseInfo.transactionInfo.categoryId = data.data.id;
+                    categoryCreated = true;
                 })
+                return categoryCreated;
             }
 
             // Create expense API call to the server
             async function createExpenseApiCall(expenseInfoo){
+            $('#save-expense-btn').off()
                 expenseInfoo = JSON.stringify(expenseInfoo)
                 $('#spinner').css('display','block');
                 await createTransactions(expenseInfoo).then((data)=> {
@@ -1176,7 +1185,9 @@ function mountDashboard(){
                     $('#spinner').css('display','none');
                     mountExpensesInDashboard();
                     balanceHeaderUpdate();
+                    respHandling(data,"Expense Creation Failed");
                 })
+
             }
 
         }
@@ -1240,4 +1251,12 @@ function isLessThanCrored(element,value){
 }
 
 
+function respHandling(data,message){
+    if(data.statusCode==200){
 
+    }else if(data.statusCode==400){
+        alert("Error occured: "+data.data+" "+message);
+    }else{
+        alert(message+" Please try again.")
+    }
+}

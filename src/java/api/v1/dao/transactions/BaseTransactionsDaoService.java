@@ -90,7 +90,7 @@ public class BaseTransactionsDaoService {
 								
 				if(type.equals("expense")) expenses.add(transaction);
 				else if(type.equals("income")) {
-
+					
 					incomes.add(transaction);
 				}
 				else if(type.equals("transfer")) transfers.add(transaction);
@@ -135,7 +135,7 @@ public class BaseTransactionsDaoService {
 		System.out.println("Execution recieved "+query);
 		ResultSet rs;
 		try {
-			rs = dbUtil.executeSelectionQuery(query);
+			rs = dbUtil.executeSelectionQuery(query); 
 			ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
 			while (rs.next()) {
 				Transactions transaction = new Transactions();
@@ -152,7 +152,7 @@ public class BaseTransactionsDaoService {
 				else if(type.equals("transfer")) transfers.add(transaction);
 
 
-			}
+			}	
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new CustomException("Problem in retriving your wallets please contact admin", 500,
