@@ -19,3 +19,4 @@ if(walletInfo.statusCode == 404){
     window.location.href = 'login.html';
 }
 
+

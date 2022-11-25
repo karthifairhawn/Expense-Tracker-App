@@ -134,12 +134,11 @@ $(function() {
             if(data.statusCode==400) alert(data.data);
             else if(data.statusCode == 404) alert("Invalid Credentials")
             else if(data.statusCode==200){
-                console.log(data);
+
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
                 localStorage.setItem('location','dashboard');
 
-                console.log(localStorage);
                 window.location.href = "/Expense_Manager/index.html"                
             }
         }

@@ -274,7 +274,8 @@ function mountDashboard(){
                 $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
                 $(currentElement).find(".wallet-splits").append(newWalletSplit);
             }
-            if(archieveWallet !== null) archieveWallet = $('<i class="fas expired-expense-ico fa-ban"></i>');
+            console.log(archieveWallet);
+            if(archieveWallet === true) archieveWallet = $('<i class="fas expired-expense-ico fa-ban"></i>');
 
 
             // Finding wallet name
@@ -450,8 +451,6 @@ function mountDashboard(){
             end = allDateRanges[currTimeSpan][1];
 
             $('#reportrange').daterangepicker({ startDate: start, endDate: end, ranges: allDateRanges }, cb);
-
-            
             cb(start, end, currTimeSpan);
 
         }   
