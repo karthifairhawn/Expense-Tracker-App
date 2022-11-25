@@ -7,6 +7,12 @@ $('.logout').click(()=>{
 })
 
 
+let authToken = localStorage.getItem('authToken');
+if(authToken == null || authToken.length == 0 || typeof authToken === undefined){
+    window.location.href = 'login.html';
+} 
+
+
 let walletInfo = await findWallets();
 if(walletInfo.statusCode == 404){
     localStorage.clear();
