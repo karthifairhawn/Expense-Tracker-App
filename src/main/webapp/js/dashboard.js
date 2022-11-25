@@ -901,7 +901,10 @@ function mountDashboard(){
         $('#expense-time').val(currDateTime);
 
         // Save Button Handler
-        $('#save-expense-btn').click(()=>{  createNewExpense();  });   
+        $('#save-expense-btn').click(()=>{  
+            createNewExpense();  
+            $('#save-expense-btn').off()
+        });   
         
         $('#expense-more').click(function(){
             $('.more-expense-info').css('display', 'block');
