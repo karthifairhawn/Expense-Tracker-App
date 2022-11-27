@@ -159,9 +159,7 @@ async function balanceHeaderUpdate(){
     let allWallets =[];
     await findWallets().then((data)=>allWallets = (data.data));
 
-    function formatMoney(n) {
-        return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
-    }
+
     
 
     let totalWalletCount = 0;
@@ -305,7 +303,6 @@ function mountWallets(){
 
             // Appennd in new card clone to the current creating section
             let walletCardClone = $('#credit-card-template')[0].content.cloneNode(true);
-            // walletCardClone.attr('id','sdgdg'+i);
 
              let subInfo =null;
              await findWalletById(allWallets[i].id).then((data) =>{
@@ -316,7 +313,8 @@ function mountWallets(){
             let creditCardUsagePercent = ((subInfo.limit- wallet.balance) / subInfo.limit) * 100;
 
             $(walletCardClone).find(".card-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
-            $(walletCardClone).find('.amount').text(wallet.balance)
+            $(walletCardClone).find('.amount').text(formatMoney(wallet.balance))
+            $(walletCardClone).find('.amount').attr('amount',(wallet.balance))
             $(walletCardClone).find('#open-wallet-btn').attr('wallet-id',wallet.id)
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.delete-wallet-btn').attr('wallet-id',wallet.id);
@@ -326,26 +324,20 @@ function mountWallets(){
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
             $(walletCardClone).find('.card-limit').text(subInfo.limit)
             $(walletCardClone).find('.pay-bill-btn').attr('wallet-id',wallet.id);
-            $(walletCardClone).find('.pay-bill-btn').attr('payment',subInfo.limit- wallet.balance);
+            $(walletCardClone).find('.pay-bill-btn').attr('payment', (subInfo.limit- wallet.balance));
 
 
             const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             let isDateTOne = false;
-            if(subInfo.repayDate=='31'){
-                isDateTOne = true;
-            }
+            if(subInfo.repayDate=='31'){ isDateTOne = true; }
 
             i
             const d = new Date();
             let name = month[(d.getMonth()+1)%12];
 
             let diffDays = '';
-            if((d.getMonth()%2==0 && isDateTOne) || !isDateTOne){
-                diffDays= name+" "+subInfo.repayDate;
-            }else if(isDateTOne){
-                diffDays= month[(d.getMonth()+2)%12]+" 1";
-                
-            }
+            if((d.getMonth()%2==0 && isDateTOne) || !isDateTOne){ diffDays= name+" "+subInfo.repayDate;
+            }else if(isDateTOne){ diffDays= month[(d.getMonth()+2)%12]+" 1"; }
 
 
             $(walletCardClone).find('.days-left').text(diffDays);
@@ -365,67 +357,43 @@ function mountWallets(){
 
             $(walletCardClone).find('.pay-bill-btn').click((event)=>{
 
-
-
-
-                if(event.target.getAttribute('payment')=='0'){
-                    $('#creditBillModal').find('.modal-body').html('<h1>No Bills</h1>')
-                console.log($('#creditBillModal'))
-
-                }
-                
-                // console.log($('#creditBillModal'))
-                // $('#creditBillModal').html('<h1>No Bills</h1>')
-
+                if(event.target.getAttribute('payment')=='0'){ $('#creditBillModal').find('.modal-body').html('<h1>No Bills</h1>') }
 
                 $('#creditBillModal').find('.amount').val(event.target.getAttribute('payment'));
                 $('#creditBillModal').find('#new-income-wallet').val(wallet.id);
                 $('#total-bill').text(event.target.getAttribute('payment'));
-                
-    
+                $('#creditBillModal').find('amount').attr('min','1');
+                $('#creditBillModal').find('amount').attr('max',event.target.getAttribute('payment'));
                 
             })
+
 
             totalCardExpense +=subInfo.limit- wallet.balance;
             $('.card-used-amount').text(totalCardExpense);
 
             
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent.toFixed(2));
-            // console.log((wallet.balance +"-"+ subInfo.limit)+" percentage="+(wallet.balance / subInfo.limit) * 100)
         
-            if(creditCardUsagePercent>100){
-                $(walletCardClone).find('.overdraft-warning').css('display', 'block');
-            }
 
-              // show input box on click
+            if(creditCardUsagePercent>100){ $(walletCardClone).find('.overdraft-warning').css('display', 'block'); }
+
+            // show input box on click
             $(walletCardClone).find('.wallet-info-label').click((event)=>{
                 inputOnClick(event.target);
                 $('.edit-wallet-btn').show();
             });
 
 
-            // $(walletCardClone).find('.wallet-info-label').append($('<i class="fas fa-edit m-1"></i>'))
-            $(walletCardClone).find('.wallet-info-label').hover((event)=>{
-                // console.log(23);
-                $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
 
+            $(walletCardClone).find('.wallet-info-label').hover((event)=>{
+                $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
             },(event)=>{
                 $(event.target).siblings('.fas').remove();
             })
 
 
-            $(walletCardClone).find('.edit-wallet-btn').click((event)=>{
-                handleEditWallet(event);
-             })
+            $(walletCardClone).find('.edit-wallet-btn').click((event)=>{ handleEditWallet(event); })
 
-            
-            let bg1 = colorOne[wallet.id%9+1];
-            let bg2 = colorTwo[wallet.id%9];
-
-
-           
-            // $(walletCardClone).find('.credit-card').css('background-color','red')
-             
 
             function inputOnClick(element){
                 let textBox = $(element);
@@ -468,17 +436,18 @@ function mountWallets(){
                 let walletId =  $(event.target).attr('wallet-id');
                 let walletInfo = {};
                 walletInfo['name'] = $(cardElement).find('.card-name').text().trim();
-                walletInfo['type'] = 'Credit Card'
-                walletInfo['balance'] = $(cardElement).find('.amount').text();
+                walletInfo['type'] = 'Credit Card';
+
+                walletInfo['balance'] = $(cardElement).find('.amount').attr('amount');
+
+
                 walletInfo['excludeFromStats'] = $(cardElement).find('.wallet-exclude-stats').text();
                 walletInfo['archiveWallet'] = false;
                 walletInfo['walletInfo'] = {};
 
-
-                 
-
                 let dueDate= (($(cardElement).find('.due-date option:selected')).val());
                 if(typeof dueDate === "undefined") dueDate = (($(cardElement).find('.due-date')).text());
+
                 walletInfo['walletInfo']['repayDate'] = dueDate;
                 walletInfo['walletInfo']['limit'] = + (($(cardElement).find('.card-field .card-limit')).text());
 
@@ -559,8 +528,7 @@ function mountWallets(){
                     "walletId" : walletId
                 }
             }
-    
-            console.log(income);
+
             $('#spinner').show();
             createTransactions(JSON.stringify(income)).then((data)=>{
                 $('#spinner').hide();   
@@ -608,7 +576,9 @@ function mountWallets(){
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.delete-wallet-btn').attr('wallet-id',wallet.id);
-            $(walletCardClone).find('.balance').text( wallet.balance)
+            $(walletCardClone).find('.balance').text(formatMoney(wallet.balance))
+            $(walletCardClone).find('.balance').attr('balance',(wallet.balance))
+
 
 
             if(wallet.balance <0 ){
@@ -679,12 +649,12 @@ function mountWallets(){
 
             // Show edit button on hover
             $(walletCardClone).find('.wallet-info-label').hover((event)=>{
-                // console.log(23);
-                $(event.target).after($('<i class="fas fa-edit m-1"></i>'));
+                $(event.target).css('border-bottom','2px solid black')
 
             },(event)=>{
-                $(event.target).siblings('.fas').remove();
+                $(event.target).css('border-bottom','none')
             })
+
 
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) {
                 let walletId = event.target.getAttribute('wallet-id');
@@ -705,22 +675,27 @@ function mountWallets(){
         }
 
         function inputOnClick(element){
-            // console.log(element)
+
+
             let textBox = $(element);
             var text = textBox.text();
             var input = $('<input id="attribute" type="text" value="' + text + '" />')
 
             let type = $(element).attr('type');
+
             if(type=='textarea'){
                 input = $('<textarea id="attribute" style="width:100%" type="text" value="' + text + '" />');
                 input.val(text)
             }
+            
             textBox.text('').append(input);
             input.select();
 
+
             input.blur(function() {
-                var text = $('#attribute').val();
-                $('#attribute').parent().text(text);
+                var newText = $('#attribute').val();
+                // if(newText.length==0 || newText==null) newText = text;
+                $('#attribute').parent().text(newText);
                 $('#attribute').remove();
             });
 
@@ -738,19 +713,35 @@ function mountWallets(){
             walletInfo['excludeFromStats'] = $(cardElement).find('.wallet-exclude-stats').text();
             walletInfo['archiveWallet'] = false;
             walletInfo['walletInfo'] = {};
+
+            let error = 0;
+            error += validateValueNull($(cardElement).find('.bank-name'),walletInfo['name'])
+            error += isLessThanCrored($(cardElement).find('.balance'),walletInfo['balance']);
+            error += validateValueIsNumber($(cardElement).find('.balance'),walletInfo['balance']);
+
+
     
             let walletType = walletInfo['type'];
             if(walletType=='Bank Account'){
-                walletInfo['walletInfo']['accountNumber'] = +($(cardElement).find('.accountNumber').text());
+                walletInfo['walletInfo']['accountNumber'] = ($(cardElement).find('.accountNumber').text());
                 walletInfo['walletInfo']['ifscCode'] = $(cardElement).find('.ifscCode').text();
-            }else if(walletType == 'Credit Card'){
-                console.log($(cardElement).find('.card-field .due-date'));
-                walletInfo['walletInfo']['repayDate'] = $(cardElement).find('.card-field .due-date').text();
-                walletInfo['walletInfo']['limit'] = $(cardElement).find('.card-field .card-limit').text();   
+
+                if(walletInfo['walletInfo']['accountNumber']=='not specified'){
+                    walletInfo['walletInfo']['accountNumber'] = 0;
+                }
+
             }else if(walletType == 'Bonus Account'){
                 walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
             }else if(walletType == 'Other'){
                 walletInfo['walletInfo']['note'] = $(cardElement).find('.note').text();
+            }
+
+
+            if(error>0){
+                alert("Invalid wallet data. Edit Failed");
+                $('.btn-close').click();
+                mountWallets();
+                return;
             }
     
 
@@ -761,7 +752,6 @@ function mountWallets(){
                 $('.modal-backdrop').remove();
                 $('body').css('overflow','scroll');
                 mountWallets();
-
             })
         }
         
@@ -957,7 +947,6 @@ function validateValueIsNumber(element,value){
 
 function IsNullOrNumber(element,value){
 
-    console.log(value)
     if(value.length==0 || value == null || value==undefined || value==0){
         return 0;
     }
@@ -1030,3 +1019,6 @@ function isLessThanCrored(element,value){
 }
 
 
+function formatMoney(n) {
+    return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
+}

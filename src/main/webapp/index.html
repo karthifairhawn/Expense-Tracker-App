@@ -65,6 +65,7 @@
         </nav>
 
 
+        <div id="balance-header" class="container"></div>
 
         <!-- DashBoard -->
         <div id="dashboard"> 
@@ -93,37 +94,6 @@
 
     <div class="d-flex flex-column justify-content-between mt-5 mb-5 container">
 
-        <div class=" mt-2 mb-2 card main-balance">
-            <div class="">
-
-                <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
-                    <div class="mi-bal-right">
-                        <span>Available Balance</span>
-                        <span>( <span id="total-acct-count">3</span> wallets)</span>
-
-                        <div class="d-flex">
-                            <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
-
-                            <div id="mi-bal-amount" class="display-1">
-                                10,000 ₹
-                            </div>
-                            &nbsp;&nbsp;
-                            <!-- <span class="muted">INR</span> -->
-                        </div>
-
-
-                    </div>
-
-                    <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
-                        + New Expense
-                    </button>
-
-                </div>
-                
-            </div>
-        </div>
-
-
         <hr>
 
         <div class="d-flex justify-content-center">
@@ -141,7 +111,7 @@
 
         </div>
 
-        <!-- New Record Popup modal -->
+        <!-- New Record Popup Container - Model content is template automounted -->
         <div class="modal fade" id="newRecord" class="new-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -284,14 +254,9 @@
         <div class="modal fade" id="editExpenseForm" class="edit-expense-form" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit Expense</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
 
-                </div>
-        
+
+                </div>        
             </div>
         </div>
         </div>
@@ -399,6 +364,38 @@
 
           </form>
 
+    </div>
+</template>
+
+<template id="tt-balance-header">
+    <div class=" mt-2 mb-2 card main-balance">
+        <div class="">
+
+            <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+                <div class="mi-bal-right">
+                    <span>Available Balance</span>
+                    <span>( <span id="total-acct-count">3</span> wallets)</span>
+
+                    <div class="d-flex">
+                        <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+
+                        <div id="mi-bal-amount" class="display-1">
+                            10,000 ₹
+                        </div>
+                        &nbsp;&nbsp;
+                        <!-- <span class="muted">INR</span> -->
+                    </div>
+
+
+                </div>
+
+                <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
+                    + New Expense
+                </button>
+
+            </div>
+            
+        </div>
     </div>
 </template>
 

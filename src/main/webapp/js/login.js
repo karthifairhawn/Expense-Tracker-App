@@ -65,7 +65,7 @@ $( function() {
                 localStorage.setItem('location','dashboard');
 
                 console.log(localStorage);
-                window.location.href = "Expense_Manager/index.html"
+                window.location.href = "index.html"
             }
         }
   
@@ -139,7 +139,7 @@ $(function() {
                 localStorage.setItem('userId',data.data.userId);
                 localStorage.setItem('location','dashboard');
 
-                window.location.href = "/Expense_Manager/index.html"                
+                window.location.href = "/index.html"                
             }
         }
 
