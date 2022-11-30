@@ -69,8 +69,8 @@ public class BaseTransactionsDaoService {
 			throw new CustomException("Bad Request",400);
 		}
 		
-		int dateFrom = Integer.parseInt(filters.get("from"));
-		int dateTo = Integer.parseInt(filters.get("to"));
+		String dateFrom = filters.get("from");
+		String dateTo = filters.get("to");
 		String fetchType = filters.get("type");
 		
 		String query = "SELECT * FROM `transactions` WHERE (user_id="+operatingUser.getId()+" and timestamp>='"+dateFrom +"') and ( timestamp<='"+dateTo+"')";

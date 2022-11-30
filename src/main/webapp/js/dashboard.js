@@ -18,6 +18,8 @@ refreshDashboard();
 
 async function refreshDashboard(){ 
 
+
+
     
     let userWallets = [];
     let userCardWallets = [];
@@ -25,6 +27,9 @@ async function refreshDashboard(){
     let totalBalance = 0;
     let userTags = null;
     let userCategories = null;
+    var formSelectedTags = [];  
+    let totalWalletSplits = 1;
+    let usingNewCategory = false;
     let expenseFormUtil = {
         
         listWalletsInForm : async function listWalletsInForm(){
@@ -57,7 +62,6 @@ async function refreshDashboard(){
             allCategoriesHTML+='<option ico="create-cat" class="create-category-option">+ create new category</option>'; // Addition icon to use for category creation
             $('#all-categories-options').html(allCategoriesHTML);
 
-
             // Set Icon of selected option to left of option sleection
             let icon = $('#all-categories-options option:selected').attr('ico');
             $('#form-category-icon').html('<span class="create-category-ico" >&#x'+icon+'</span>')
@@ -86,12 +90,18 @@ async function refreshDashboard(){
         },
 
         listTagsInForm : async function listTagsInForm(selectedTags){
-
+            
             let allTagsInfo = userTags;
             let allTagsHTML = '';
+            let allTagsId = [];
+            formSelectedTags = [];
             for(let i=0;i<allTagsInfo.length;i++){
                 allTagsHTML+='<option value="'+allTagsInfo[i].id+'">'+allTagsInfo[i].name+'</option>'
-                // allTags.push(+(allTagsInfo[i].id));
+                allTagsId.push(+(allTagsInfo[i].id));
+            }
+
+            for(let item in selectedTags){
+                formSelectedTags.push(item)
             }
 
             $('#locationSets').html(allTagsHTML);
@@ -107,24 +117,10 @@ async function refreshDashboard(){
                 items:selectedTags,
                 onItemAdd: (value,obj)=>{
 
-                    if(userTags.includes(+value)){
-                        formSelectedTags.push(value);
-                    }else{
-                                            // console.log(obj+' '+value)
-                        if(value.length<=3 || value.length>14){
-                            alert('pleas create tag in len between 3 and 14');
-                            $(obj).hide();
-                            return false;
-                        }
-
-                        createTag(JSON.stringify({
-                            "name":""+value,
-                            "color":"#44545"
-                        })).then((data)=>{
-                            userTags.push(data.data.id);
-                            formSelectedTags.push(data.data.id);
-                        })
-                    }
+                    let status = true;
+                    if(allTagsId.includes(+value)) formSelectedTags.push(value);
+                    else status = createNewTag(value)
+                    
                     return false;
                 },
                 onItemRemove : ((value)=>{
@@ -132,8 +128,25 @@ async function refreshDashboard(){
                 })
             });
 
+            function createNewTag(name){
+                if(value.length<3 || value.length>15){
+                    alert('pleas create tag in len between 3 and 15');
+                    $(obj).hide();
+                    return false;
+                }
+                createTag(JSON.stringify({
+                    "name":""+name,
+                    "color":"#44545"
+                })).then((data)=>{
+                    allTagsId.push(data.data.id);
+                    formSelectedTags.push(data.data.id);
+                })
+                return true;
+            }
+
             // Setting tag creation max length as 14
             $('.selectize-control input').attr('maxlength','14')
+            console.log(formSelectedTags);
 
         },
 
@@ -143,19 +156,25 @@ async function refreshDashboard(){
             if(!IsAllWalletSplitFilled()) return;
 
             // Clone wallet split and add it to dom
-            let walletSplitAdditional = $('#newRecord .wallet-split1').clone().removeClass('wallet-split1')
+            totalWalletSplits++;
+            let walletSplitAdditional = $('.wallet-split1').clone().removeClass('wallet-split1')
             walletSplitAdditional.find('.message-text').remove();
             walletSplitAdditional.find('#expense-amount').val(0);
-            walletSplitAdditional.append('<i class="far fa-times-circle"></i>');
             $('.wallet-split1').find('#split-wallet').remove();
 
     
-            walletSplitAdditional.find('.far').click((event)=>{
-                $(event.target).closest('.w-split').remove();
-            });
-    
-    
             walletSplitAdditional.appendTo($('#all-wallet-splits'));
+            $('.w-split').append('<i class="far fa-times-circle"></i>');
+
+            $('.w-split').find('.far').click((event)=>{
+                $(event.target).closest('.w-split').remove();
+                totalWalletSplits--;
+                if(totalWalletSplits==1){
+                    $('.w-split').find('.fa-times-circle').remove();
+                    return;
+                }
+            });
+
 
             // Setting some css
             $('.w-split').addClass('d-flex');
@@ -164,7 +183,7 @@ async function refreshDashboard(){
     
             function IsAllWalletSplitFilled(){
 
-                let allWalletSplitValues = $('#create-new-expense-form .w-split');
+                let allWalletSplitValues = $('.w-split');
     
                 for(let k=0; k<allWalletSplitValues.length; k++){
                     let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
@@ -183,7 +202,45 @@ async function refreshDashboard(){
 
         setDateTimeInForm : function setDateTimeInForm(dateTime){
             $('#expense-time').val(dateTime);
+        },
+
+        createNewCategory : async function createNewCategory(){
+
+            let newCategoryName = $('#new-category-input').val();
+            let newCategoryIcon = $('#new-category-icon').val();
+            let categoryId = null;
+
+            let raw = {
+                "name": newCategoryName,
+                "imagePath": newCategoryIcon
+            }
+            raw = JSON.stringify(raw)
+
+            await createCategory(raw).then((data)=>{
+                util.toastResponse(data, "Category Creation Success","Category Creation Failed");
+                categoryId = data.data.id;
+            })
+            return categoryId;
+        },
+
+        validateExpenseInfo : function validateExpenseInfo(expenseInfo){
+
+            let valid = true;
+            valid = util.isGreaterThanZero(expenseInfo.amount,$('#expense-amount')) && valid;
+            valid = util.isLessThanN(expenseInfo.amount,10000000,$('#expense-amount')) && valid;
+            valid = util.isNotEmpty(expenseInfo.transactionInfo.reason,$('#expense-name')) && valid;       
+            if(usingNewCategory) valid = util.isNotEmpty($('#new-category-input'),$('#new-category-input').val()) && valid;
+
+            let allWalletSplitValues = $('#create-new-expense-form .w-split');
+
+            for(let k=0; k<allWalletSplitValues.length; k++){
+                let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
+                valid = util.isGreaterThanN(amount,0,$(allWalletSplitValues[k]).find('#expense-amount')) && valid;
+            }
+            return valid;
         }
+
+
     }
 
     await findCategories().then((data)=> userCategories= (data.data));
@@ -195,26 +252,17 @@ async function refreshDashboard(){
             else userNonCardWallets.push(...data[category]);
             userWallets.push(...data[category]);
         }
+        for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
     });
 
-    for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
 
 
+    updateHeader();
     mountExpenseSection();
-    
-
-    
-    let template = document.getElementById('tt-balance-header').content.cloneNode(true);
-    $(template).find('#total-acct-count').text(userWallets.length);
-    $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
-    $('#balance-header').html('');
-    $('#balance-header').append(template);
 
 
 
-    // LISTENER ----- Mount new expense form 
     $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
-
 
 
     function mountExpenseSection(){
@@ -419,7 +467,7 @@ async function refreshDashboard(){
             }
             for(let i=1;i<allTagsInfo.length;i++){
                 let newTagClone = newTag.clone();
-                newTagClone.find('.tag-text').text(", "+allTagsInfo[i].data.name.toLowerCase());
+                newTagClone.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
                 modelAllTagsSection.append(newTagClone);
             }
 
@@ -505,16 +553,17 @@ async function refreshDashboard(){
 
     }  
 
-     
     function mountCreateExpenseForm(){  
+
+        // Removing old forms from dom to prevent duplicate elements on form selection
+        $('.new-expense-form .modal-content').html('');
+        $('.edit-expense-form .modal-content').html('');
 
         // Clone form to DOM
         let newExpenseFormClone = document.getElementById('tt-new-expense-form').content.cloneNode(true);
         $('#newRecord .modal-content').html($(newExpenseFormClone));
+        totalWalletSplits=1;
 
-
-        let formSelectedTags = [];
-        let usingNewCategory = false;
         let currTime = moment().format('YYYY-MM-DD HH:mm').split(" ").join("T");
 
         
@@ -591,50 +640,11 @@ async function refreshDashboard(){
             }
 
             // Validate the new expense json
-            if(isValidExpense(expenseInfo)){
-                console.log(expenseInfo);
+            if(expenseFormUtil.validateExpenseInfo(expenseInfo)){
                 let categoryCreated = true;
-                if(usingNewCategory==true) categoryCreated = await createNewCategory();            
+                if(usingNewCategory==true) expenseInfo.transactionInfo.categoryId = await expenseFormUtil.createNewCategory();            
                 if(categoryCreated) createExpenseApiCall(expenseInfo);
             }   
-
-            function isValidExpense(expenseInfo){
-
-                let valid = true;
-                valid = util.isPositiveNumber(expenseInfo.amount,$('#expense-amount')) && valid;
-                valid = util.isLessThanN(expenseInfo.amount,10000000,$('#expense-amount')) && valid;
-                valid = !util.isEmpty(expenseInfo.transactionInfo.reason,$('#expense-name')) && valid;       
-                if(usingNewCategory) error = util.isEmpty($('#new-category-input'),$('#new-category-input').val()) && valid;
-
-                let allWalletSplitValues = $('#create-new-expense-form .w-split');
-    
-                for(let k=0; k<allWalletSplitValues.length; k++){
-                    let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
-                    valid = util.isGreaterThanN(amount,0,$(allWalletSplitValues[k]).find('#expense-amount')) && valid;
-                }
-
-                return valid;
-            }
-
-
-            async function createNewCategory(){
-                let newCategoryName = $('#new-category-input').val();
-                let newCategoryIcon = $('#new-category-icon').val();
-
-                let raw = {
-                    "name": newCategoryName,
-                    "imagePath": newCategoryIcon
-                }
-                let categoryCreated = false;
-                raw = JSON.stringify(raw)
-
-                await createCategory(raw).then((data)=>{
-                    respHandling(data, "Category Creation Failed");
-                    expenseInfo.transactionInfo.categoryId = data.data.id;
-                    categoryCreated = true;
-                })
-                return categoryCreated;
-            }
 
             // Create expense API call to the server
             async function createExpenseApiCall(expenseInfoo){
@@ -660,18 +670,23 @@ async function refreshDashboard(){
         
     }
 
-
     function mountEditExpenseForm(expenseId){
+
+        // Removing old forms from dom to prevent duplicate elements on form selection
+        $('.new-expense-form .modal-content').html('');
+        $('.edit-expense-form .modal-content').html('');
 
         // Mount form to the dom
         $('#editExpenseForm'+expenseId+' .modal-content').html('');
         let newEditFormSelector = '#editExpenseForm'+expenseId;
         let newEditForm = $('#tt-new-expense-form')[0].content.cloneNode(true);
         $(newEditForm).appendTo(newEditFormSelector+ ' .modal-content');
+        $('.more-expense-info').css('display', 'block');
+        $('#expense-more').css('display', 'none');
+
+        $('#split-wallet').click(()=>expenseFormUtil.splitWalletHandler())       // Split expense ampunt 
 
 
-
-        let formSelectedTags = [];
         let usingNewCategory = false;
         
 
@@ -686,7 +701,6 @@ async function refreshDashboard(){
 
             async function insertExpenseDataToForm(expenseData){
 
-
                 // Parse time to inject into date time input box
                 let form =  $('#editExpenseForm'+expenseId+' .modal-content');
                 let time = expenseData.transactionInfo.spendOn.split(" ")[1].split(":");
@@ -694,19 +708,20 @@ async function refreshDashboard(){
                 time  = (expenseData.transactionInfo.spendOn.split(" ")[0]+"T"+time);
 
 
-
+                $(form).find('.modal-title').text("Edit Expense")
                 $(form).find('#expense-time').val(time);
                 $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
                 $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
                 $(form).find('#expense-note').val(expenseData.transactionInfo.note);
-
-
                 expenseFormUtil.listTagsInForm((expenseData.transactionInfo.tagId));
+                
 
 
+                // Add all wallet split to DOM
                 let walletSplits = expenseData.walletSplits;
                 let  initialWalletSplit =  $(form).find('.wallet-split1');
                 let filledFirstWalletSplit = false;
+                totalWalletSplits = 0;
                 for(const walletId in walletSplits){
                     if(!filledFirstWalletSplit){
                         filledFirstWalletSplit = true;
@@ -717,18 +732,24 @@ async function refreshDashboard(){
                         newWalletSplit.removeClass('wallet-split1');
                         $(newWalletSplit).find('.form-wallet-list').val(walletId);
                         $(newWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
-                        $(newWalletSplit).append('<i class="far fa-times-circle"></i>');
-    
-                        $(newWalletSplit).find('.far').click((event)=>{
-                            $(event.target).closest('.w-split').remove();
-                        });
-                        
                         $(form).find('#all-wallet-splits').append(newWalletSplit);
                     }
+                    totalWalletSplits++;
                 }
 
-                $(form).find('#update-expense-btn').off();
-                $(form).find('#update-expense-btn').click(()=>{ updateExpenseDetails(); })
+                // Add remove option to all wallet splits
+                if(totalWalletSplits>1) $('.w-split').append('<i class="far fa-times-circle"></i>');
+                $('.w-split').find('.far').click((event)=>{
+                    $(event.target).closest('.w-split').remove();
+                    totalWalletSplits--;
+                    if(totalWalletSplits==1){
+                        $('.w-split').find('.fa-times-circle').remove();
+                        return;
+                    }
+                });
+
+                // Save button Handler
+                $(form).find('#save-expense-btn').click(()=>{ updateExpenseDetails(); })
 
             }
 
@@ -736,7 +757,9 @@ async function refreshDashboard(){
 
         async function updateExpenseDetails(){
 
-            let form = $(newEditFormSelector);
+            
+
+            let form =  $('#editExpenseForm'+expenseId+' .modal-content');
 
             let totalAmount = 0;
             let reason =  $(form).find('#expense-name').val();
@@ -750,7 +773,8 @@ async function refreshDashboard(){
             let tagInfo = [];
 
             for(let i = 0; i < formSelectedTags.length; i++) tagInfo.push(+(formSelectedTags[i]));
-            
+            console.log(tagInfo)
+
             // Setting todays date for spend on date
             if(userSpendOn.length>0){
 
@@ -769,7 +793,7 @@ async function refreshDashboard(){
             }
 
             let walletSplits ={};
-            let allWalletSplitValues =  $(form).find('.all-wallet-splits').find('.w-split');
+            let allWalletSplitValues =  $(form).find('.w-split');
     
             for(let k=0; k<allWalletSplitValues.length; k++){   
                 let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
@@ -788,7 +812,7 @@ async function refreshDashboard(){
             spendOn = spendOn.split(" ");
             let time = spendOn[3].split(":");
             time = time[0]+":"+time[1]+":"+time[2];
-            spendOn = spendOn[0]+" "+spendOn[1]+" "+spendOn[2]+" "+utilFunctions.timeCovertor(time);
+            spendOn = spendOn[0]+" "+spendOn[1]+" "+spendOn[2]+" "+util.to12Format(time);
             // Expense info json
             let expenseInfo = {
                 "type" : "expense",
@@ -805,60 +829,21 @@ async function refreshDashboard(){
 
 
             // Validate the new expense json
-            if(validateNewExpense(expenseInfo)){         
-                if(usingNewCategory==true) await createNewCategory();            
-                updateExpenseApiCall(expenseInfo) 
-            } 
+            if(expenseFormUtil.validateExpenseInfo(expenseInfo))  updateExpenseApiCall(expenseInfo) 
 
-            function validateNewExpense(expenseInfo){
-                let error = 0;
-                error+=validateValueIsPositive($('#expense-amount'),expenseInfo.amount);
-                error+=isLessThanCrored($('#expense-amount'),expenseInfo.amount);
-                error+=validateValueNull($('#expense-name'),expenseInfo.transactionInfo.reason)                
-                if(usingNewCategory==true) error+=validateValueNull($('#new-category-input'),$('#new-category-input').val());
-                let allWalletSplitValues = $(newEditFormSelector+' .w-split');
-    
-                for(let k=0; k<allWalletSplitValues.length; k++){
-                    let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
-                    if(amount == 0 || amount==undefined || amount==null){
-                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','red')
-                        error+=1;
-                    }else{
-                        $(allWalletSplitValues[k]).find('#expense-amount').css('border-color','#ced4da')
-                    }
-                }
 
-                return error>0 ? false :true
-            }
 
-            async function createNewCategory(){
-                let newCategoryName = $(form).find('#new-category-input').val();
-                let newCategoryIcon = $(form).find('#new-category-icon').val();
-
-                let raw = {
-                    "name": newCategoryName,
-                    "imagePath": newCategoryIcon
-                }
-                raw = JSON.stringify(raw)
-
-                await createCategory(raw).then((data)=>{
-                    expenseInfo.transactionInfo.categoryId = data.data.id;
-                    console.log(expenseInfo)
-                })
-            }
-
-            
             // Create expense API call to the server
-            function updateExpenseApiCall(expenseInfoo){
+            async function updateExpenseApiCall(expenseInfoo){
+                if(usingNewCategory==true) await createNewCategory();            
                 expenseInfoo = JSON.stringify(expenseInfoo)
                 $('#spinner').css('display','block');
                 updateTransactionsById(expenseId,expenseInfoo).then((data)=> {
                     $('#spinner').css('display','none');
                     $('.modal-backdrop').remove();
-                    mountExpensesInDashboard();
+                    refreshDashboard();
                 });
                 $('body').css('overflow', 'scroll');
-
             }
 
     
@@ -867,6 +852,13 @@ async function refreshDashboard(){
 
     }
 
+    function updateHeader(){
+        let template = document.getElementById('tt-balance-header').content.cloneNode(true);
+        $(template).find('#total-acct-count').text(userWallets.length);
+        $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
+        $('#balance-header').html('');
+        $('#balance-header').append(template);
+    }
 
 }
 

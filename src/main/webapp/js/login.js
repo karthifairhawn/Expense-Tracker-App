@@ -139,7 +139,7 @@ $(function() {
                 localStorage.setItem('userId',data.data.userId);
                 localStorage.setItem('location','dashboard');
 
-                window.location.href = "/index.html"                
+                window.location.href = "index.html"                
             }
         }
 

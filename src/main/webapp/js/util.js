@@ -1,5 +1,3 @@
-
-
 export var to12Format = (time) => {
     // Check correct time format and split into components
     time = time.toString ().match (/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
@@ -29,30 +27,36 @@ export var moneyFormat =  (n)=>{
     return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
 }
     
-export var handleApiResponse = (data)=>{
-        if(data.statusCode==404){
-            alert('Data not found');
-        }else if(data.statusCode==500){
-            alert('Please try again later');
-        }else if(data.statusCode=400){
-            alert('Invalid data to process');
-        }else if(data.statusCode==401){
-            alert("Unauthorized");
-        }
+$('#toastbtn').click(()=>{ handleApiResponse({statusCode:200}) })
+export var handleApiResponse = (data,success,error)=>{
+    
+    if(data.statusCode==404){
+    }else if(data.statusCode==500){
+    }else if(data.statusCode=400){
+    }else if(data.statusCode==401){
+    }
+
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    var toastList = toastElList.map(function(toastEl) {
+      return new bootstrap.Toast(toastEl)
+    })
+    toastList.forEach(toast => toast.show()) 
 }
 
 
 // Validator Functions
 
-export function isEmpty(val,element){
-    let result = false;
-    if(val === undefined || val === null || val.length === 0) result =  true;
+export function isNotEmpty(val,element){
+    let result = true;
+    if(val == undefined || val == null || val.length == 0 || val =='null') result =  false;
+    highlightElement(element,result);
     return result;
 }
 
 export function isNumber(val,element){
     let result = false;
     if(!isNaN(val)) result = true;
+    highlightElement(element,result);
     return result;
 }
 
@@ -60,8 +64,9 @@ export function isLessThanN(val,N,element) {
     let result = false;
     N = parseInt(N);
     if(isNumber(val)){
-        if(parseInt(val)<N) result = true;
+        if(val<N) result = true;
     }
+    highlightElement(element,result);
     return result;
 }
 
@@ -71,6 +76,7 @@ export function isGreaterThanN(val,N,element) {
     if(isNumber(val)){
         if(parseInt(val)>N) result = true;
     }
+    highlightElement(element,result);
     return result;
 }
 
@@ -79,6 +85,7 @@ export function isMobileNumber(val,element){
     if(isNumber(val)){
         if((val+"").length==10) result = true;
     }
+    highlightElement(element,result);
     return result;
 }
 
@@ -88,6 +95,17 @@ export function isPositiveNumber(val,element){
     if(isNumber(val)){
         if(parseInt(val)>=0) result = true;
     }
+    highlightElement(element,result);
+    return result;
+}
+
+export function isGreaterThanZero(val,element){
+    let result = false;
+
+    if(isNumber(val)){
+        if(parseInt(val)>0) result = true;
+    }
+    highlightElement(element,result);
     return result;
 }
 
@@ -95,9 +113,15 @@ export function isIfscCode(val,element){
     let result = false;
     var reg = /[A-Z|a-z]{4}[0][a-zA-Z0-9]{6}$/;    
     if (val.match(reg)) result = true;
+    highlightElement(element,result);
     return result;
 }
 
 export function toastResponse(statusCode, success, fail){
     console.log(statusCode);
+}
+
+function highlightElement(element,isValid){
+    if(isValid) $(element).css('border','1px solid #ced4da');
+    else $(element).css('border','1px solid red');
 }

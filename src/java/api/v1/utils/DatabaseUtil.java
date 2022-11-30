@@ -18,18 +18,8 @@ public class DatabaseUtil {
 	private static DatabaseUtil databaseUtil = null;
 
 
-		private Connection con;
+	private Connection con;
 
-
-	
-//	public Connection intiateConnection() throws SQLException {
-//		try {
-//			
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		}
-//		return DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "");
-//	}
 
 	public ResultSet executeInsertionQuery(String query) {
 		System.out.println("Query Execution recieved : " + query);
@@ -105,8 +95,6 @@ public class DatabaseUtil {
 	}
 	
 	public ResultSet executeSelectionQuery(String query) throws SQLException {
-
-//		con = intiateConnection();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(query);

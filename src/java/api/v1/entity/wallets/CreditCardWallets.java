@@ -18,12 +18,8 @@ import lombok.ToString;
 public class CreditCardWallets{
 	public CreditCardWallets(LinkedTreeMap walletInfo) {
 		this.id = null;
-//		SimpleDateFormat dateFormatter=new SimpleDateFormat("dd-MM-yyyy");
-//		String dateString = (String) walletInfo.get("repayDate");
-
-		this.repayDate  = Integer.parseInt((String) walletInfo.get("repayDate"));
-
-		this.limit = ((Double) walletInfo.get("limit")).longValue();
+		this.repayDate  = Integer.parseInt((walletInfo.get("repayDate")+"").split("\\.")[0]);
+		this.limit = Long.parseLong((walletInfo.get("limit")+"").split("\\.")[0]);
 	}
 	Long id;
 	Integer repayDate;
