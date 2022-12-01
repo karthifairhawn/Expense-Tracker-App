@@ -52,7 +52,7 @@ async function refreshDashboard(){
             let allCategories = userCategories;
         
             let allCategoriesHTML = '';
-            allCategoriesHTML+='<option ico="f219" value="0">General Expense</option>'
+            allCategoriesHTML+='<option ico="f219" value="0">General Expense</option>';
             for(let i=0;i<allCategories.length;i++){
                 allCategoriesHTML+='<option class="category-list-option" ico="'+allCategories[i].imagePath+'" value="'+allCategories[i].id+'">'+allCategories[i].name+'</option>'
             }
@@ -113,11 +113,10 @@ async function refreshDashboard(){
                 selectOnTab : true,
                 items:selectedTags,
                 onItemAdd: (value,obj)=>{
-                    console.log(value);
                     let status = true;
                     if(allTagsId.includes(+value)) formSelectedTags.push(value);
                     else{
-                        status = createNewTag(value)
+                        status = createNewTag(value,obj)
                     }                    
                     return false;
                 },
@@ -126,7 +125,7 @@ async function refreshDashboard(){
                 })
             });
 
-            function createNewTag(name){
+            function createNewTag(name,obj){
                 if(name.length<3 || name.length>15){
                     alert('pleas create tag in len between 3 and 15');
                     $(obj).hide();
@@ -418,7 +417,6 @@ async function refreshDashboard(){
             if(walletArchiveIndicator === true) $(currentElement).find('.expense-edit-btn').remove();
             if(walletArchiveIndicator === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
             $(currentElement).find('.expense-edit-btn').click((event)=>{
-                // setTimeout(()=>{})
                 let walletId = $(event.target).attr('expense-id');
                 mountEditExpenseForm(walletId);
             })

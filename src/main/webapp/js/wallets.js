@@ -104,6 +104,7 @@ let walletFormUtil = {
         isValid = util.isNotEmpty(acctBalance, $('#new-wallet-balance')) && isValid
         isValid = util.isNumber(acctBalance, $('#new-wallet-balance')) && isValid
         isValid = util.isLessThanN(acctBalance,10000000,$('#new-wallet-balance')) && isValid
+        isValid = util.isGreaterThanZero(acctBalance,10000000,$('#new-wallet-balance')) && isValid
 
         isValid = util.isNotEmpty(walletName,$('#new-wallet-name')) && isValid
 
