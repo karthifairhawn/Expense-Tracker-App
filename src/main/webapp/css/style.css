@@ -710,7 +710,7 @@ select {
 }
 
 .expired-expense-ico:hover::after{
-    content: 'asfs';
+    content: 'wallet deleted';
 }
 
 .all-tags-msection{
@@ -726,5 +726,17 @@ select {
 }
 
 .toast-container{
-    position: absolute;
+    /* position: absolute;
+    top:50px; */
+    top:5px;
+    right:100px;
+}
+
+.ucf-value{
+    overflow-wrap: break-word !important;
+    overflow: hidden;
+}
+
+.toast-header{
+    color:black;
 }

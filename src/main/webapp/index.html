@@ -46,6 +46,21 @@
 
     <body>
 
+        <button type="button" class="btn btn-primary" id="toastbtn">Show Toast</button>
+  
+        <div aria-live="polite" aria-atomic="true" class="toast-container d-flex  justify-content-end w-100">
+            <div class="toast">
+                <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <h3>hello worlds</h3>
+                </div>
+            </div>
+        </div>  
+
+
         <!-- Navbar  -->
         <nav class="navbar navbar-expand-xl navbar-light bg-light">
             <div class="container-fluid d-flex">
@@ -334,7 +349,7 @@
               
               <div class="mb-3">
                   <label for="recipient-name" class="col-form-label">Spend on:</label>
-                  <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
+                  <input placeholder="new clothes" step="any" type="datetime-local" maxDate = 0 class="form-control" id="expense-time">
               </div>
 
               <div class="mb-3">

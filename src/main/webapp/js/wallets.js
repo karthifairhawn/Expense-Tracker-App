@@ -19,9 +19,9 @@ let totalBalance = 0;
 let walletUtil = {
     deleteWalletById :  function deleteWalletById(walletId){
         $('#spinner').show();
-        walletService.deleteWalletById(walletId).then(()=>{
+        walletService.deleteWalletById(walletId).then((data)=>{
             $('#spinner').hide();
-            console.log('Wallet deleted');
+            util.handleApiResponse(data,"Wallet Deleted 🗑️");
             refreshWalletsPage();
         })
     }       
@@ -56,13 +56,13 @@ let walletFormUtil = {
     editWalletSubmissionHandler : function editWalletSubmissionHandler(walletId,walletType){
         let wallet = walletFormUtil.getWalletInfoFromForm(walletType);
         if(wallet==null){
-            alert("Invalid wallet information");
             return;
         }
         $('#spinner').show();
         walletService.updateWalletById(walletId,JSON.stringify(wallet)).then((data) => {
             $('.btn-close').click();
             $('#spinner').hide();
+            util.handleApiResponse(data,"Wallet Edited ✏️ ");
             refreshWalletsPage();
         })
     },
@@ -76,8 +76,8 @@ let walletFormUtil = {
         walletService.createWallet(JSON.stringify(wallet)).then((data) =>{
             $('#spinner').css('display', 'none');
             $('#wallets .btn-close').click();
-            console.log(data);
             refreshWalletsPage();
+            util.handleApiResponse(data,"Wallet Created ✅ ");
         })
         
     },
@@ -100,11 +100,10 @@ let walletFormUtil = {
 
         let isValid = true;
         isValid = util.isNotEmpty(walletType,$('#new-wallet-type')) && isValid;
-        console.log(util.isNotEmpty(walletType,$('#new-wallet-type')),walletType);
 
         isValid = util.isNotEmpty(acctBalance, $('#new-wallet-balance')) && isValid
-        isValid = util.isLessThanN(acctBalance,10000000,$('#new-wallet-balance')) && isValid
         isValid = util.isNumber(acctBalance, $('#new-wallet-balance')) && isValid
+        isValid = util.isLessThanN(acctBalance,10000000,$('#new-wallet-balance')) && isValid
 
         isValid = util.isNotEmpty(walletName,$('#new-wallet-name')) && isValid
 
@@ -126,16 +125,20 @@ let walletFormUtil = {
                 "repayDate" : $('#new-wallet-repay').val(),
                 "limit": $('#new-wallet-limit').val()
              }
-             isValid = util.isNumber(acctBalance, $('#new-wallet-repay')) && isValid
-             isValid = util.isPositiveNumber(acctBalance, $('#new-wallet-repay')) && isValid
+
 
              isValid = util.isNumber($('#new-wallet-limit').val(), $('#new-wallet-limit')) && isValid
+             isValid = util.isLessThanN($('#new-wallet-limit').val(),10000000, $('#new-wallet-limit')) && isValid
              isValid = util.isNotEmpty($('#new-wallet-limit').val(), $('#new-wallet-limit')) && isValid
 
-             if($('#new-wallet-limit').val()<acctBalance){
+             if(Number($('#new-wallet-limit').val())<Number(acctBalance)){
                 isValid = false;
-                $('#new-wallet-limit').closest('.input-group').after('<span class="text-danger mb-3">Limit cannot be less than the balance.</span>');
+                $('.limit-low-err').removeClass('invisible');
+            }else{
+                $('.limit-low-err').addClass('invisible')
              }
+
+
 
         }else if(newWalletObject.type=='Bonus Account'){
             newWalletObject['walletInfo'] = { "note" : $('#new-wallet-bnote').val() }
@@ -143,9 +146,7 @@ let walletFormUtil = {
             newWalletObject['walletInfo'] = { "note" : $('#new-wallet-onote').val() }
         }
 
-        
-
-        console.log(newWalletObject);
+    
         if(!isValid) return null;
         return newWalletObject;
     }
@@ -173,15 +174,40 @@ async function refreshWalletsPage(){
             let type = (userWallets[wallet].type);
             totalBalance += userWallets[wallet].balance;
         }
-
-
     });
+
 
     populateBalanceContainer();
     mountWallets();
+
     $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
     $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
     $('.view-income-btn').click(()=>{ mountAllIncomes() })
+
+    if(userWallets.length==0){
+        $('.no-wallet-available').show();
+        $('.create-wallet-url').click(()=>{ $('.add-wallet-btn').click(); })
+        $('.add-income-btn').hide();
+    }else{
+        $('.no-wallet-available').hide();
+    }
+
+    if(userNonCardWallets==0){
+        $('.my-wallets-title').hide();
+    }
+
+    if(userCardWallets==0){
+        $('.cards-section').hide();
+    }
+
+}
+
+function populateBalanceContainer(){
+    let balanceContainer = document.getElementById('balance-container').content.cloneNode(true);
+    $(balanceContainer).find('#total-acct-count').text(userWallets.length);
+    $(balanceContainer).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
+    $('#balance-header').html('');
+    $('#balance-header').append(balanceContainer);
 }
 
 async function mountWallets(){
@@ -193,30 +219,14 @@ async function mountWallets(){
     let clone = walletContainerTemplate.content.cloneNode(true);
     walletContainer.appendChild(clone);
 
-    if(userWallets.length==0){
-        $('.no-wallet-available').show();
-        $('.create-wallet-url').click(()=>{ $('.add-wallet-btn').click(); })
-        $('.add-income-btn').hide();
-    }
-
-    if(userNonCardWallets==0){
-        $('.my-wallets-title').hide();
-    }
-
-    if(userCardWallets==0){
-        $('.cards-section').hide();
-    }
-
-
     populateCardWallets();
     populateNonCardWallets(userNonCardWallets);
+
    
     async function populateCardWallets(){
 
         let allWallets = userCardWallets;
         let totalCardExpense = 0; 
-
-
 
         for(let i = 0; i < allWallets.length; i++){
 
@@ -229,14 +239,17 @@ async function mountWallets(){
             let creditCardUsagePercent = ((subInfo.limit- wallet.balance) / subInfo.limit) * 100;
 
             const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-            let isDateTOne = false;
-            if(subInfo.repayDate=='31'){ isDateTOne = true; }
             const d = new Date();
-            let name = month[(d.getMonth()+1)%12];
+            let name = null;
+            if(d.getDate()<parseInt(subInfo.repayDate)){
+                name = month[(d.getMonth())];
+            }else{
+                name = month[(d.getMonth()+1)%12];
+            }
             let diffDays = '';
-            if((d.getMonth()%2==0 && isDateTOne) || !isDateTOne){ diffDays= name+" "+subInfo.repayDate;
-            }else if(isDateTOne){ diffDays= month[(d.getMonth()+2)%12]+" 1"; }
-
+            diffDays= name+" "+subInfo.repayDate;
+            if(d.getDate() == parseInt(subInfo.repayDate)) diffDays = 'Today'
+            console.log(d.getDate()+" "+parseInt(subInfo.repayDate))
 
             $(walletCardClone).find(".card-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
             $(walletCardClone).find('.amount').text(util.moneyFormat(wallet.balance))
@@ -256,6 +269,7 @@ async function mountWallets(){
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent.toFixed(2));
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             if(creditCardUsagePercent>100){ $(walletCardClone).find('.overdraft-warning').css('display', 'block'); }
+
             $(walletCardClone).find('.edit-wallet-btn').attr('type',wallet.type);
             $(walletCardClone).find('.edit-wallet-btn').click((event)=> { 
                 mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('type')) 
@@ -263,7 +277,10 @@ async function mountWallets(){
 
 
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) { walletUtil.deleteWalletById(event.target.getAttribute('wallet-id')) })
-            $(walletCardClone).find('.pay-bill-btn').click((event)=>{ mountCreditCardBillModal(event) })
+            $(walletCardClone).find('.pay-bill-btn').click((event)=>{
+                mountCreditCardBillModal(event) 
+            })
+
 
             function mountCreditCardBillModal(event){
                 if(event.target.getAttribute('payment')=='0'){ $('#creditBillModal').find('.modal-body').html('<h1>No Bills</h1>') }
@@ -272,6 +289,51 @@ async function mountWallets(){
                 $('#total-bill').text(event.target.getAttribute('payment'));
                 $('#creditBillModal').find('amount').attr('min','1');
                 $('#creditBillModal').find('amount').attr('max',event.target.getAttribute('payment'));
+                console.log($('.add-income-submit'));
+                $('.add-income-submit').off();
+                let maxIncome = parseInt(event.target.getAttribute('payment'))
+                $('.add-income-submit').click((event)=> { submitBillPayment(event,maxIncome) })
+            }
+
+            function submitBillPayment(event,maxIncome){
+                console.log("submit recieved")
+                let form = $(event.target).closest('.create-expense-form');
+                let paymentAmount = +($(form).find('.amount').val());
+                let note = $(form).find('.note').val();
+                let walletId =  +($(form).find('.wallet-selection').val());
+
+                maxIncome = parseInt(maxIncome)
+                maxIncome+=1;
+        
+                let isValid = true;
+                isValid = util.isNotEmpty(paymentAmount,$(form).find('.amount')) && isValid;
+                isValid = util.isLessThanN(paymentAmount,maxIncome,$(form).find('.amount')) && isValid;
+                isValid = util.isNumber(walletId,$(form).find('.wallet-selection')) && isValid;
+                isValid = util.isGreaterThanZero(paymentAmount,$(form).find('.amount')) && isValid;
+        
+                console.log(util.isLessThanN(paymentAmount,maxIncome,$(form).find('.amount')));
+                console.log(paymentAmount+"<"+maxIncome)
+                if(!isValid) return;
+
+                $('.add-income-submit').off();
+                let income = {
+                    "type" : "income",
+                    "amount" : paymentAmount,
+                    "transactionInfo" : {
+                        "note" : note,
+                        "walletId" : walletId
+                    }
+                }
+        
+                $('#spinner').show();
+                trasnsactionService.createTransactions(JSON.stringify(income)).then((data)=>{
+                    $('#spinner').hide();   
+                    util.handleApiResponse(data,"Income Added ✅ ");
+                    refreshWalletsPage(); 
+                })
+        
+                $('.credit-bill-close-btn').click();
+                $('.income-model-close-btn').click();
             }
 
             $('#credit-cards').append($(walletCardClone));
@@ -280,9 +342,7 @@ async function mountWallets(){
              
         }
 
-
         $('.card-used-amount').text(totalCardExpense);
-        $('.pay-bill-btn').click(()=>{ mountAddIncomeModal() })
 
 
         // ----------------------   Card Animation Handlers    ---------------------
@@ -340,6 +400,7 @@ async function mountWallets(){
             $(walletCardClone).find('.balance').attr('balance',(wallet.balance))
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.edit-wallet-btn').attr('type',wallet.type);
+
             $(walletCardClone).find('.edit-wallet-btn').click((event)=> { 
                 mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('type')) 
             });
@@ -381,7 +442,7 @@ async function mountWallets(){
                     }
 
                     if(obj!='note'){
-                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><div class="ucf-value">'+data[obj]+'</div></div>';
+                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';
                     }else{
                         subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
                     }
@@ -399,130 +460,15 @@ async function mountWallets(){
             })
 
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) { walletUtil.deleteWalletById(event.target.getAttribute('wallet-id')) })
-
+            
 
             $('#all-wallets-container').append(walletCardClone);
 
         }
-        
         walletContainer.appendChild(newWalletSection[0]); 
-
     }
 
 
-}
-
-function populateBalanceContainer(){
-    let balanceContainer = document.getElementById('balance-container').content.cloneNode(true);
-    $(balanceContainer).find('#total-acct-count').text(userWallets.length);
-    $(balanceContainer).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
-    $('#balance-header').html('');
-    $('#balance-header').append(balanceContainer);
-}
-
-function mountAddIncomeModal(){
-    console.log('mountAddIncomeModal');
-    let walletSelection = $('#incomeModal').find('.wallet-selection');
-
-    $('#incomeModal').find('.wallet-selection').html('');
-    $('.add-income-submit').click((event)=>{ submitIncome(event)})
-
-    if(userNonCardWallets==0){
-        $('#incomeModal').find('.modal-body').html('<h3>No wallets found to add income</h3>')
-    }
-    for(let i=0;i<userNonCardWallets.length;i++){
-        walletSelection.append('<option value='+userWallets[i].id+'>'+userWallets[i].name+'</option>');
-    }
-
-    function submitIncome(event){
-        
-        let form = $(event.target).closest('.create-expense-form');
-        let paymentAmount = +($(form).find('.amount').val());
-        let note = $(form).find('.note').val();
-        let walletId =  +($(form).find('.wallet-selection').val());
-
-        let isValid = true;
-        isValid = util.isNumber(paymentAmount,$(form).find('.amount')) && isValid;
-        isValid = util.isNotEmpty(paymentAmount,$(form).find('.amount')) && isValid;
-        isValid = util.isLessThanN(paymentAmount,10000000,$(form).find('.amount')) && isValid;
-        isValid = util.isNumber(walletId,$(form).find('.wallet-selection')) && isValid;
-
-        console.log(isValid);
-        if(!isValid) return;
-
-        let income = {
-            "type" : "income",
-            "amount" : paymentAmount,
-            "transactionInfo" : {
-                "note" : note,
-                "walletId" : walletId
-            }
-        }
-
-        $('#spinner').show();
-        trasnsactionService.createTransactions(JSON.stringify(income)).then((data)=>{
-            $('#spinner').hide();   
-            refreshWalletsPage(); 
-        })
-
-        $('.credit-bill-close-btn').click();
-        $('.income-model-close-btn').click();
-    }
-
-}
-
-async function mountAllIncomes(){
-
-    let allDateRanges =  {
-        'Today': [moment(), moment()],
-        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-    };
-
-
-    let start = allDateRanges['This Month'][0];
-    let end = allDateRanges['This Month'][1];
-
-    start = start.format('YYYYMMDD').split('-').join('');
-    end = end.add(1,'days').format('YYYYMMDD').split('-').join('');
-
-    let incomeData = null;
-    await trasnsactionService.findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
-
-    $('#allIncomes .income-table-view .tbody').html('');
-
-    console.log(incomeData.length);
-    
-    for(let i = 0; i < incomeData.length; i++){
-        let newRow = $('<tr> <th scope="row" class="wallet">1</th> <td class="time">Mark</td> <td class="amount">Otto</td> <td class="note">@mdo</td> </tr>');
-
-        let walletInfo = null;
-        let walletId = incomeData[i]['transactionInfo']['walletId'];
-
-        for(let wallet of userWallets){
-            if(wallet.id == walletId){
-                walletInfo = wallet;
-            }
-        }
-
-
-        if(incomeData[i]['transactionInfo']['note']==''){
-            incomeData[i]['transactionInfo']['note'] = "-"
-        }
-        newRow.find('.note').text(incomeData[i]['transactionInfo']['note']);
-        newRow.find('.time').text(incomeData[i]['timestamp']);
-        newRow.find('.wallet').text((walletInfo.name));
-        newRow.find('.amount').text(incomeData[i]['amount']+" ₹");
-
-        $('.income-table-view .tbody').append(newRow);
-    }
-
-    if(incomeData.length==0){
-        $('.income-table-view .tbody').append('<h3>No Income Transactions</h3>');
-    }
 }
 
 function mountWalletCreationForm(){
@@ -559,13 +505,11 @@ function mountEditWalletForm(walletId,type){
 
 
     if(type=='Credit Card'){
-        $('.ce-wallet-model').find('#new-wallet-balance').closest('.input-group').css('height', '0px');
-        $('.ce-wallet-model').find('#new-wallet-balance').closest('.input-group').css('overflow', 'hidden');
         $('.ce-wallet-model').find('#new-wallet-limit').val(editingWallet.walletInfo.limit);
         $('.ce-wallet-model').find('#new-wallet-repay').val(editingWallet.walletInfo.repayDate);
     }else if(type=='Bank Account'){
-        $('.ce-wallet-model').find('#new-wallet-accno').val(editingWallet.walletInfo.limit);
-        $('.ce-wallet-model').find('#new-wallet-ifsc').val(editingWallet.walletInfo.repayDate);
+        $('.ce-wallet-model').find('#new-wallet-accno').val(editingWallet.walletInfo.accountNumber=='not specified' ? '' : editingWallet.walletInfo.accountNumber);
+        $('.ce-wallet-model').find('#new-wallet-ifsc').val(editingWallet.walletInfo.ifscCode=='not specified' ? '' : editingWallet.walletInfo.ifscCode);
     }else if(type=='Bonus Account'){
         $('.ce-wallet-model').find('#new-wallet-bnote').val(editingWallet.walletInfo.note);
     }else if(type=='Others'){
@@ -576,4 +520,120 @@ function mountEditWalletForm(walletId,type){
     $('.edit-wallet-submit-btn').click(()=> { walletFormUtil.editWalletSubmissionHandler(walletId,type) });
 
 }
+
+async function mountAllIncomes(){
+
+    let allDateRanges =  {
+        'Today': [moment(), moment()],
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    };
+
+
+    let start = allDateRanges['This Month'][0];
+    let end = allDateRanges['This Month'][1];
+
+    start = start.format('YYYYMMDD').split('-').join('');
+    end = end.add(1,'days').format('YYYYMMDD').split('-').join('');
+
+    let incomeData = null;
+    await trasnsactionService.findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
+
+    $('#allIncomes .income-table-view .tbody').html('');
+
+    for(let i = 0; i < incomeData.length; i++){
+        let newRow = $('<tr> <th scope="row" class="wallet">1</th> <td class="time">Mark</td> <td class="amount">Otto</td> <td class="note">@mdo</td> </tr>');
+
+        let walletInfo = null;
+        let walletId = incomeData[i]['transactionInfo']['walletId'];
+        let isDeletedWallet = false;
+        for(let wallet of userWallets){
+            if(wallet.id == walletId){
+                walletInfo = wallet;
+            }
+        }
+
+        if(walletInfo==null){
+            await walletService.findWalletById(walletId).then((data)=>walletInfo=data.data)
+            isDeletedWallet = true;
+        }
+
+        if(walletInfo==null) continue;
+
+        if(incomeData[i]['transactionInfo']['note']==''){
+            incomeData[i]['transactionInfo']['note'] = "-"
+        }
+        let walletName = (walletInfo.name);
+        newRow.find('.note').text(incomeData[i]['transactionInfo']['note']);
+        newRow.find('.time').text(incomeData[i]['timestamp']);
+        newRow.find('.wallet').text(walletName);
+        if(isDeletedWallet) newRow.find('.wallet').append(' <i class="fas expired-expense-ico fa-ban"></i>')
+        newRow.find('.amount').text(incomeData[i]['amount']+" ₹");
+
+        $('.income-table-view .tbody').append(newRow);
+    }
+
+    if(incomeData.length==0){
+        $('.income-table-view .tbody').append('<h3>No Income Transactions</h3>');
+    }
+}
+
+function mountAddIncomeModal(isBill,billMax){
+
+    $('#addIncomeForm')[0].reset();
+    let walletSelection = $('#incomeModal').find('.wallet-selection');
+
+    $('#incomeModal').find('.wallet-selection').html('');
+    $('.add-income-submit').off();
+    $('.add-income-submit').click((event)=>{ submitIncome(event)})
+
+    if(userNonCardWallets==0){
+        $('#incomeModal').find('.modal-body').html('<h3>No wallets found to add income</h3>')
+    }
+    for(let i=0;i<userNonCardWallets.length;i++){
+        walletSelection.append('<option value='+userNonCardWallets[i].id+'>'+userNonCardWallets[i].name+'</option>');
+    }
+
+    function submitIncome(event){
+        
+        let form = $(event.target).closest('.create-expense-form');
+        let paymentAmount = +($(form).find('.amount').val());
+        let note = $(form).find('.note').val();
+        let walletId =  +($(form).find('.wallet-selection').val());
+
+        let isValid = true;
+
+        isValid = util.isNotEmpty(paymentAmount,$(form).find('.amount')) && isValid;
+        isValid = util.isLessThanN(paymentAmount,10000000,$(form).find('.amount')) && isValid;
+        isValid = util.isNumber(walletId,$(form).find('.wallet-selection')) && isValid;
+        isValid = util.isGreaterThanZero(paymentAmount,$(form).find('.amount')) && isValid;
+
+        if(!isValid) return;
+        $('.add-income-submit').off();
+
+        let income = {
+            "type" : "income",
+            "amount" : paymentAmount,
+            "transactionInfo" : {
+                "note" : note,
+                "walletId" : walletId
+            }
+        }
+
+        $('#spinner').show();
+        trasnsactionService.createTransactions(JSON.stringify(income)).then((data)=>{
+            $('#spinner').hide();   
+            util.handleApiResponse(data,"Income Added ✅ ");
+            refreshWalletsPage(); 
+        })
+
+        $('.credit-bill-close-btn').click();
+        $('.income-model-close-btn').click();
+    }
+
+}
+
 

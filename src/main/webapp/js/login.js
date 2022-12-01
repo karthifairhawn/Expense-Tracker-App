@@ -2,7 +2,6 @@ import { server,orgin } from '../config/apiConfig.js';
 
 
 
-
 $("#signup").click(function() {
     $("#first").fadeOut("fast", function() {
         $("#second").fadeIn("fast");
@@ -62,9 +61,6 @@ $( function() {
             else if(data.statusCode==200){
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
-                localStorage.setItem('location','dashboard');
-
-                console.log(localStorage);
                 window.location.href = "index.html"
             }
         }
@@ -104,14 +100,12 @@ $(function() {
             email: "Please enter a valid email address"
         },
         submitHandler: function(form) {
-            // $(form).ajaxSubmit();
             submitForm();
         }
     });
 
     
 
-    // $("form[name='registration']").submit(async (e)=>{
     function submitForm(form){
 
         let raw = ({
@@ -137,8 +131,6 @@ $(function() {
 
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
-                localStorage.setItem('location','dashboard');
-
                 window.location.href = "index.html"                
             }
         }
