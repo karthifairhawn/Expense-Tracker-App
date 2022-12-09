@@ -261,7 +261,14 @@ async function refreshDashboard(){
         for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
     });
 
-    updateHeader();
+
+    let template = document.getElementById('tt-balance-header').content.cloneNode(true);
+    $(template).find('#total-acct-count').text(userWallets.length);
+    $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
+    $('#balance-header').html('');
+    $('#balance-header').append(template);
+    
+
     mountExpenseSection();
 
     $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
@@ -283,7 +290,7 @@ async function refreshDashboard(){
 
 
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
-        async function findAllExpenseDetails(expenseFrom,expenseTo){ 
+        async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan){ 
 
             // Clearing up old expense section data
             listingExpenseDate = null;
@@ -315,8 +322,10 @@ async function refreshDashboard(){
 
             }
 
-            // Show current set range total expense in top
+            // Show current set range total expense in header container
             $('.reporting-days-total').text(rangeExpense);
+            $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
+            $('.main-balance .timespan').text("("+timeSpan+")");
 
         }
 
@@ -515,7 +524,7 @@ async function refreshDashboard(){
                 let expenseFrom = start.format('YYYYMMDD').split('-').join('');
                 let expenseTo = end.format('YYYYMMDD').split('-').join('');
 
-                findAllExpenseDetails(expenseFrom,expenseTo);
+                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan);
 
 
                 $('#date-range-type').html(timeSpan);
@@ -849,13 +858,7 @@ async function refreshDashboard(){
 
     }
 
-    function updateHeader(){
-        let template = document.getElementById('tt-balance-header').content.cloneNode(true);
-        $(template).find('#total-acct-count').text(userWallets.length);
-        $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
-        $('#balance-header').html('');
-        $('#balance-header').append(template);
-    }
+
 
 }
 

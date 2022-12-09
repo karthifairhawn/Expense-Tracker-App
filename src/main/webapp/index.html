@@ -377,33 +377,26 @@
 </template>
 
 <template id="tt-balance-header">
-    <div class=" mt-2 mb-2 card main-balance">
-        <div class="">
+    <div class=" mt-5 mb-2 card main-balance">
 
-            <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
-                <div class="mi-bal-right">
-                    <span>Available Balance</span>
-                    <span>( <span id="total-acct-count">3</span> wallets)</span>
+        <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+            <div class="mi-bal-right">
+                <span >Total Spendings <span class="timespan"> (This Month)</span></span>
+                <!-- <span>( <span id="total-acct-count">3</span> wallets)</span> -->
 
-                    <div class="d-flex">
-                        <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
-
-                        <div id="mi-bal-amount" class="display-1">
-                            10,000 ₹
-                        </div>
-                        &nbsp;&nbsp;
-                        <!-- <span class="muted">INR</span> -->
+                <div class="d-flex">
+                    <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+                    <div id="mi-bal-amount" class="display-1">
+                        10,000 ₹
                     </div>
-
-
+                    &nbsp;&nbsp;
                 </div>
 
-                <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
-                    + New Expense
-                </button>
 
             </div>
-            
+            <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
+                + New Expense
+            </button>
         </div>
     </div>
 </template>
