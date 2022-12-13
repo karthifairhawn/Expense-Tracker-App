@@ -23,7 +23,9 @@ public class Expense {
 	Long transactionId;
 	List<Long> tagId;
 	
-	public Expense(LinkedTreeMap linkedTreeMap){
+
+
+	public Expense(LinkedTreeMap linkedTreeMap) {
 		this.categoryId = ((Double) linkedTreeMap.get("categoryId")).longValue();
 		this.reason = (String) linkedTreeMap.get("reason");
 		this.note = (String) linkedTreeMap.get("note");
@@ -37,8 +39,8 @@ public class Expense {
 		}
 		 
 		 this.spendOn = (String) linkedTreeMap.get("spendOn");
-
 	}
+
 
 
 }

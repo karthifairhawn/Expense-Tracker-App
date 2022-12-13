@@ -57,7 +57,7 @@ public class PublicFilter implements Filter {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			CommonObjectResponse<String> respObject = new CommonObjectResponse<String>(500,"An unexpected error occured check logs.");
+			CommonObjectResponse<String> respObject = new CommonObjectResponse<String>(500,"An unexpected error occured, Try again later");
 			response.setContentType("application/json");
 			resp.getWriter().write(gson.toJson(respObject));
 		}

@@ -13,12 +13,12 @@ import lombok.ToString;
 @ToString
 public class Income {
 	
-	
+
 	public Income(LinkedTreeMap transactionInfo) {
 		this.walletId = ((Double)transactionInfo.get("walletId")).longValue();
 		this.note = (String) transactionInfo.get("note");
 	}
-	
+
 	Long id;
 	String note;
 	Long transactionId;

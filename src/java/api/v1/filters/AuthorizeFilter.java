@@ -35,44 +35,24 @@ public class AuthorizeFilter extends Thread implements Filter {
 		HttpServletRequest req = (HttpServletRequest) request;
 		
 
-		// No authentication for login 
+		// No authentication for login and Account Creation
 		if(req.getPathInfo().contains("/login") || req.getPathInfo().endsWith("/users") ) { chain.doFilter(request, response); return; }
-		Gson gson = new Gson();
-		
-		try {
-			resp.setContentType("application/json");
-			
-			String authToken = ((HttpServletRequest) request).getHeader("Authorization");
-			UsersService usersDaoService = UsersService.getInstance();
-			
-			
-			if((authToken == null || authToken.split(" ").length == 0)) throw new CustomException("Please provide authorization value in header to valadiate you",401,new Date().toLocaleString());
-			Users accessingUser = usersDaoService.findByAuthToken(authToken.split(" ")[1]);
-		
-			RequestContext.setAttribute("user",accessingUser);
 
-			
-			System.out.println("\033[32m Passed Authorization -------"+accessingUser.getEmail()+"  \033[37m");
-			chain.doFilter(request, response);
-			
-			
-			
-			
-		}catch (CustomException e) {
+		resp.setContentType("application/json");
+		
+		String authToken = ((HttpServletRequest) request).getHeader("Authorization");
+		UsersService usersDaoService = UsersService.getInstance();
+		
+		if((authToken == null || authToken.split(" ").length == 0)) throw new CustomException("Please provide authorization value in header to valadiate you",401,new Date().toLocaleString());
+		Users accessingUser = usersDaoService.findByAuthToken(authToken.split(" ")[1]);
+	
+		RequestContext.setAttribute("user",accessingUser);
 
-			e.printStackTrace();
+		
+		System.out.println("\033[32m Passed Authorization -------"+accessingUser.getEmail()+"  \033[37m");
+		chain.doFilter(request, response);
 			
-			CommonObjectResponse<?> respObject = new CommonObjectResponse(e.getStatusCode(),e.getError());
-			resp.setStatus(respObject.getStatusCode());
-			resp.getWriter().write(gson.toJson(respObject));
-			
-		}
-		catch (Exception e) {
-			
-			e.printStackTrace();
-			CommonObjectResponse<String> respObject = new CommonObjectResponse<String>(500,"An unexpected error occured check logs.");
-			resp.getWriter().write(gson.toJson(respObject));
-		}
+
 		
 	}
 

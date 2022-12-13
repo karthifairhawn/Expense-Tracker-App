@@ -29,9 +29,6 @@ async function findWallets() {
 async function findWalletById(id) {
     var getRequestOptions = { method: 'GET',headers: myHeaders,redirect: 'follow'};
     const response =  await fetch(server+"/api/v1/users/"+userId+"/wallets/"+id, getRequestOptions);
-    $.ajax({
-
-    })
     return await response.json();
 }
 

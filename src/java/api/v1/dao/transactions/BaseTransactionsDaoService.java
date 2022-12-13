@@ -107,7 +107,6 @@ public class BaseTransactionsDaoService {
 		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
 		return allTransactions;
 	}
-
 	
 	public Map<String, List<Transactions>> findAllExpenseBySpendRange(Map<String, String> filters){
 		
@@ -128,7 +127,7 @@ public class BaseTransactionsDaoService {
 		
 		String dateTo = filters.get("to");
 		dateTo = dateTo.substring(0, 4)+"-"+dateTo.substring(4, 6)+"-"+dateTo.substring(6)+" 23:59";
-		String query = "SELECT * FROM `transactions` LEFT JOIN `expenses` on transactions.id = expenses.transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (expenses.spend_on>='"+dateFrom +"' and  expenses.spend_on<='"+dateTo+"') order	 by `spend_on`";
+		String query = "SELECT * FROM `transactions` LEFT JOIN `expenses` on transactions.id = expenses.transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (expenses.spend_on>='"+dateFrom +"' and  expenses.spend_on<='"+dateTo+"') order	 by `spend_on` desc";
 		
 		
 		
@@ -136,7 +135,6 @@ public class BaseTransactionsDaoService {
 		ResultSet rs;
 		try {
 			rs = dbUtil.executeSelectionQuery(query); 
-			ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
 			while (rs.next()) {
 				Transactions transaction = new Transactions();
 				transaction.setId(rs.getLong("id"));
@@ -165,6 +163,70 @@ public class BaseTransactionsDaoService {
 		return allTransactions;
 	}
 
+	public Map<String, List<Transactions>> findAllExpenseByCount(Map<String, String> filters){
+		
+		Users operatingUser = (Users)RequestContext.getAttribute("user");
+		
+		Map<String,List<Transactions>> allTransactions = new HashMap<String,List<Transactions>>();
+		List<Transactions> expenses = new LinkedList<Transactions>();
+		List<Transactions> incomes = new LinkedList<Transactions>();
+		List<Transactions> transfers = new LinkedList<Transactions>();
+		
+		if(filters==null) throw new CustomException("Bad Request",400);
+		
+		Integer page = null;
+		Integer size = null;
+		try {
+			page = Integer.parseInt(filters.get("page"));
+			size = Integer.parseInt(filters.get("size"));
+		}catch(Exception e){
+			throw new CustomException("Invalid page or size",400);
+		}
+
+		String fetchType = filters.get("type");
+
+		Integer offset = (page -1)*size;
+
+		String query = "SELECT * FROM `transactions` LEFT JOIN `expenses` on transactions.id = expenses.transaction_id WHERE transactions.user_id="+operatingUser.getId()+" order by `spend_on` desc LIMIT "+size+" OFFSET "+offset;
+		
+		
+		System.out.println("Execution recieved "+query);
+		ResultSet rs;
+		try {
+			rs = dbUtil.executeSelectionQuery(query); 
+			ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
+			while (rs.next()) {
+				
+				Transactions transaction = new Transactions();
+				transaction.setId(rs.getLong("id"));
+				transaction.setAmount(rs.getLong("amount"));
+				transaction.setType(rs.getString("type"));
+				transaction.setTimestamp(rs.getTimestamp("timestamp"));
+				
+				String type = transaction.getType();
+				
+				
+				if(type.equals("expense")) expenses.add(transaction);
+				else if(type.equals("income")) incomes.add(transaction);
+				else if(type.equals("transfer")) transfers.add(transaction);
+				
+				System.out.println(expenses);
+
+			}	
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new CustomException("Problem in retriving your wallets please contact admin", 500,
+					new Date().toLocaleString());
+		}
+		
+		if(fetchType.equals(null) || fetchType.equals("expenses")) allTransactions.put("expenses",expenses);
+		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
+		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
+		
+		System.out.println(allTransactions);
+		return allTransactions;
+	}
+	
 	public Transactions findById(Long transactionId){
 		
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
@@ -176,8 +238,6 @@ public class BaseTransactionsDaoService {
 		ResultSet rs;
 		try {
 			rs = dbUtil.executeSelectionQuery(query);
-
-			ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
 
 			rs.next();
 			transaction.setId(rs.getLong("id"));

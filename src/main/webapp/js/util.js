@@ -24,7 +24,7 @@ export var to24Format = (time) => {
 }
 
 export var moneyFormat =  (n)=>{
-    return (Math.round(n * 100) / 100).toLocaleString() +" ₹";
+    return "₹ "+(Math.round(n * 100) / 100).toLocaleString();
 }
 
 $('#toastbtn').hide();
@@ -160,7 +160,6 @@ export function isLessThanN(val,N,element) {
     N = parseInt(N);
     if(isNumber(val)){
         if(val<N) result = true;
-        console.log(val+"<"+N+" "+val<N);
     }
     highlightElement(element,result);
     return result;

@@ -11,6 +11,15 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
 }
 
+.navbar .title h2{
+    font-family: 'Kaushan Script', cursive !important;
+    color: white;
+}
+
+.title .fa-chart-pie{
+    font-size: 2rem;
+    color: white;
+}
 
 
 html, body{
@@ -19,30 +28,107 @@ html, body{
 }
 
 .nav-item{
-    padding: 20px 15px;
+    padding: 10px 15px;
     font-size: 25px;
     margin:0px 5px; 
-    color: #000;
+    color: #fff;
 }
 
 .nav-item:hover{
-    color: black;
+    color: #43cead;
+}
+
+#expense-name{
+    height: 50px;
+    font-size: 1.5rem;
 }
 
 .active {
-    border-bottom: 2px solid #142d4c;
+    border-bottom: 2px solid #fff;
     border-radius: 2px;
-    color: #000 !important;
     /* background-color: ; */
 }
 
-
-#date-range-type{
-    background-color: #ececec;
-    padding: 12px;
-    font-weight: 600;
-    /* font-size: 20px; */
+#expense-card-container{
+    /* min-height: 450px; */
 }
+#reportrange{
+    /* height: 50px;
+    border: 1px solid #aaa; */
+    font-size: 17px;
+    cursor: pointer;
+}
+
+#expense-card-container{
+    overflow-y: scroll;
+    height: 750px;
+}
+
+
+
+#expense-card-container::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(107, 107, 107, 0.3);
+	background-color: #F5F5F5;
+}
+
+#expense-card-container::-webkit-scrollbar
+{
+	width: 6px;
+	background-color: #F5F5F5;
+}
+
+#expense-card-container::-webkit-scrollbar-thumb
+{
+	background-color: #000000;
+}
+
+
+#reportrange .selector{
+    font-weight: bold !important;
+}
+
+.date-range-sico{
+    /* border-left: 1px solid rgba(255, 255, 255, 0.274);
+    background-color: #142d4c;
+    color: white !important; */
+    font-size: 15px !important;
+}
+.view-type{
+    width: 40px;
+    font-weight: 600;
+    font-family: 'Lato', 'Font Awesome 5 Free';
+}
+
+.view-type option{
+    font-weight: 600;
+    font-family: 'Lato', 'Font Awesome 5 Free';
+}
+/* #date-range-type{
+    background-color: #142d4c;
+    font-weight: 600;
+    text-transform: uppercase;
+    height: 100%;
+    padding: 10px 10px;
+    color: white;
+} */
+
+.show-more-section{
+    border-top: 1px solid #1c1d21;
+    padding:10px;
+}
+
+.date-range-section .fa-solid{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    height: 100%;
+    font-size: 23px;
+    color: #000;
+}
+
+
 
 .label{
     background-color: #142d4c;
@@ -67,14 +153,9 @@ html, body{
 }
 
 
-
-
-.expense-card .expense-card-time, .expense-card-amount,.expense-card .title,.expense-card-left .category{
-}
-
 .expense-card-left{
     padding: 0px 10px;
-
+    width: 150px;
 }
 
 .expense-view-btn{
@@ -90,8 +171,8 @@ html, body{
     /* background-color: #66a2f7 !important; */
 }
 
-.expense-card-wallet{
-    width: 350px;
+.expense-card-wallet{ 
+    width: 550px;
 }
 
 
@@ -119,7 +200,7 @@ html, body{
 .category-ico, .wallet-card .fa-solid {
     border-radius: 50%;
     /* background-color: #9fd3c7; */
-    padding: 5px;
+    padding: 2px;
     color: #fff;
 
 }
@@ -199,19 +280,29 @@ select {
     font-weight: 900;
    
 }
+
+.expense-card{
+    border-radius: 20px;
+}
+.expense-card .card-body{
+    border-radius: 10px;
+}
 .expense-card .card-body .category-ico{
 
     background-color: #131519 !important;
     border-color: 1px solid white;
+    border-radius: 10px;
+
 
 }
 
 .expense-card .category-ico{
-    width: 40px;
     overflow: hidden;
-    width: 100px;
+    width: 40px;
     border-radius: 0px;
-    font-size: 50px;
+    font-size: 25px;
+    padding: 7px 30px;
+    border-radius: 10px;
 }
 
 .expense-card .card-body{
@@ -521,7 +612,7 @@ select {
     width: 200px;
     height: 100%;
     border-radius: 0px 5px 5px 0px;
-    background-color: #272727;
+    background-color: #2e2e2e;
     color: #fff !important;
     position: absolute;
     right: 0;
@@ -532,10 +623,9 @@ select {
 }
 
 .expense-card-bal-cont .spend-amount{
-    font-size: 30px;
+    font-size: 20px;
     color: #142d4c;
     font-weight: 900;   
-    /* top: 20px; */
     padding: 4px;
 }
 

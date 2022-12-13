@@ -26,6 +26,13 @@ async function findTransactions(from,to,type) {
     return await response.json();
 }
 
+export async function findTransactionsPaginated(page,size,type) {
+    var getRequestOptions = { method: 'GET',headers: myHeaders,redirect: 'follow'};
+    const response = await fetch(server+"/api/v1/users/"+userId+"/transactions?page="+page+"&size="+size+"&type="+type, getRequestOptions);
+    return await response.json();
+}
+
+
 async function findTransactionsById(id) {
     var getRequestOptions = { method: 'GET',headers: myHeaders,redirect: 'follow'};
     const response = await fetch(server+"/api/v1/users/"+userId+"/transactions/"+id, getRequestOptions);

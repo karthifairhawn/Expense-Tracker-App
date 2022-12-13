@@ -1,4 +1,4 @@
-import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById} from '../apis/transactions.js';
+import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById, findTransactionsPaginated} from '../apis/transactions.js';
 import {findWalletById, findWallets,createWallet,deleteWalletById,updateWalletById} from '../apis/wallets.js';
 import {findTagById,findTags,createTag} from '../apis/tags.js';
 import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
@@ -6,7 +6,7 @@ import {findCategoryById,findCategories,createCategory} from '../apis/categories
 import * as util from './util.js';
 
 // Mount Dashboard by default
-var currTimeSpan = 'Today';
+var currTimeSpan = 'Recent';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
@@ -18,12 +18,20 @@ refreshDashboard();
 
 async function refreshDashboard(){ 
 
-    let userWallets = [];
+
     let userCardWallets = [];
     let userNonCardWallets = [];
     let totalBalance = 0;
+
     let userTags = null;
+    let userTagsMap = {};
+
     let userCategories = null;
+    let userCategoriesMap = {};
+    
+    let userWallets = [];
+    let userWalletsMap = {};
+
     var formSelectedTags = [];  
     let totalWalletSplits = 1;
     let usingNewCategory = false;
@@ -249,8 +257,20 @@ async function refreshDashboard(){
 
     }
 
-    await findCategories().then((data)=> userCategories= (data.data));
-    await findTags().then((data)=> userTags= (data.data));
+    await findCategories().then((data)=> {
+        userCategories= (data.data)
+        for(let k=0; k<userCategories.length; k++){
+            userCategoriesMap[userCategories[k].id] = userCategories[k];
+        }
+    });
+
+    await findTags().then((data)=> {
+        userTags = data.data;
+        for(let k=0; k<userTags.length; k++){
+            userTagsMap[userTags[k].id] = userTags[k];
+        }
+    });
+
     await findWallets().then((data)=> {
         data = data.data;
         for(const category in data){
@@ -261,7 +281,8 @@ async function refreshDashboard(){
         for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
     });
 
-
+    for(let key in userWallets) userWalletsMap[userWallets[key].id] = userWallets[key];
+    
     let template = document.getElementById('tt-balance-header').content.cloneNode(true);
     $(template).find('#total-acct-count').text(userWallets.length);
     $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
@@ -280,6 +301,8 @@ async function refreshDashboard(){
         let dateRangeContainer = document.getElementById("date-range-selector");
         let dateRangeElement = document.getElementById("date-range-template");
         let clone = dateRangeElement.content.cloneNode(true);
+        let pageNumber = 1;
+        let pageSize = 15;
         $(dateRangeContainer).html('');
         dateRangeContainer.appendChild(clone);  
         
@@ -287,34 +310,50 @@ async function refreshDashboard(){
         let daysTotalExpense = 0;
 
         initiateDateSelectorPlugin();
-
+        updateHeader();
 
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
-        async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan){ 
+        async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer){ 
 
             // Clearing up old expense section data
             listingExpenseDate = null;
             daysTotalExpense = 0;
             let rangeExpense = 0;
             let expenseData = null;
-            $("#expense-card-container").html("");
 
             // Find all expense info from selected date range
-            await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>expenseData = data);
+            if(timeSpan!='Recent'){
+                $("#expense-card-container").html("");
+                await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{
+                    expenseData = data
+                    console.log(expenseData);
+                    if(expenseData.data.expenses.length == 0) zeroExpensesHandler();
+                });
+            }else{
+                if(refreshExpenseContainer==true){
+                    $("#expense-card-container").html("");
+                }
+                await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
+            }0
             let expenses = expenseData.data.expenses;
-            if(expenses.length == 0 ) zeroExpensesHandler();
-
 
             for(let i=0; i<expenses.length; i++){ 
                 
-                
-                // Find all wallets
+                // Find all wallets (search in already fetched wallets if not found get from server)
                 let wallets = new Array();
-                for (const [key, value] of Object.entries(expenses[i].walletSplits)) await findWalletById(`${key}`).then((resp)=> wallets.push(resp));
+                for (const [key, value] of Object.entries(expenses[i].walletSplits)){
+                    let searched = null;
+                    searched = (userWalletsMap[key])
+                    if(searched!=null){
+                        wallets.push({data:searched});
+                    }else{
+                        await findWalletById(`${key}`).then((resp)=> wallets.push(resp.data));
+                    }
+                }
                 
                 // Find Category info
                 let categoryInfo = {};
-                (expenses[i].transactionInfo.categoryId==0) ? categoryInfo.name='General Expense' : await findCategoryById(expenses[i].transactionInfo.categoryId).then((data)=> categoryInfo = data.data);
+                (expenses[i].transactionInfo.categoryId==0) ? categoryInfo.name='General Expense' : categoryInfo= userCategoriesMap[expenses[i].transactionInfo.categoryId];
                 
                 // Add expense amount to currentRangeTotal and Populate
                 rangeExpense+=expenses[i].amount;
@@ -322,12 +361,39 @@ async function refreshDashboard(){
 
             }
 
-            // Show current set range total expense in header container
-            $('.reporting-days-total').text(rangeExpense);
-            $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
-            $('.main-balance .timespan').text("("+timeSpan+")");
+            $('#expense-card-container').find('#espinner').remove();
+
+            // Add loading indicator at end of container
+            if(refreshExpenseContainer==false && expenses.length==15){
+                $('#expense-card-container').append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
+
+                // Load more expenses when reached expense container end
+                $('#expense-card-container').scroll(function(e){
+    
+                    // grab the scroll amount and the window height
+                    var scrollAmount   = $('#expense-card-container').scrollTop();
+                    var documentHeight = $('#expense-card-container').height();
+                
+                    // calculate the percentage the user has scrolled down the page
+                    var scrollPercent = (scrollAmount / documentHeight) * 100;
+                
+                    if(scrollPercent > 90) {
+                        $('#expense-card-container').off();
+                        doSomething();
+                    }
+                
+                    function doSomething() { 
+                        pageNumber++;
+                        setTimeout( ()=>findAllExpenseDetails(null,null,'expenses',false),1500 )
+                    }
+                
+                });
+            }else{
+                $('#expense-card-container').find('#espinner').remove();
+            }
 
         }
+
 
         // Fetch Wallet Split and tag info then populateExpense [Trigger = findAllExpenseDetails()]
         async function populateExpense(walletInfo,expense,categoryInfo){
@@ -337,11 +403,8 @@ async function refreshDashboard(){
             let tagsIds = expense.transactionInfo.tagId;
 
             // Get all tags information
-            for(let i=0;i<tagsIds.length;i++){
-                await findTagById(tagsIds[i]).then((data) =>{
-                    allTagsInfo.push(data);
-                })
-            }
+            for(let i=0;i<tagsIds.length;i++) allTagsInfo.push({data:userTagsMap[tagsIds[i]]});
+            
 
             let expenseTemplate = $("#expense-card-template")[0];
             let expenseContainer = $("#expense-card-container")[0];
@@ -367,6 +430,9 @@ async function refreshDashboard(){
             // Findign wallet Split;
             let walletArchiveIndicator =  null;
             for(let i=0; i<walletInfo.length;i++){
+                // if(walletInfo[i].statusCode != 200){
+                //     continue;
+                // }
                 walletArchiveIndicator = walletInfo[i].data.archiveWallet;
                 let id = walletInfo[i].data.id;
                 let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
@@ -378,7 +444,7 @@ async function refreshDashboard(){
             // Finding wallet name
             let walletName = null;
             if(walletInfo.length == 1){
-                walletName = (walletInfo[0].data.name);
+                walletName = (walletInfo[0]?.data?.name);
             }else{
                 let accounts = walletInfo.length;
                 walletName = +accounts+" Accounts "+'<i class="fa-solid fa-arrows-split-up-and-left"></i> '
@@ -395,7 +461,7 @@ async function refreshDashboard(){
 
 
             // find wallet type
-            let walletType = walletInfo.length == 1 ? walletInfo[0].data.type : 'Multiple Wallet Split';
+            let walletType = walletInfo.length > 1 ? 'Multiple Wallet Split' : walletInfo[0]?.data?.type ;
 
 
             let color = '#'+colorOne[expense.id%9];
@@ -506,42 +572,36 @@ async function refreshDashboard(){
 
         // Initiate the date range selector plugin
         function initiateDateSelectorPlugin(){
-            // Date Range Selector
-            let start = moment();
-            let end = moment();
-            
 
             function cb(start, end, timeSpan) {
+
                 // No date in expense list for today and yesterday's expense
-                if(timeSpan=="Today" || timeSpan=="Yesterday"){
-                    $('#reportrange .date').text(start.format('MMMM D, YYYY')); 
-                    $('#reportrange .date').css('padding','10px');
-                }else{
-                    $('#reportrange .date').css('padding','10px');
-                    $('#reportrange .date').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY')); 
+                let expenseFrom = start;
+                let expenseTo = end;
+                let refreshExpenseContainer = true;
+
+                if(timeSpan=='Recent') refreshExpenseContainer = false;
+                else{
+                    expenseFrom = start.format('YYYYMMDD').split('-').join('');
+                    expenseTo = end.format('YYYYMMDD').split('-').join('');
                 }
 
-                let expenseFrom = start.format('YYYYMMDD').split('-').join('');
-                let expenseTo = end.format('YYYYMMDD').split('-').join('');
-
-                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan);
-
+                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true);
 
                 $('#date-range-type').html(timeSpan);
                 currTimeSpan = timeSpan;
             }
 
             let allDateRanges =  {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Recent' : [moment(),moment()], // "Works based on count the keys has no usage",
                 'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
                 'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
             };
 
-            start = allDateRanges[currTimeSpan][0];
-            end = allDateRanges[currTimeSpan][1];
+            let start = allDateRanges['Recent'][0];
+            let end = allDateRanges['Recent'][1];
 
             let now = moment().format('MM/DD/YYYY');
 
@@ -553,6 +613,24 @@ async function refreshDashboard(){
         // Called if no expenses for the user [Trigger = findAllExpenseDetails]
         function zeroExpensesHandler(){
             $("#expense-card-container").html('<center class="card"><h1 class="card-body">No expense data found</h1></center>')
+        }
+
+        async function updateHeader(){
+            
+            // Show current set range total expense in header container
+            let st = moment().startOf('month').format('YYYYMMDD');
+            let end = moment().endOf('month').format('YYYYMMDD');
+            let expenseData = null;
+            await findTransactions(st,end,'expenses').then((data)=>expenseData = data.data.expenses);
+
+            let rangeExpense = 0;
+            for(let i=0; i<expenseData.length; i++){ 
+                rangeExpense+=expenseData[i].amount;
+            }
+
+            $('.reporting-days-total').text(rangeExpense);
+            $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
+            $('.main-balance .timespan').text("("+"This Month"+")");
         }
 
     }  

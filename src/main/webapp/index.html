@@ -31,7 +31,7 @@
         <link rel="stylesheet" href="./libs/selectize.0.6.9.css">
         <script src="./libs/selectize.min.0.6.9.js"></script>
 
-
+        <link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
         <link rel="stylesheet" href="./css/style.css">
 
     </head>
@@ -62,9 +62,13 @@
 
 
         <!-- Navbar  -->
-        <nav class="navbar navbar-expand-xl navbar-light bg-light">
+        <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
             <div class="container-fluid d-flex">
-                <h4><i class="fa-solid fa-chart-pie"></i> Expense Tracker App</h4>
+                <div class="title d-flex align-items-center justify-content-center">
+                    <h2 class="mt-1 mb-3">Expense Tracker App </h2>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <i class="fa-solid fa-chart-pie"></i>
+                 </div>
 
                 <div class="d-flex">
                     <a class="nav-item" href="index.html" tabs="dashboard"><i class="fa-solid fa-house"></i></a>
@@ -91,6 +95,10 @@
             <!-- multiple #expense-card-template will be mounted here -->
             <div id="expense-card-container" class="container"></div>
 
+            <!-- <div class="show-more-section container d-flex align-items-center justify-content-center">
+                <div class="url show-more-button">See old expenses <i class="fa-solid fa-chevron-down"></i></div>
+            </div> -->
+
 
         </div>
         
@@ -107,23 +115,47 @@
 <!-- Section 1 -->
 <template id="date-range-template">
 
-    <div class="d-flex flex-column justify-content-between mt-5 mb-5 container">
+    <div class="d-flex flex-column justify-content-between container date-range-section">
 
         <hr>
+        <div class="d-flex justify-content-between align-items-center">
 
-        <div class="d-flex justify-content-center">
+            <div class="h2 mt-1">Recent Transactions</div>
 
-
-            <div id="reportrange" class="pull-right d-flex" style="background: #fff; cursor: pointer; border: 1px solid #ccc; width: auto">
-                <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
-                <span class="date"></span> <b class="caret"></b>
+            <!-- Date Range Selector -->
+            <div class="d-flex justify-content-center">
+                <div id="reportrange" class="pull-right d-flex">
     
-                <span id="date-range-type">Today</span>
+                    <!-- <div class="d-flex">
+                        <div class="label d-flex align-items-center"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></div>
+                        <span class="date d-flex align-items-center justify-content-center"></span> <b class="caret"></b>
+        
+                        <span class="reporting-total-symbol d-flex align-items-center justify-content-center">₹</span>
+                        <span class="reporting-days-total d-flex align-items-center justify-content-center">20000</span>
+                    </div> -->
+    
+                    <div class="d-flex align-items-center justify-content-center">
+                        <span>View by </span>
+                        &nbsp;&nbsp;&nbsp;
+                        <div class="d-flex align-items-center selector">
+                            <span id="date-range-type" class="d-flex align-items-center justify-content-center">Recent</span>
+                            <i class="fa-solid fa-chevron-down date-range-sico"></i>
+                        </div>
+                    </div>
 
-                <span class="reporting-days-total d-flex align-items-center justify-content-center">20000</span>
-                <span class="reporting-total-symbol d-flex align-items-center justify-content-center">₹</span>
+    
+                </div>
+
+
+                <select class="view-type" name="" id="">
+                    <option selected value="minimal">&#xf03a</i></option>
+                    <option selected value="minimal">&#xf828</option>
+                </select>
+
             </div>
 
+ 
+    
         </div>
 
         <!-- New Record Popup Container - Model content is template automounted -->
@@ -148,30 +180,30 @@
                 <i class="fa-solid fa-trophy" class="category-ico"></i>
             </span>
 
+            <!-- Expense Name -->
             <div class="d-flex flex-column  expense-card-left">
                 
                 <span style="font-size: 22px" class="title">Sample Expense</span>
 
-                <div class="d-flex flex-row">
+                <!-- <div class="d-flex flex-row">
                     <div class="d-flex flex-row align-items-center" style="width: 300px;">
                         <span style="font-size: 17px" class="category">Sample Expense</span>
                         &nbsp;&nbsp;&nbsp;
                         <i><span style="font-size: 15px" class="spend-on"> 5:40 AM</span></i> 
                     </div>
     
-                </div>
+                </div> -->
     
             </div>
 
-                
-            <span style="font-size: 18px;" class="expense-card-wallet">
+            <!-- Wallet Name -->
+            <span style="font-size: 18px;" class="expense-card-wallet d-flex align-items-center justify-content-center">
                 <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> 
+                &nbsp;&nbsp;
                 <span class="wallet-name">Isndian Bank</span>
-                <br>
-                <i><span style="font-size: 15px" class="wallet-type"> Bank Account</span></i> 
             </span>
 
-            
+            <!-- Tags Listing -->
             <div class="d-flex align-items-center tags-section ">
                 <i class="fa-solid fa-tag"></i>
                 <div class="all-tags-section d-flex ">
@@ -179,17 +211,17 @@
                 </div>
             </div>
 
-
-            <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn invisible" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
-                <i class="fas fa-edit"></i>
-            </btn>
-
-             
+            <!-- Amount  -->
             <div class="expense-card-bal-cont d-flex align-items-center justify-content-center">
                 <div class="spend-amount">-23 ₹</div>
 
                 
             </div>
+
+            <btn type="button" id="inExpEditForm" class="d-flex align-items-center btn btn-primary expense-edit-btn invisible" href="" data-bs-toggle="modal" data-bs-target="#editExpenseForm">
+                <i class="fas fa-edit"></i>
+            </btn>
+
             <a type="button"  class="align-items-center justify-content-center btn btn-primary expense-view-btn" href="" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <i class="fas fa-eye"> </i> &nbsp; view 
             </a>
@@ -268,6 +300,7 @@
                 </div>        
             </div>
         </div>
+        
         </div>
 
     </div>
@@ -377,7 +410,7 @@
 </template>
 
 <template id="tt-balance-header">
-    <div class=" mt-5 mb-2 card main-balance">
+    <div class=" mt-2 mb-2 card main-balance">
 
         <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
             <div class="mi-bal-right">

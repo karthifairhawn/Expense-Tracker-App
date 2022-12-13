@@ -58,65 +58,18 @@ public class TransactionsService {
     	return transactionsService;
     }
 	
-    public Transactions save(Transactions transaction) {
-    	
-    	transaction.setTimestamp(new Date());
-    	transaction = baseTransactionsDaoService.save(transaction);
-    	
-    	String type = transaction.getType();
-    	Map<Long,Long> walletSplits = transaction.getWalletSplits();
-    	
-    	
-		if(type.equalsIgnoreCase("expense")){
-			
-			Expense expense = new Expense((LinkedTreeMap)transaction.getTransactionInfo());
-			expense.setTransactionId(transaction.getId());
-			expenseTransactionsDaoService.save(expense);	
-			
-			// set tags to the transaction
-			List<Long> allTags = expense.getTagId();
-
-			tagsDaoService.assignTagsToExpenseById(allTags, expense.getId());
-
-			// assign wallet splits to the transaction
-			baseWalletsDaoService.assignWalletsForExpenses(walletSplits, expense.getId());
-		}
-		else if(type.equalsIgnoreCase("income")){
-			
-			Income income = new Income((LinkedTreeMap) transaction.getTransactionInfo());
-			income.setTransactionId(transaction.getId());
-			incomeTransactionDaoService.save((income) );
-			baseWalletsDaoService.increaseBalanceById(income.getWalletId(),transaction.getAmount());
-		}
-		else if(type.equalsIgnoreCase("transfer")) {
-			
-			Transfer transfer = new Transfer((LinkedTreeMap) transaction.getTransactionInfo());
-			transfer.setTimestamp(transaction.getTimestamp());
-			transfer.setTransactionId(transaction.getId());
-			transferTransactionsDaoService.save(transfer);
-			
-			Long walletFrom = transfer.getWalletFrom();
-			Long walletTo = transfer.getWalletTo();
-
-			baseWalletsDaoService.reduceBalanceById(walletFrom,transaction.getAmount());
-			baseWalletsDaoService.increaseBalanceById(walletTo,transaction.getAmount());
-			
-			
-		}
-		
-    	
-    	return transaction;
-    }
-
 	public  Map<String, List<Transactions>> findAll(Map<String, String> queryParams){
 		
-		Map<String, List<Transactions>> allTransactions =  baseTransactionsDaoService.findAllExpenseBySpendRange(queryParams);
+		Map<String, List<Transactions>> allTransactions = null;
 		
-		if(queryParams.get("type").equals("expenses")) {
-			allTransactions =  baseTransactionsDaoService.findAllExpenseBySpendRange(queryParams);
-		}else {
+		if(queryParams.get("page")!=null) {
+			allTransactions = baseTransactionsDaoService.findAllExpenseByCount(queryParams);
+		}else if(queryParams.get("from")!=null) {
+			allTransactions = baseTransactionsDaoService.findAllExpenseBySpendRange(queryParams);
+		}else{
 			allTransactions =  baseTransactionsDaoService.findAll(queryParams);
 		}
+
 
 		 
 		for(Map.Entry<String,List<Transactions>> e: allTransactions.entrySet()) {
@@ -130,16 +83,60 @@ public class TransactionsService {
 			 allTransactions.put(e.getKey(),completeTransaction);
 		 }
 
-		System.out.println();
-		System.out.println();
-		System.out.println(allTransactions);
-		System.out.println();
-		System.out.println();
 		 return allTransactions;
 		 
 
 	}
 
+	 public Transactions save(Transactions transaction) {
+	    	
+    	transaction.setTimestamp(new Date());
+    	transaction = baseTransactionsDaoService.save(transaction);
+    	
+    	String type = transaction.getType();
+    	Map<Long,Long> walletSplits = transaction.getWalletSplits();
+    	
+    	
+    	if(type.equalsIgnoreCase("expense")){
+			
+			Expense expense = new Expense( ((LinkedTreeMap)transaction.getTransactionInfo()) );
+			expense.setTransactionId(transaction.getId());
+			expenseTransactionsDaoService.save(expense);	
+			
+			// set tags to the transaction
+			List<Long> allTags = expense.getTagId();
+
+			tagsDaoService.assignTagsToExpenseById(allTags, expense.getId());
+
+			// assign wallet splits to the transaction
+			baseWalletsDaoService.assignWalletsForExpenses(walletSplits, expense.getId());
+		}else if(type.equalsIgnoreCase("income")){
+			
+			Income income = new Income( ((LinkedTreeMap) transaction.getTransactionInfo()) );
+			income.setTransactionId(transaction.getId());
+			incomeTransactionDaoService.save((income) );
+			baseWalletsDaoService.increaseBalanceById(income.getWalletId(),transaction.getAmount());
+		}else if(type.equalsIgnoreCase("transfer")) {
+			
+			Transfer transfer = new Transfer( ((LinkedTreeMap) transaction.getTransactionInfo()));
+			transfer.setTimestamp(transaction.getTimestamp());
+			transfer.setTransactionId(transaction.getId());
+			transferTransactionsDaoService.save(transfer);
+			
+			Long walletFrom = transfer.getWalletFrom();
+			Long walletTo = transfer.getWalletTo();
+
+			baseWalletsDaoService.reduceBalanceById(walletFrom,transaction.getAmount());
+			baseWalletsDaoService.increaseBalanceById(walletTo,transaction.getAmount());
+			
+			
+		}
+
+		
+    	
+    	return transaction;
+	    }
+	 
 	public Transactions findById(Long transactionId) {
 		
 		Transactions transaction = baseTransactionsDaoService.findById(transactionId);	
