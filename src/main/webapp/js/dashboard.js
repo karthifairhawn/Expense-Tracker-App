@@ -10,6 +10,7 @@ var currTimeSpan = 'Recent';
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
+let isMonthlyViewOverriden = false; 
 $('.nav-item[tabs=dashboard]').addClass('active')
 
 
@@ -35,6 +36,8 @@ async function refreshDashboard(){
     var formSelectedTags = [];  
     let totalWalletSplits = 1;
     let usingNewCategory = false;
+    
+
     let expenseFormUtil = {
         
         listWalletsInForm : async function listWalletsInForm(){
@@ -305,63 +308,60 @@ async function refreshDashboard(){
         let pageSize = 15;
         $(dateRangeContainer).html('');
         dateRangeContainer.appendChild(clone);  
+
+        // Hide monthly view section by default
+        $('.monthly-view').hide();
+
         
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
+        let daysExpenseCount = 0
+        let calendarMounted = false;
 
         initiateDateSelectorPlugin();
         updateHeader();
+        
+
 
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
-        async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer){ 
+        async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer){   
 
             // Clearing up old expense section data
             listingExpenseDate = null;
             daysTotalExpense = 0;
             let rangeExpense = 0;
             let expenseData = null;
+            $('#expense-card-container').show();
+            $('.timespan').text(timeSpan)
+
+
 
             // Find all expense info from selected date range
             if(timeSpan!='Recent'){
                 $("#expense-card-container").html("");
                 await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{
                     expenseData = data
-                    console.log(expenseData);
                     if(expenseData.data.expenses.length == 0) zeroExpensesHandler();
                 });
-            }else{
-                if(refreshExpenseContainer==true){
-                    $("#expense-card-container").html("");
-                }
-                await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
-            }0
-            let expenses = expenseData.data.expenses;
-
-            for(let i=0; i<expenses.length; i++){ 
-                
-                // Find all wallets (search in already fetched wallets if not found get from server)
-                let wallets = new Array();
-                for (const [key, value] of Object.entries(expenses[i].walletSplits)){
-                    let searched = null;
-                    searched = (userWalletsMap[key])
-                    if(searched!=null){
-                        wallets.push({data:searched});
-                    }else{
-                        await findWalletById(`${key}`).then((resp)=> wallets.push(resp.data));
-                    }
-                }
-                
-                // Find Category info
-                let categoryInfo = {};
-                (expenses[i].transactionInfo.categoryId==0) ? categoryInfo.name='General Expense' : categoryInfo= userCategoriesMap[expenses[i].transactionInfo.categoryId];
-                
-                // Add expense amount to currentRangeTotal and Populate
-                rangeExpense+=expenses[i].amount;
-                populateExpense(wallets,expenses[i],categoryInfo);
-
             }
 
-            $('#expense-card-container').find('#espinner').remove();
+            // Mount Expense Container Section for non month view
+            if(timeSpan!='Monthly')  unmountCalendar();
+
+            // Change layout according to view selected
+            if(timeSpan=='Recent'){
+                if(refreshExpenseContainer==true) $("#expense-card-container").html(""); // Remove old expense data
+                await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
+            }else if(timeSpan=='Monthly'){
+                if(!isMonthlyViewOverriden){
+                    monthlyViewOverride();
+                    isMonthlyViewOverriden = true;
+                    $('#mycalendar').monthly({});
+                }
+                $('#expense-card-container').hide(); // Hide normal card view container
+                mountCalendar();
+            }
+
 
             // Add loading indicator at end of container
             if(refreshExpenseContainer==false && expenses.length==15){
@@ -379,21 +379,38 @@ async function refreshDashboard(){
                 
                     if(scrollPercent > 90) {
                         $('#expense-card-container').off();
-                        doSomething();
-                    }
-                
-                    function doSomething() { 
                         pageNumber++;
                         setTimeout( ()=>findAllExpenseDetails(null,null,'expenses',false),1500 )
                     }
                 
                 });
-            }else{
-                $('#expense-card-container').find('#espinner').remove();
+            }else $('#expense-card-container').find('#espinner').remove();
+
+
+            let expenses = expenseData.data.expenses;
+            for(let i=0; i<expenses.length; i++){ 
+                
+                // Find all wallets (search in already fetched wallets if not found get from server)
+                let wallets = new Array();
+                for (const [key, value] of Object.entries(expenses[i].walletSplits)){
+                    let searched = null;
+                    searched = (userWalletsMap[key])
+                    if(searched!=null) wallets.push({data:searched});
+                    else                await findWalletById(`${key}`).then((resp)=> wallets.push(resp.data));
+                }
+                
+                // Find Category info
+                let categoryInfo = {};
+                (expenses[i].transactionInfo.categoryId==0) ? categoryInfo.name='General Expense' : categoryInfo= userCategoriesMap[expenses[i].transactionInfo.categoryId];
+                
+                // Add expense amount to currentRangeTotal and Populate
+                rangeExpense+=expenses[i].amount;
+                populateExpense(wallets,expenses[i],categoryInfo);
+
             }
 
-        }
 
+        }
 
         // Fetch Wallet Split and tag info then populateExpense [Trigger = findAllExpenseDetails()]
         async function populateExpense(walletInfo,expense,categoryInfo){
@@ -415,12 +432,15 @@ async function refreshDashboard(){
 
             // Grouping multiple days expense with dates and calculating per days's expense 
             if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
+                daysExpenseCount = 1;
                 daysTotalExpense = expense.amount;
                 newDateSection(expense.transactionInfo.spendOn.split(" ")[0]); 
                 listingExpenseDate = expense.transactionInfo.spendOn.split(" ")[0];
             }else{
+                daysExpenseCount+=1;
                 daysTotalExpense+=expense.amount;
-                $('#days-expense'+listingExpenseDate).text(daysTotalExpense); 
+                $('.days-expense'+listingExpenseDate).text(util.moneyFormat(daysTotalExpense)); 
+                $('.dtb'+listingExpenseDate).find('.expenses-count').text(daysExpenseCount); 
             }
 
             expenseContainer.appendChild(expenseTemplateClone);
@@ -464,27 +484,35 @@ async function refreshDashboard(){
             let walletType = walletInfo.length > 1 ? 'Multiple Wallet Split' : walletInfo[0]?.data?.type ;
 
 
+            // Populate info into card
             let color = '#'+colorOne[expense.id%9];
             let colorTw = '#'+colorTwo[expense.id%9];
-            $(currentElement).find('.card-body').css('background-color',colorTw);
-            $(currentElement).find('.category-ico').css('background-color','#43cead');
-            $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
+
+            // Populating information to the card
             $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
-            $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
             $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
             $(currentElement).find(".timestamp").text(expense.timestamp);
             $(currentElement).find(".category").text(categoryInfo.name);
-            $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
-            $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
             $(currentElement).find(".wallet-name").html(walletName);
             $(currentElement).find(".wallet-type").text(walletType);
             $(currentElement).find(".spend-on").text(fullExpenseTime);
             $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
+
+
+            // Setting dynamic attributes
+            $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
             $(currentElement).find(".edit-expense-btn").attr('expense-id',expense.id);
             $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
+
+            // Adding Dynamic Styling
+            $(currentElement).find('.card-body').css('background-color',colorTw);
+            $(currentElement).find('.category-ico').css('background-color','#43cead');
+            $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
+            $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
+            $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
 
 
             // Detection of isDeleted Wallets Expense
@@ -519,6 +547,7 @@ async function refreshDashboard(){
                 $(currentElement).find('.expense-edit-btn').click();
             });
 
+            // Populating Tags
             let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
             let allTagsSection = $(currentElement).find('.all-tags-section');
             let modelAllTagsSection = $(currentElement).find('.all-tags-msection');
@@ -549,23 +578,32 @@ async function refreshDashboard(){
             }
             )
             
+
+
             function newDateSection(newDate){
                 let dateSection = document.createElement("div");
+
+                // Monthly view calendar update
+                let calander = $('.dt'+newDate);
+                let calendarBoxContent = $('<div class="calendar-dtb dtb'+newDate+'"></div>');
+                $(calendarBoxContent).append('<span> <span class="expenses-count">1 </span> Expenses</span>'); // Expense Count will be updated by newDateSection() in populateExpense();
+                $(calendarBoxContent).append('<h4 class="dte-amount days-expense'+newDate+'">'+util.moneyFormat(daysTotalExpense)+'</h4>');
+                $(calander).find('.monthly-indicator-wrap').html(calendarBoxContent);
 
                 let date = newDate.split("-").reverse();
                 date[1] = months[date[1]-1];
                 date = date.join(' ')
 
-                let daysExpenseTemplate = "<span id='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
+                let daysExpenseTemplate = "<span class='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
                 dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: ₹'+ daysExpenseTemplate;
                 dateSection.style.color = '#385170';
                 expenseContainer.appendChild(dateSection);
+
             }
 
             function formatExpenseTime(expenseTime,groupBy){
                 let timeOnly = expenseTime.split(" ")[1].split(":");
                 return (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
-
             }
 
         }     
@@ -586,7 +624,7 @@ async function refreshDashboard(){
                     expenseTo = end.format('YYYYMMDD').split('-').join('');
                 }
 
-                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true);
+                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true); // true = refreshExpenseContainer
 
                 $('#date-range-type').html(timeSpan);
                 currTimeSpan = timeSpan;
@@ -596,8 +634,7 @@ async function refreshDashboard(){
                 'Recent' : [moment(),moment()], // "Works based on count the keys has no usage",
                 'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                'Monthly': [moment().startOf('month'), moment().endOf('month')],
             };
 
             let start = allDateRanges['Recent'][0];
@@ -631,6 +668,527 @@ async function refreshDashboard(){
             $('.reporting-days-total').text(rangeExpense);
             $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
             $('.main-balance .timespan').text("("+"This Month"+")");
+        }
+
+
+        function mountCalendar() {
+            $('.monthly-view').show();
+            calendarMounted = true;
+        }
+
+        function unmountCalendar() {
+            $('.monthly-view').hide();
+            calendarMounted = false;
+        }
+
+        function calendarMonthExpensesChange(month,year){
+            let start = year+""+month+"01";
+            let end = year+""+month+(32 - new Date(year, month-1, 32).getDate());
+            
+            findAllExpenseDetails(start, end,'Monthly',true);
+        }
+
+        function monthlyViewOverride() {
+
+            (function ($) {
+                "use strict";
+                $.fn.extend({
+                    monthly: function(customOptions) {
+
+                        // These are overridden by options declared in footer
+                        var defaults = {
+                            dataType: "xml",
+                            disablePast: false,
+                            eventList: true,
+                            events: "",
+                            jsonUrl: "",
+                            linkCalendarToEventUrl: false,
+                            maxWidth: false,
+                            mode: "event",
+                            setWidth: false,
+                            showTrigger: "",
+                            startHidden: false,
+                            stylePast: false,
+                            target: "",
+                            useIsoDateFormat: false,
+                            weekStart: 0,	// Sunday
+                            xmlUrl: ""
+                        };
+
+                        var	options = $.extend(defaults, customOptions),
+                            uniqueId = $(this).attr("id"),
+                            parent = "#" + uniqueId,
+                            currentDate = new Date(),
+                            currentMonth = currentDate.getMonth() + 1,
+                            currentYear = currentDate.getFullYear(),
+                            currentDay = currentDate.getDate(),
+                            locale = (options.locale || defaultLocale()).toLowerCase(),
+                            monthNameFormat = options.monthNameFormat || "short",
+                            weekdayNameFormat = options.weekdayNameFormat || "short",
+                            monthNames = options.monthNames || defaultMonthNames(),
+                            dayNames = options.dayNames || defaultDayNames(),
+                            markupBlankDay = '<div class="m-d monthly-day-blank"><div class="monthly-day-number"></div></div>',
+                            weekStartsOnMonday = options.weekStart === "Mon" || options.weekStart === 1 || options.weekStart === "1",
+                            primaryLanguageCode = locale.substring(0, 2).toLowerCase();
+
+                    if (options.maxWidth !== false) {
+                        $(parent).css("maxWidth", options.maxWidth);
+                    }
+                    if (options.setWidth !== false) {
+                        $(parent).css("width", options.setWidth);
+                    }
+
+                    if (options.startHidden) {
+                        $(parent).addClass("monthly-pop").css({
+                            display: "none",
+                            position: "absolute"
+                        });
+                        $(document).on("focus", String(options.showTrigger), function (event) {
+                            $(parent).show();
+                            event.preventDefault();
+                        });
+                        $(document).on("click", String(options.showTrigger) + ", .monthly-pop", function (event) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                        });
+                        $(document).on("click", function () {
+                            $(parent).hide();
+                        });
+                    }
+
+                    // Add Day Of Week Titles
+                    _appendDayNames(weekStartsOnMonday);
+
+                    // Add CSS classes for the primary language and the locale. This allows for CSS-driven
+                    // overrides of the language-specific header buttons. Lowercased because locale codes
+                    // are case-insensitive but CSS is not.
+                    $(parent).addClass("monthly-locale-" + primaryLanguageCode + " monthly-locale-" + locale);
+
+                    // Add Header & event list markup
+                    $(parent).prepend('<div class="monthly-header"><div class="monthly-header-title"><a href="#" class="monthly-header-title-date" onclick="return false"></a></div><a href="#" class="monthly-prev"></a><a href="#" class="monthly-next"></a></div>').append('<div class="monthly-event-list"></div>');
+
+                    // Set the calendar the first time
+                    setMonthly(currentMonth, currentYear);
+
+                    // How many days are in this month?
+                    function daysInMonth(month, year) {
+                        return month === 2 ? (year & 3) || (!(year % 25) && year & 15) ? 28 : 29 : 30 + (month + (month >> 3) & 1);
+                    }
+
+                    // Build the month
+                    function setMonthly(month, year) {
+                        
+
+                        calendarMonthExpensesChange(month, year);
+                        $(parent).data("setMonth", month).data("setYear", year);
+
+                        // Get number of days
+                        var index = 0,
+                            dayQty = daysInMonth(month, year),
+                            // Get day of the week the first day is
+                            mZeroed = month - 1,
+                            firstDay = new Date(year, mZeroed, 1, 0, 0, 0, 0).getDay(),
+                            settingCurrentMonth = month === currentMonth && year === currentYear;
+
+                        // Remove old days
+                        $(parent + " .monthly-day, " + parent + " .monthly-day-blank").remove();
+                        $(parent + " .monthly-event-list, " + parent + " .monthly-day-wrap").empty();
+                        // Print out the days
+                        for(var dayNumber = 1; dayNumber <= dayQty; dayNumber++) {
+                            // Check if it's a day in the past
+                            var isInPast = options.stylePast && (
+                                year < currentYear
+                                || (year === currentYear && (
+                                    month < currentMonth
+                                    || (month === currentMonth && dayNumber < currentDay)
+                                ))),
+                                innerMarkup = '<div class="monthly-day-number">' + (dayNumber) + '</div><div class="monthly-indicator-wrap"></div>';
+                            if(options.mode === "event") {
+                                var thisDate = new Date(year, mZeroed, dayNumber, 0, 0, 0, 0);
+                                $(parent + " .monthly-day-wrap").append("<div"
+                                    + attr("class", "m-d monthly-day monthly-day-event"
+                                        + (isInPast ? " monthly-past-day" : "")
+                                        // + " dt" + year+"-"+mZeroed+"-"+dayNumber
+                                        + " dt" + thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate())
+                                        )
+                                    + attr("data-number", dayNumber)
+                                    + ">" + innerMarkup + "</div>");
+                            } else {
+                                $(parent + " .monthly-day-wrap").append("<a"
+                                    + attr("href", "#")
+                                    + attr("class", "m-d monthly-day monthly-day-pick" + (isInPast ? " monthly-past-day" : ""))
+                                    + attr("data-number", dayNumber)
+                                    + ">" + innerMarkup + "</a>");
+                            }
+                        }
+
+                        if (settingCurrentMonth) {
+                            $(parent + ' *[data-number="' + currentDay + '"]').addClass("monthly-today");
+                        }
+
+                        // Reset button
+                        $(parent + " .monthly-header-title").html('<a href="#" class="monthly-header-title-date" onclick="return false">' + monthNames[month - 1] + " " + year + "</a>" + (settingCurrentMonth && $(parent + " .monthly-event-list").hide() ? "" : '<a href="#" class="monthly-reset"></a>'));
+
+                        // Account for empty days at start
+                        if(weekStartsOnMonday) {
+                            if (firstDay === 0) {
+                                _prependBlankDays(6);
+                            } else if (firstDay !== 1) {
+                                _prependBlankDays(firstDay - 1);
+                            }
+                        } else if(firstDay !== 7) {
+                            _prependBlankDays(firstDay);
+                        }
+
+                        // Account for empty days at end
+                        var numdays = $(parent + " .monthly-day").length,
+                            numempty = $(parent + " .monthly-day-blank").length,
+                            totaldays = numdays + numempty,
+                            roundup = Math.ceil(totaldays / 7) * 7,
+                            daysdiff = roundup - totaldays;
+                        if(totaldays % 7 !== 0) {
+                            for(index = 0; index < daysdiff; index++) {
+                                $(parent + " .monthly-day-wrap").append(markupBlankDay);
+                            }
+                        }
+
+                        // Events
+                        if (options.mode === "event") {
+                            addEvents(month, year);
+                        }
+                        var divs = $(parent + " .m-d");
+                        for(index = 0; index < divs.length; index += 7) {
+                            divs.slice(index, index + 7).wrapAll('<div class="monthly-week"></div>');
+                        }
+                    }
+
+                    function addEvent(event, setMonth, setYear) {
+                        // Year [0]   Month [1]   Day [2]
+                        var fullStartDate = _getEventDetail(event, "startdate"),
+                            fullEndDate = _getEventDetail(event, "enddate"),
+                            startArr = fullStartDate.split("-"),
+                            startYear = parseInt(startArr[0], 10),
+                            startMonth = parseInt(startArr[1], 10),
+                            startDay = parseInt(startArr[2], 10),
+                            startDayNumber = startDay,
+                            endDayNumber = startDay,
+                            showEventTitleOnDay = startDay,
+                            startsThisMonth = startMonth === setMonth && startYear === setYear,
+                            happensThisMonth = startsThisMonth;
+
+                        if(fullEndDate) {
+                            // If event has an end date, determine if the range overlaps this month
+                            var	endArr = fullEndDate.split("-"),
+                                endYear = parseInt(endArr[0], 10),
+                                endMonth = parseInt(endArr[1], 10),
+                                endDay = parseInt(endArr[2], 10),
+                                startsInPastMonth = startYear < setYear || (startMonth < setMonth && startYear === setYear),
+                                endsThisMonth = endMonth === setMonth && endYear === setYear,
+                                endsInFutureMonth = endYear > setYear || (endMonth > setMonth && endYear === setYear);
+                            if(startsThisMonth || endsThisMonth || (startsInPastMonth && endsInFutureMonth)) {
+                                happensThisMonth = true;
+                                startDayNumber = startsThisMonth ? startDay : 1;
+                                endDayNumber = endsThisMonth ? endDay : daysInMonth(setMonth, setYear);
+                                showEventTitleOnDay = startsThisMonth ? startDayNumber : 1;
+                            }
+                        }
+                        if(!happensThisMonth) {
+                            return;
+                        }
+
+                        var startTime = _getEventDetail(event, "starttime"),
+                            timeHtml = "",
+                            eventURL = _getEventDetail(event, "url"),
+                            eventTitle = _getEventDetail(event, "name"),
+                            eventClass = _getEventDetail(event, "class"),
+                            eventColor = _getEventDetail(event, "color"),
+                            eventId = _getEventDetail(event, "id"),
+                            customClass = eventClass ? " " + eventClass : "",
+                            dayStartTag = "<div",
+                            dayEndTags = "</span></div>";
+
+                        if(startTime) {
+                            var endTime = _getEventDetail(event, "endtime");
+                            timeHtml = '<div><div class="monthly-list-time-start">' + formatTime(startTime) + "</div>"
+                                + (endTime ? '<div class="monthly-list-time-end">' + formatTime(endTime) + "</div>" : "")
+                                + "</div>";
+                        }
+
+                        if(options.linkCalendarToEventUrl && eventURL) {
+                            dayStartTag = "<a" + attr("href", eventURL);
+                            dayEndTags = "</span></a>";
+                        }
+
+                        var	markupDayStart = dayStartTag
+                                + attr("data-eventid", eventId)
+                                + attr("title", eventTitle)
+                                // BG and FG colors must match for left box shadow to create seamless link between dates
+                                + (eventColor ? attr("style", "background:" + eventColor + ";color:" + eventColor) : ""),
+                            markupListEvent = "<a"
+                                + attr("href", eventURL)
+                                + attr("class", "listed-event" + customClass)
+                                + attr("data-eventid", eventId)
+                                + (eventColor ? attr("style", "background:" + eventColor) : "")
+                                + attr("title", eventTitle)
+                                + ">" + eventTitle + " " + timeHtml + "</a>";
+                        for(var index = startDayNumber; index <= endDayNumber; index++) {
+                            var doShowTitle = index === showEventTitleOnDay;
+                            // Add to calendar view
+                            $(parent + ' *[data-number="' + index + '"] .monthly-indicator-wrap').append(
+                                    markupDayStart
+                                    + attr("class", "monthly-event-indicator" + customClass
+                                        // Include a class marking if this event continues from the previous day
+                                        + (doShowTitle ? "" : " monthly-event-continued")
+                                        )
+                                    + "><span>" + (doShowTitle ? eventTitle : "") + dayEndTags);
+                            // Add to event list
+                            $(parent + ' .monthly-list-item[data-number="' + index + '"]')
+                                .addClass("item-has-event")
+                                .append(markupListEvent);
+                        }
+                    }
+
+                    function addEvents(month, year) {
+                        if(options.events) {
+                            // Prefer local events if provided
+                            addEventsFromString(options.events, month, year);
+                        } else {
+                            var remoteUrl = options.dataType === "xml" ? options.xmlUrl : options.jsonUrl;
+                            if(remoteUrl) {
+                                // Replace variables for month and year to load from dynamic sources
+                                var url = String(remoteUrl).replace("{month}", month).replace("{year}", year);
+                                $.get(url, {now: $.now()}, function(data) {
+                                    addEventsFromString(data, month, year);
+                                }, options.dataType).fail(function() {
+                                    console.error("Monthly.js failed to import " + remoteUrl + ". Please check for the correct path and " + options.dataType + " syntax.");
+                                });
+                            }
+                        }
+                    }
+
+                    function addEventsFromString(events, setMonth, setYear) {
+                        if (options.dataType === "xml") {
+                            $(events).find("event").each(function(index, event) {
+                                addEvent(event, setMonth, setYear);
+                            });
+                        } else if (options.dataType === "json") {
+                            $.each(events.monthly, function(index, event) {
+                                addEvent(event, setMonth, setYear);
+                            });
+                        }
+                    }
+
+                    function attr(name, value) {
+                        var parseValue = String(value);
+                        var newValue = "";
+                        for(var index = 0; index < parseValue.length; index++) {
+                            switch(parseValue[index]) {
+                                case "'": newValue += "&#39;"; break;
+                                case "\"": newValue += "&quot;"; break;
+                                case "<": newValue += "&lt;"; break;
+                                case ">": newValue += "&gt;"; break;
+                                default: newValue += parseValue[index];
+                            }
+                        }
+                        return " " + name + "=\"" + newValue + "\"";
+                    }
+
+                    function _appendDayNames(startOnMonday) {
+                        var offset = startOnMonday ? 1 : 0,
+                            dayName = "",
+                            dayIndex = 0;
+                        for(dayIndex = 0; dayIndex < 6; dayIndex++) {
+                            dayName += "<div>" + dayNames[dayIndex + offset] + "</div>";
+                        }
+                        dayName += "<div>" + dayNames[startOnMonday ? 0 : 6] + "</div>";
+                        $(parent).append('<div class="monthly-day-title-wrap">' + dayName + '</div><div class="monthly-day-wrap"></div>');
+                    }
+
+                    // Detect the user's preferred language
+                    function defaultLocale() {
+                        if(navigator.languages && navigator.languages.length) {
+                            return navigator.languages[0];
+                        }
+                        return navigator.language || navigator.browserLanguage;
+                    }
+
+                    // Use the user's locale if possible to obtain a list of short month names, falling back on English
+                    function defaultMonthNames() {
+                        if(typeof Intl === "undefined") {
+                            return ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                        }
+                        var formatter = new Intl.DateTimeFormat(locale, {month: monthNameFormat});
+                        var names = [];
+                        for(var monthIndex = 0; monthIndex < 12; monthIndex++) {
+                            var sampleDate = new Date(2017, monthIndex, 1, 0, 0, 0);
+                            names[monthIndex] = formatter.format(sampleDate);
+                        }
+                        return names;
+                    }
+
+                    function formatDate(year, month, day) {
+                        if(options.useIsoDateFormat) {
+                            return new Date(year, month - 1, day, 0, 0, 0).toISOString().substring(0, 10);
+                        }
+                        if(typeof Intl === "undefined") {
+                            return month + "/" + day + "/" + year;
+                        }
+                        return new Intl.DateTimeFormat(locale).format(new Date(year, month - 1, day, 0, 0, 0));
+                    }
+
+                    // Use the user's locale if possible to obtain a list of short weekday names, falling back on English
+                    function defaultDayNames() {
+                        if(typeof Intl === "undefined") {
+                            return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                        }
+                        var formatter = new Intl.DateTimeFormat(locale, {weekday: weekdayNameFormat}),
+                            names = [],
+                            dayIndex = 0,
+                            sampleDate = null;
+                        for(dayIndex = 0; dayIndex < 7; dayIndex++) {
+                            // 2017 starts on a Sunday, so use it to capture the locale's weekday names
+                            sampleDate = new Date(2017, 0, dayIndex + 1, 0, 0, 0);
+                            names[dayIndex] = formatter.format(sampleDate);
+                        }
+                        return names;
+                    }
+
+                    function _prependBlankDays(count) {
+                        var wrapperEl = $(parent + " .monthly-day-wrap"),
+                            index = 0;
+                        for(index = 0; index < count; index++) {
+                            wrapperEl.prepend(markupBlankDay);
+                        }
+                    }
+
+                    function _getEventDetail(event, nodeName) {
+                        return options.dataType === "xml" ? $(event).find(nodeName).text() : event[nodeName];
+                    }
+
+                    // Returns a 12-hour format hour/minute with period. Opportunity for future localization.
+                    function formatTime(value) {
+                        var timeSplit = value.split(":");
+                        var hour = parseInt(timeSplit[0], 10);
+                        var period = "AM";
+                        if(hour > 12) {
+                            hour -= 12;
+                            period = "PM";
+                        } else if (hour == 12) {
+                            period = "PM";
+                        } else if(hour === 0) {
+                            hour = 12;
+                        }
+                        return hour + ":" + String(timeSplit[1]) + " " + period;
+                    }
+
+                    function setNextMonth() {
+                        var	setMonth = $(parent).data("setMonth"),
+                            setYear = $(parent).data("setYear"),
+                            newMonth = setMonth === 12 ? 1 : setMonth + 1,
+                            newYear = setMonth === 12 ? setYear + 1 : setYear;
+                        setMonthly(newMonth, newYear);
+                        viewToggleButton();
+                    }
+
+                    function setPreviousMonth() {
+                        var setMonth = $(parent).data("setMonth"),
+                            setYear = $(parent).data("setYear"),
+                            newMonth = setMonth === 1 ? 12 : setMonth - 1,
+                            newYear = setMonth === 1 ? setYear - 1 : setYear;
+                        setMonthly(newMonth, newYear);
+                        viewToggleButton();
+                    }
+
+                    // Function to go back to the month view
+                    function viewToggleButton() {
+                        if($(parent + " .monthly-event-list").is(":visible")) {
+                            $(parent + " .monthly-cal").remove();   
+                            $(parent + " .monthly-header-title").prepend('<a href="#" class="monthly-cal"></a>');
+                        }
+                        // $(".monthly-event-list").html("");
+                    }
+
+                    // Advance months
+                    $(document.body).on("click", parent + " .monthly-next", function (event) {
+                        $('.monthly-event-list').css('display', 'none');
+                        setNextMonth();
+                        event.preventDefault();
+                    });
+
+                    // Go back in months
+                    $(document.body).on("click", parent + " .monthly-prev", function (event) {
+                        $('.monthly-event-list').css('display', 'none');
+                        setPreviousMonth();
+                        event.preventDefault();
+                    });
+
+                    // Reset Month
+                    $(document.body).on("click", parent + " .monthly-reset", function (event) {
+                        $(this).remove();
+                        setMonthly(currentMonth, currentYear);
+                        viewToggleButton();
+                        event.preventDefault();
+                        event.stopPropagation();
+                    });
+
+                    // Back to month view
+                    $(document.body).on("click", parent + " .monthly-cal", function (event) {
+                        $(this).remove();
+                        $(parent + " .monthly-event-list").css("transform", "scale(0)");
+                        setTimeout(function() {
+                            $(parent + " .monthly-event-list").hide();
+                        }, 250);
+                        event.preventDefault();
+                    });
+
+                    // Click A Day
+                    $(document.body).on("click touchstart", parent + " .monthly-day", function (event) {
+                        // If events, show events list
+                        var whichDay = $(this).data("number");
+                        if(options.mode === "event" && options.eventList) {
+                            var	theList = $(parent + " .monthly-event-list");
+                            theList.show();
+                            theList.css("transform");
+                            theList.css("transform", "scale(1)");
+                            $(parent + ' .monthly-list-item[data-number="' + whichDay + '"]').show();
+                            
+                            viewToggleButton();
+                            if(!options.linkCalendarToEventUrl) {
+                                event.preventDefault();
+                            }
+                        // If picker, pick date
+                        } else if (options.mode === "picker") {
+                            var	setMonth = $(parent).data("setMonth"),
+                                setYear = $(parent).data("setYear");
+                            // Should days in the past be disabled?
+                            if($(this).hasClass("monthly-past-day") && options.disablePast) {
+                                // If so, don't do anything.
+                                event.preventDefault();
+                            } else {
+                                // Otherwise, select the date ...
+                                $(String(options.target)).val(formatDate(setYear, setMonth, whichDay));
+                                // ... and then hide the calendar if it started that way
+                                if(options.startHidden) {
+                                    $(parent).hide();
+                                }
+                            }
+                            event.preventDefault();
+                        }
+                    });
+
+                    // Clicking an event within the list
+                    $(document.body).on("click", parent + " .listed-event", function (event) {
+                        var href = $(this).attr("href");
+                        // If there isn't a link, don't go anywhere
+                        if(!href) {
+                            event.preventDefault();
+                        }
+                    });
+
+                }
+                });
+            }(jQuery));
+
         }
 
     }  
