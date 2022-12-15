@@ -143,12 +143,11 @@ public class WalletsService {
 		Wallets wallet = baseWalletsDaoService.findById(walletId);
 		String walletType = wallet.getType();
 		
-		
-//
-//		if(walletType.equals("Bank Account")) 			bankWalletsDaoService.deleteById(walletId);
-//		else if(walletType.equals("Credit Card")) 		creditCardWalletsDaoService.deleteById(walletId);
-//		else if(walletType.equals("Bonus Account")) 	bonusWalletsDaoService.deleteById(walletId);
-//		else if(walletType.equals("Other")) 			otherWalletsDaoService.deleteById(walletId);
+	
+		if(walletType.equals("Bank Account")) 			bankWalletsDaoService.deleteById(walletId);
+		else if(walletType.equals("Credit Card")) 		creditCardWalletsDaoService.deleteById(walletId);
+		else if(walletType.equals("Bonus Account")) 	bonusWalletsDaoService.deleteById(walletId);
+		else if(walletType.equals("Other")) 			otherWalletsDaoService.deleteById(walletId);
 	
 		baseWalletsDaoService.deleteById(walletId);
 	}

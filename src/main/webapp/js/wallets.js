@@ -228,6 +228,7 @@ async function mountWallets(){
 
         let allWallets = userCardWallets;
         let totalCardExpense = 0; 
+        let cardSymbols = ['fa-circle-notch','fa-shapes','fa-yin-yang','fa-tablets','fa-spa','fa-ribbon','fa-paw','fa-life-ring','fa-infinity','fa-futbol','fa-feather'];
 
         for(let i = 0; i < allWallets.length; i++){
 
@@ -237,7 +238,7 @@ async function mountWallets(){
             let wallet = allWallets[i];            
             await walletService.findWalletById(allWallets[i].id).then((data) =>{ userWalletFull.push(data.data); subInfo = data.data.walletInfo; })
 
-            let creditCardUsagePercent = ((subInfo.limit- wallet.balance) / subInfo.limit) * 100;
+            let creditCardUsagePercent = ((subInfo.limit - wallet.balance) / subInfo.limit) * 100;
 
             const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             const d = new Date();
@@ -248,7 +249,7 @@ async function mountWallets(){
                 name = month[(d.getMonth()+1)%12];
             }
             let diffDays = '';
-            diffDays= name+" "+subInfo.repayDate;
+            diffDays= subInfo.repayDate +", "+name;
             if(d.getDate() == parseInt(subInfo.repayDate)) diffDays = 'Today'
             console.log(d.getDate()+" "+parseInt(subInfo.repayDate))
 
@@ -262,14 +263,16 @@ async function mountWallets(){
             $(walletCardClone).find('.credit-card').attr('data-bs-target','#walletInfoModal'+wallet.id);
             $(walletCardClone).find('#walletInfoModal').attr('id','walletInfoModal'+wallet.id);
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
-            $(walletCardClone).find('.card-limit').text(subInfo.limit)
+            $(walletCardClone).find('.card-limit').text( util.moneyFormat(subInfo.limit))
             $(walletCardClone).find('.pay-bill-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.pay-bill-btn').attr('payment', (subInfo.limit- wallet.balance));
             $(walletCardClone).find('.days-left').text(diffDays);
             $(walletCardClone).find('.due-date').text(subInfo.repayDate);
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent.toFixed(2));
+            $(walletCardClone).find('.card-symbol .fas').addClass(cardSymbols[wallet.id%9])
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             if(creditCardUsagePercent>100){ $(walletCardClone).find('.overdraft-warning').css('display', 'block'); }
+            
 
             $(walletCardClone).find('.edit-wallet-btn').attr('type',wallet.type);
             $(walletCardClone).find('.edit-wallet-btn').click((event)=> { 

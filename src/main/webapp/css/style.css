@@ -162,7 +162,7 @@ html, body{
 
 .expense-card-left{
     padding: 0px 10px;
-    width: 150px;
+    width: 300px;
 }
 
 .expense-view-btn{
@@ -178,6 +178,26 @@ html, body{
     /* background-color: #66a2f7 !important; */
 }
 
+.wallet-name .muted{
+    opacity: 0.5;
+}
+
+.wallet-name-section .add-wallet-bt{
+    position: absolute;
+}
+
+.nr-no-wallet-ind{
+    font-size: 24px;
+    /* width: 100%; */
+    border: 1px solid rgba(95, 95, 95, 0.281);
+    border-radius: 5px;
+}
+
+.nr-no-wallet-ind .fas{
+    color: #f0ad4e;
+    padding: 0px 10px;
+}
+
 .expense-card-wallet{ 
     width: 550px;
 }
@@ -187,8 +207,13 @@ html, body{
     font-size: 20px;
 }
 
+.form-wallet-list, .form-wallet-list option[value="-100"] {
+    font-family: 'Lato', 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
 .bank-name{
-    width: 350px;
+    width: 140px;
 }
 
 .acct-type{
@@ -498,6 +523,7 @@ select {
     color: #ffffff;
     background-color: #313131;
     font-family: 'Montserrat', sans-serif;
+    position: relative;
 
 }
 
@@ -525,13 +551,21 @@ select {
 }
 
 .credit-card:hover{
-    filter: drop-shadow(5px 5px 10px #000);
-    transition: all ease-in-out 100ms;
+    filter: drop-shadow(2px 2px 5px rgb(82, 82, 82));
+    transition: all ease-in-out 200ms;
     cursor: pointer;
 }
 
 .credit-card .amount{
     font-size: 30px;
+}
+
+.card-symbol{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #fff;
+    font-size: 25px;
 }
 
 .credit-cards{
@@ -561,6 +595,7 @@ select {
 	width: 5px;
 	background-color: #F5F5F5;
     height: 3px;
+    display: none;
 }
 
 .credit-cards::-webkit-scrollbar-thumb
@@ -574,6 +609,8 @@ select {
 
 .section-title{
     /* background-color: #9fd3c77c; */
+    font-size: 24px;
+    /* text-transform: ; */
 }
 
 .cards-scroller{
@@ -674,8 +711,6 @@ select {
     background-color: #142d4c;
     color: white;
     font-weight: 600;
-    /* font-weight: 40px !important; */
-    /* font-family: 'Lato', 'Font Awesome 5 Free'; */
 }
 
 
@@ -683,39 +718,31 @@ select {
 
 .wallet-card{
     width: 350px;
-    height: 300px;
-
+    height: 100px;
     color: white;
-
-    background-image: linear-gradient(135deg, #636262 0%, black 100%);
-    
+    background-image: linear-gradient(135deg, #636262 0%, #3d3b43 100%);
     border-radius: 16px;
-     
     border: 1px solid rgba(120, 225, 211, 0.1);
     transition: all ease-in-out 100ms;
     font-family: 'Montserrat', sans-serif;
-
-
 }
 .wallet-card:hover{
     transition: all ease-in-out 100ms;
 }
 .wallet-card .bank-name{
-    font-size: 26px;
+    font-size: 17px;
     text-transform: capitalize;
 }
 
 .wallet-card .modal .bank-name{
-    /* font-size: 0px; */
-    /* text-decoration: underline; */
-
     border-bottom: 1px solid rgba(0, 0, 0, 0.384);
 }
 
 .wallet-card .balance{
-    font-size: 40px;
+    font-size: 20px;
     text-transform: capitalize;
-    margin: 30px 0px;
+    /* margin: 30px 0px; */
+    width: 100%;
 }
 
 .wallet-card .rupee-symbol{
@@ -724,6 +751,14 @@ select {
 
 .wallet-card .modal{
     color: black;
+}
+
+.acct-type-ico{
+    font-size: 30px;
+    margin-right: 10px;
+    background-color: #24232a;
+    padding: 7px 13px;
+    border-radius: 20px;
 }
 
 .wallet-card #open-wallet-btn{
@@ -772,6 +807,7 @@ select {
     padding: 10px 10px;
     font-size: 25px;
     width: 100% ;
+    position: relative;
 }
 
 .category-section .category-ico{

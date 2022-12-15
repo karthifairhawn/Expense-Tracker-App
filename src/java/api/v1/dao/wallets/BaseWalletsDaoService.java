@@ -141,7 +141,7 @@ public class BaseWalletsDaoService {
 		
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
-		String sql = "UPDATE `wallets` SET deleted=1,archive_wallet=1 WHERE `id` = "+walletId+ " and  user_id = "+operatingUser.getId();
+		String sql = "DELETE from `wallets`WHERE `id` = "+walletId+ " and  user_id = "+operatingUser.getId();
 		int rs = dbUtil.executeDeletionionQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account",400,new Date().toLocaleString());
 		
@@ -183,7 +183,6 @@ public class BaseWalletsDaoService {
 		try {
 			String reduceBalanceSql = "update wallets set balance=balance+"+amount+" where id="+walletId;
 			int rowsAffected = dbUtil.executeUpdateQuery(reduceBalanceSql);
-			if(rowsAffected==0) throw new CustomException("Invalid transfer",400,new Date().toLocaleString());
 		}catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomException("Unexpected error occured.",500,new Date().toLocaleString());
@@ -198,6 +197,7 @@ public class BaseWalletsDaoService {
         	try {	
         		Long walletId= entry.getKey();
         		Long amount = entry.getValue();
+
         		
     			String sql = "INSERT INTO `expense_split`(`wallet_id`, `expense_id`,`amount`) VALUES ('"+walletId+"','"+expenseId+"','"+amount+"')";
     			ResultSet rs = dbUtil.executeInsertionQuery(sql);
@@ -205,7 +205,7 @@ public class BaseWalletsDaoService {
     			
     			String reduceBalanceSql = "update wallets set balance=balance-"+amount+" where id="+walletId+" and user_id="+operatingUser.getId();
     			int rowsAffected = dbUtil.executeUpdateQuery(reduceBalanceSql);
-    			if(rowsAffected==0) throw new CustomException("Invalid wallet id",400,new Date().toLocaleString());
+    			if(rowsAffected==0 && walletId!=-100) throw new CustomException("Invalid wallet id",400,new Date().toLocaleString());
     			
     		} catch (Exception e) {
     			throw new CustomException("Creation of some wallets assigning for the expense transaction failed",400,new Date().toLocaleString());

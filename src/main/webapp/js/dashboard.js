@@ -40,17 +40,22 @@ async function refreshDashboard(){
         listWalletsInForm : async function listWalletsInForm(){
 
             let allOptions = '';
+           
+            
             if(userWallets.length==0){
-                $('#newRecord .modal-body').html('<div class="h3">Please add wallet to create expense.<div> <br> <a href="wallets.html" class="btn btn-primary">Create Wallet</a>')
-                return false;
+                $('#split-wallet').remove();
+                // $('.wallet-name-section').html('<span class="nr-no-wallet-ind d-flex align-items-center"><i class="fas fa-exclamation-triangle"></i>No Wallet Found</span>');
             }
 
             for(let i=0;i<userWallets.length;i++){
                 let overdraft = "";
-                if(userWallets[i].balance<0) overdraft = "(      overdraft)";
+                if(userWallets[i].balance<0) overdraft = "(overdraft)";
                 let option = '<option value="'+userWallets[i].id+'" >'+userWallets[i].name+overdraft+'</option>';
                 allOptions+=(option);
             }
+            allOptions += '<option value="-100"> &#xf05a; Dont assign wallet</option>';
+
+
             $('#all-wallets-options').html(allOptions);
 
         },
@@ -152,8 +157,6 @@ async function refreshDashboard(){
 
             // Setting tag creation max length as 14
             $('.selectize-control input').attr('maxlength','14')
-            console.log(formSelectedTags);
-
         },
 
         splitWalletHandler : function splitWalletHandler(){
@@ -373,12 +376,40 @@ async function refreshDashboard(){
                     let searched = null;
                     searched = (userWalletsMap[key])
                     if(searched!=null)  wallets.push(searched);
-                    else{
+                    else if(key<0){
+                        searched = {
+                            "id": -100,
+                            "name": "Wallet not linked",
+                            "type": "Other",
+                            "archiveWallet": false,
+                            "balance": 1000,
+                            "excludeFromStats": false,
+                            "walletInfo": {
+                              "note": ""
+                            }
+                          }
+                          wallets.push(searched)
+                    }else{
                         await findWalletById(`${key}`).then((resp)=> { 
-                            wallets.push(resp.data)
-                            userWalletsMap[resp.data.id] = resp.data;
+                            if(resp.statusCode==404){
+                                searched = {
+                                    "id": -101,
+                                    "name": "N/A",
+                                    "type": "Other",
+                                    "archiveWallet": false,
+                                    "balance": 1000,
+                                    "excludeFromStats": false,
+                                    "walletInfo": {
+                                      "note": ""
+                                    }
+                                  }
+                                  wallets.push(searched)
+                            }else{
+                                wallets.push(resp.data)
+                                userWalletsMap[resp.data.id] = resp.data;
+                            }
                         });
-                        
+
                     }
                 }
 
@@ -453,24 +484,32 @@ async function refreshDashboard(){
             let currentElement = document.getElementsByClassName("card")[document.getElementsByClassName("card").length-1];
 
 
-            // Findign wallet Split;
-            let walletArchiveIndicator =  null;
+            // Find and append wallet Split;
+            let isWalletMissSet =  null;
             for(let i=0; i<walletInfo.length;i++){
-                // if(walletInfo[i].statusCode != 200){
-                //     continue;
-                // }
-                walletArchiveIndicator = walletInfo[i]?.archiveWallet;
-                let id = walletInfo[i]?.id;
-                let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
-                // console.log(walletInfo[i]);
-                $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
-                $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
-                $(currentElement).find(".wallet-splits").append(newWalletSplit);
+                if(walletInfo[i].id <   0 ){
+                    isWalletMissSet = false;
+                    let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
+                    $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
+                    $(newWalletSplit).find('.account-spend').text('N/A');
+                    // $(currentElement).find(".wallet-splits").append(newWalletSplit);
+                    
+                }else{
+                    let id = walletInfo[i]?.id;
+                    let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
+                    $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
+                    $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
+                    $(currentElement).find(".wallet-splits").append(newWalletSplit);
+                }
             }
+
+            if($(currentElement).find('.wallet-split').size()==0)  $(currentElement).find('.wallet-splits').parent().remove();
 
             // Finding wallet name
             let walletName = null;
-            if(walletInfo.length == 1){
+            if(walletInfo[0].id<0){
+                walletName = '<span class="muted">N/A</span>'
+            }else if(walletInfo.length == 1){
                 walletName = (walletInfo[0]?.name);
             }else{
                 let accounts = walletInfo.length;
@@ -524,15 +563,15 @@ async function refreshDashboard(){
 
 
             // Detection of isDeleted Wallets Expense
-            if(walletArchiveIndicator === true) $(currentElement).find('.edit-expense-btn').remove();
-            if(walletArchiveIndicator === true) $(currentElement).find('.expense-edit-btn').remove();
-            if(walletArchiveIndicator === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
+            if(isWalletMissSet === true) $(currentElement).find('.edit-expense-btn').remove();
+            if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').remove();
+            if(isWalletMissSet === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
             $(currentElement).find('.expense-edit-btn').click((event)=>{
                 let walletId = $(event.target).attr('expense-id');
                 mountEditExpenseForm(walletId);
             })
-            if(walletArchiveIndicator === true) $(currentElement).find('.expense-edit-btn').off()
-            if(walletArchiveIndicator === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
+            if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').off()
+            if(isWalletMissSet === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
             
 
 
@@ -584,7 +623,11 @@ async function refreshDashboard(){
             },()=>{
                 $(currentElement).find('.expense-view-btn').css('display', 'none');
             })
-            
+
+            // To Fix Modal Mounting inside container issues
+            $(currentElement).find('.card-body').click(()=>{
+                $('#expense'+expense.id).appendTo('body');
+            })
 
 
             function newDateSection(newDate){
@@ -602,7 +645,7 @@ async function refreshDashboard(){
                 date = date.join(' ')
 
                 let daysExpenseTemplate = "<span class='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
-                dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: ₹'+ daysExpenseTemplate;
+                dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: '+ daysExpenseTemplate;
                 dateSection.style.color = '#385170';
                 expenseContainer.appendChild(dateSection);
 
@@ -1306,6 +1349,7 @@ async function refreshDashboard(){
             for(let k=0; k<allWalletSplitValues.length; k++){
                 let amount = $(allWalletSplitValues[k]).find('#expense-amount').val();
                 let walletId = $(allWalletSplitValues[k]).find('.form-wallet-list').val();
+                if(walletId==undefined) walletId = -100; // -100 indicates no wallte entity
                 if(amount == 0 ) continue;
                 if(walletSplits[walletId]>0){
                     walletSplits[walletId]+= +amount;
@@ -1315,6 +1359,7 @@ async function refreshDashboard(){
                 totalAmount+= (+amount);
             }
 
+            
 
             // Expense info json
             let expenseInfo = {
@@ -1375,7 +1420,6 @@ async function refreshDashboard(){
         $(newEditForm).appendTo(newEditFormSelector+ ' .modal-content');
         $('.more-expense-info').css('display', 'block');
         $('#expense-more').css('display', 'none');
-
         $('#split-wallet').click(()=>expenseFormUtil.splitWalletHandler())       // Split expense ampunt 
 
 
@@ -1419,17 +1463,29 @@ async function refreshDashboard(){
                 for(const walletId in walletSplits){
                     if(!filledFirstWalletSplit){
                         filledFirstWalletSplit = true;
-                        $(initialWalletSplit).find('.form-wallet-list').val(walletId);
+
+                        if($(initialWalletSplit).find(".form-wallet-list option[value='"+walletId+"']").length == 0){
+                            $(initialWalletSplit).find('.form-wallet-list').val(-100);
+                        }else{
+                            $(initialWalletSplit).find('.form-wallet-list').val(walletId);
+                        }
                         $(initialWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
                     }else{
                         let newWalletSplit = $(initialWalletSplit).clone();
                         newWalletSplit.removeClass('wallet-split1');
-                        $(newWalletSplit).find('.form-wallet-list').val(walletId);
+
+                        if($(newWalletSplit).find(".form-wallet-list option[value='"+walletId+"']").length == 0){
+                            $(newWalletSplit).find('.form-wallet-list').val(-100);
+                        }else{
+                            $(newWalletSplit).find('.form-wallet-list').val(walletId);
+                        }
+
                         $(newWalletSplit).find('#expense-amount').val(walletSplits[walletId]);
                         $(form).find('#all-wallet-splits').append(newWalletSplit);
                     }
                     totalWalletSplits++;
                 }
+
 
                 // Add remove option to all wallet splits
                 if(totalWalletSplits>1) $('.w-split').append('<i class="far fa-times-circle"></i>');
