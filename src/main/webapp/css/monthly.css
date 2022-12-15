@@ -8,8 +8,12 @@
 	-ms-user-select: none;
 	user-select: none;
 	position: relative;
+	/* height: 80%; */
 }
 
+.m-d{
+	height: 130px !important;
+}
 /* Top bar containing title, navigation, and buttons */
 .monthly-header {
 	position: relative;
@@ -75,9 +79,10 @@
 /* Button to return to month view */
 .monthly-cal {
 	border-right: 0!important;
+	background-color: #A1C2E3;
 }
 .monthly-cal::before {
-	content: '\2637';
+	content: '\1F8A8';
 	margin-right: 0.25em;
 }
 
@@ -174,7 +179,7 @@
 .monthly-day:before {
 	content: '';
 	display: block;
-	padding-top: 100%;
+	/* padding-top: 20%; */
 	float: left;
 }
 
@@ -238,7 +243,6 @@
 	top: 0.08em;
 	left: 0.05em;
 	font-size: 0.9em;
-	padding: 0;
 	width: 1.25em;
 	height: 1.25em;
 	line-height: 1.25em;
@@ -373,13 +377,16 @@
 
 /* Language-specific. Default is English. */
 .monthly-reset:after		{ content: 'Today'; }
-.monthly-cal:after			{ content: 'Month'; }
+.monthly-cal:after			{ content: 'Go Back'; }
 .monthly-list-item:after	{ content: 'No Events'; }
 
 .monthly-locale-fr .monthly-reset:after		{ content: "aujourd'hui"; }
 .monthly-locale-fr .monthly-cal:after		{ content: "mois"; }
 .monthly-locale-fr .monthly-list-item:after	{ content: 'aucun événement'; }
 
+.m-d{
+	/* height: 10px !important !important; */
+}
 
 /*
 Calendar shows event titles if the device width allows for at least 3em per day (rounded
@@ -401,7 +408,7 @@ establish the rules based on the calendar element width rather than the device w
 		padding: 0;
 	}
 	.monthly-day:before {
-		padding-top: calc(100% - 1.2em);
+		/* padding-top: calc(100% - 1.2em); */
 	}
 	.monthly-day .monthly-event-indicator {
 		display: block;

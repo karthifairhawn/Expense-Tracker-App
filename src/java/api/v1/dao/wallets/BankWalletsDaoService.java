@@ -38,7 +38,7 @@ public class BankWalletsDaoService {
 	
 	public BankWallets  save(BankWallets  wallet,Long walletId) {
 		// Wallet Creation
-		String sql = "INSERT INTO `bank_wallet` (`account_number`, `ifsc_code`,`wallet_id`) VALUES ('" + wallet.getAccountNumber() + "', '" + wallet.getIfscCode() + "',"+walletId + ")";
+		String sql = "INSERT INTO `bank_wallet` (`note`,`wallet_id`) VALUES ('" + wallet.getNote() + "',"+walletId + ")";
 		try {
 			ResultSet rs = dbUtil.executeInsertionQuery(sql);
 			rs.next();
@@ -59,9 +59,8 @@ public class BankWalletsDaoService {
 			rs = dbUtil.executeSelectionQuery(query);
 			rs.next();
 			bankWallet = new BankWallets();
-			bankWallet.setAccountNumber(Long.parseLong(rs.getString("account_number")));
 			bankWallet.setId(Long.parseLong(rs.getString("id")));
-			bankWallet.setIfscCode(rs.getString("ifsc_code"));
+			bankWallet.setNote(rs.getString("note"));
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new CustomException("AN unexpected error occured",500,new Date().toLocaleString());
@@ -80,7 +79,7 @@ public class BankWalletsDaoService {
 		Long walletIdd = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 		
 		// Wallet Updation
-		String sql = "UPDATE `bank_wallet` SET `account_number`='"+wallet.getAccountNumber()+"',`ifsc_code`='"+wallet.getIfscCode()+"' WHERE wallet_id="+walletIdd;
+		String sql = "UPDATE `bank_wallet` SET `note`='"+wallet.getNote()+"' WHERE wallet_id="+walletIdd;
 		int rs = dbUtil.executeUpdateQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		

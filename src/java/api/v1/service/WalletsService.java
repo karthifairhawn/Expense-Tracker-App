@@ -223,8 +223,8 @@ public class WalletsService {
     	
     	
     	// Null Validation
-    	validatorUtil.nullValidation(bankWallets.getAccountNumber(),errors,"Name");
-    	validatorUtil.nullValidation(bankWallets.getIfscCode(),errors,"Type");
+//    	validatorUtil.nullValidation(bankWallets.getAccountNumber(),errors,"Name");
+//    	validatorUtil.nullValidation(bankWallets.getIfscCode(),errors,"Type");
 
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
 		

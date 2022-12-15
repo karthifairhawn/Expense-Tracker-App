@@ -21,6 +21,9 @@ h1, h2, h3, h4, h5, h6 {
     color: white;
 }
 
+.monthly-event-list{
+    padding:20px;
+}
 
 html, body{
     width: 100%;
@@ -267,6 +270,34 @@ form {
 select {
   width: 300px;
 }
+
+.htimespan-select .options{
+    display: none;
+    position: absolute;
+    top : 20px;
+    width: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.103);
+    border-radius: 10px;
+}
+
+.htimespan-select .options .option{
+    padding: 5px 4px;
+    border: 1px solid #43ceae36;
+    background-color: #131519;
+}
+
+.htimespan-select .options .option:hover{
+    background-color: #43cead;
+    color: #000000;
+    border-radius: 5px;;
+}
+
+.main-balance .htimespan-select{
+    cursor: pointer;
+    position: relative;
+    
+}
+
 
 
 .selectize-input .item{

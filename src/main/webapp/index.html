@@ -103,7 +103,7 @@
             <div id="date-range-selector"></div>
 
             <!-- Calender View -->
-            <div class="monthly-view container">
+            <div class="monthly-view month-container container">
                 <div class="monthly" id="mycalendar"></div>
             </div>
 
@@ -429,7 +429,21 @@
 
         <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
             <div class="mi-bal-right">
-                <span >Total Spendings <span class="timespan"> (This Month)</span></span>
+                <span class="d-flex align-items-center justify-content-center">
+                    
+                    <span>Total Spendings </span>
+                    &nbsp;
+                    <span class="header-timespan ">(This Month)</span>  
+                    &nbsp;&nbsp;
+                    <div class="htimespan-select">
+                        <i class="fa-solid fa-chevron-down d-flex flex-column"></i>
+                        <div class="options">
+                            <div class="option">Today</div>
+                            <div class="option">This Week</div>
+                            <div class="option">This Month</div>
+                        </div>
+                    </div>
+                </span>
                 <!-- <span>( <span id="total-acct-count">3</span> wallets)</span> -->
 
                 <div class="d-flex">

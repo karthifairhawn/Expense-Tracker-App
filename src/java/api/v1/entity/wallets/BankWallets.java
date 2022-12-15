@@ -12,8 +12,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class BankWallets{
-	long accountNumber;
-	String ifscCode;
+//	long accountNumber;
+	String note;
 	long id;
 	
 	
@@ -21,8 +21,8 @@ public class BankWallets{
 
 	public BankWallets(LinkedTreeMap walletInfo) {
 
-		this.accountNumber = ((Double) walletInfo.get("accountNumber")).longValue();
-		this.ifscCode = (String) walletInfo.get("ifscCode");
+//		this.note = ((Double) walletInfo.get("accountNumber")).longValue();
+		this.note = (String) walletInfo.get("ifscCode");
 //		this.id = walletInfo.get("id")!=null ? (long) walletInfo.get("id") : null;
 	}
 }
