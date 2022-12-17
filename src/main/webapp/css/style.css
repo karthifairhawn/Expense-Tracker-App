@@ -69,19 +69,19 @@ html, body{
 
 
 
-#expense-card-container::-webkit-scrollbar-track
+:-webkit-scrollbar-track
 {
 	-webkit-box-shadow: inset 0 0 6px rgba(107, 107, 107, 0.3);
 	background-color: #F5F5F5;
 }
 
-#expense-card-container::-webkit-scrollbar
+::-webkit-scrollbar
 {
 	width: 6px;
 	background-color: #F5F5F5;
 }
 
-#expense-card-container::-webkit-scrollbar-thumb
+::-webkit-scrollbar-thumb
 {
 	background-color: #000000;
 }
@@ -199,7 +199,7 @@ html, body{
 }
 
 .expense-card-wallet{ 
-    width: 550px;
+    width: 300px;
 }
 
 
@@ -243,6 +243,10 @@ html, body{
     padding: 8px;
     color: #9fd3c7;
     width: 35px;
+}
+
+.expcard-body .popup-modals{
+    color: #000;
 }
 
 #new-category-icon{
@@ -344,10 +348,14 @@ select {
 .expense-card{
     border-radius: 20px;
 }
-.expense-card .card-body{
+.expense-card .expcard-body {
     border-radius: 10px;
+    position: relative;
+    width: 100%;
+    height: 55px;
+    margin-left: 10px;
 }
-.expense-card .card-body .category-ico{
+.expense-card .category-ico{
 
     background-color: #131519 !important;
     border-color: 1px solid white;
@@ -365,13 +373,13 @@ select {
     border-radius: 10px;
 }
 
-.expense-card .card-body{
+.expense-card .expcard-body{
     padding: 0px;
     background-color: #363636 !important;
     color: #fff;
 }
 
-.expense-card .card-body .tags-section{
+.expense-card .expcard-body  .tags-section{
     color: #000 !important;
 }
 
@@ -900,4 +908,174 @@ select {
 
 .toast-header{
     color:black;
+}
+
+
+
+
+/* Weekly Calendat View */
+
+
+#myc-container {
+    width: inherit;
+}
+
+#myc-nav-container {
+    margin-bottom: 15px;
+    width: inherit;
+}
+
+#myc-current-month-year-container {
+    display: inline-block;
+    border: 1px solid rgb(204, 204, 204);
+    color: rgb(84, 84, 84);
+    text-decoration: none;
+    height: 1.75em;
+    line-height: 1.65em;
+    padding: 0px 0.65em;
+    box-sizing: border-box;
+    transition: background 0.1s ease 0s;
+    cursor: default;
+    background: rgb(238, 238, 238) !important;
+    border: 1px solid rgb(204, 204, 204) !important;
+    color: rgb(84, 84, 84) !important;
+    border-radius: 1em;
+    text-transform: uppercase;
+}
+
+.active-weekly-day{
+    background-color: #504f53;
+    color: #fff;
+}
+
+#myc-prev-week-container {
+    display: inline-block;
+    width: 15%;
+}
+
+#myc-next-week-container {
+    display: inline-block;
+    width: 15%;
+}
+
+#myc-prev-week {
+    /* border: 1px solid #e0e0e0; */
+    border-radius: 80px;
+    color: rgb(88, 88, 88);
+    cursor: pointer;
+    float: left;
+    font-size: 1em;
+    font-weight: lighter;
+    height: 40px;
+    text-align: center;
+    font-weight: 900;
+    width: 40px;
+}
+
+#myc-next-week {
+    /* border: 1px solid #e0e0e0; */
+    border-radius: 80px;
+    color: rgb(88, 88, 88);
+    cursor: pointer;
+    float: right;
+    font-size: 1em;
+    font-weight: lighter;
+    height: 40px;
+    text-align: center;
+    width: 40px;
+    font-weight: 900;
+}
+
+#myc-prev-week:hover, #myc-next-week:hover {
+    /* border: 1px solid #bdbdbd; */
+    color: #000;
+}
+
+#myc-week-container {
+    /* border: 1px solid #e0e0e0; */
+}
+
+#myc-dates-container {
+    background-color: #fafafa;
+    width: 100%;
+}
+
+
+
+.myc-date-header {
+    border: 1px solid #e0e0e0;
+    display: inline-block;
+    min-height: 50px;
+    padding: 15px 0px 15px 15px;
+    vertical-align: top;
+    width: 13.77%;
+}
+
+.myc-date-header:first-of-type {
+    padding-left: 15px;
+}
+
+.myc-date-header:last-of-type {
+    border-right: none;
+}
+
+#myc-available-time-container {
+    border-top: 1px solid #e0e0e0;
+    height:550px;
+    overflow-y: scroll;
+    padding:5px;
+}
+
+#myc-current-month-year-container{
+    cursor: pointer;
+}
+
+.myc-day-time-container {
+    /*border-right: 1px solid #e0e0e0;*/
+    display: inline-block;
+    height: 100%;
+    padding: 15px 15px 15px 15px;
+    vertical-align: top;
+    width: 13.77%;
+}
+
+.myc-day-time-container:first-of-type {
+    padding-left: 15px;
+}
+
+.myc-day-time-container:last-of-type {
+    border-right: none;
+    width: 13%;
+}
+
+.myc-date-number {
+    font-size: 1.8em;
+    font-weight: lighter;
+}
+
+.myc-available-time {
+    background-color: #29b6f6;
+    border-radius: 20px;
+    color: #ffffff;
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px 0px 10px 0px;
+    text-align: center;
+}
+
+.myc-available-time.selected, .myc-available-time:hover {
+    background-color: #222;
+}
+
+.myc-date-display {
+    font-weight: lighter;
+}
+
+@media only screen and (max-width: 768px) {
+    .myc-date-header, .myc-day-time-container {
+        width: 13.5%;
+    }
+    /*.myc-date-header:last-of-type, .myc-day-time-container:last-of-type {
+        width: 12%;
+    }*/
 }

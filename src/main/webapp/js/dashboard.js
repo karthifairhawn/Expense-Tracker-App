@@ -237,8 +237,6 @@ async function refreshDashboard(){
 
             let spendOn = expenseInfo.transactionInfo.spendOn;
             
-            // console.log(<=);
-
             let valid = true;
             valid = util.isGreaterThanZero(expenseInfo.amount,$('#expense-amount')) && valid;
             valid = util.isLessThanN(expenseInfo.amount,10000000,$('#expense-amount')) && valid;
@@ -310,22 +308,23 @@ async function refreshDashboard(){
         dateRangeContainer.appendChild(clone);  
 
         // Hide monthly view section by default
-        $('.monthly-view').hide();
+
 
         
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
         let daysExpenseCount = 0
         let calendarMounted = false;
+        let weeklyTabInitialized = false;    
+
 
         initiateDateSelectorPlugin();
 
         let spendingsBannerTime = localStorage.getItem("spendingsBannerTime");
         if (spendingsBannerTime==undefined) spendingsBannerTime = 'This Month';
         updateHeader(spendingsBannerTime);
+
         
-
-
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
         async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
 
@@ -334,39 +333,52 @@ async function refreshDashboard(){
             daysTotalExpense = 0;
             let rangeExpense = 0;
             let expenseData = null;
-            $('#expense-card-container').show();
-            $('.timespan').text(timeSpan)
 
-            
             
             // Find all expense info from selected date range
-            if(timeSpan!='Recent'){  // Not recent 
-                $("#expense-card-container").html("");
-                await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{
-                    expenseData = data
-                    if(expenseData.data.expenses.length == 0) zeroExpensesHandler();
+            if(timeSpan!=null) $('.timespan').text(timeSpan)
+            if(refreshExpenseContainer==true) $('#'+containerId).html("");
+
+            // Seperate Fetching Mechanism for timespan view and Recent transactions
+            if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
+            else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
+            
+
+            if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
+
+            // Add loading indicator at end of container only for recent transactions
+            if(timeSpan=='Recent' && expenseData.data.expenses.length==15) mountLiveUpdateBar();
+            
+
+            // Only appliable for recent transactions section
+            function mountLiveUpdateBar(){
+
+                if(expenseData.data.expenses.length == 0) return;
+
+                // Load more expenses when reached expense container end
+                $('#'+containerId).scroll(function(e){
+
+                    // grab the scroll amount and the window height
+                    var scrollAmount   = $('#'+containerId).scrollTop();
+                    var documentHeight = $('#'+containerId).height();
+                
+                    // calculate the percentage the user has scrolled down the page
+                    var scrollPercent = (scrollAmount / documentHeight) * 100;
+                
+                    if(scrollPercent > 70) {
+                        $('#'+containerId).append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
+                        $('#'+containerId).off();
+                        pageNumber++;
+                        setTimeout( async ()=>{
+                            await findAllExpenseDetails(null,null,'Recent',false,containerId)
+                            $('#'+containerId).find('#espinner').remove()
+                            // mountLiveUpdateBar();
+                        },1500)
+                    }
+                
                 });
-            }else{                
-                if(refreshExpenseContainer==true){ // If previous render of expense list is not Recent Expenses
-                    $("#expense-card-container").html(""); // Remove old expense data
-                }
-                await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
             }
 
-            // Mount Expense Container Section for non month view
-            if(timeSpan!='Monthly')  unmountCalendar();
-
-            // Change layout according to view selected
-            if(timeSpan=='Monthly'){
-                if(!isMonthlyViewOverriden){
-                    monthlyViewOverride();
-                    isMonthlyViewOverriden = true;
-                    $('#mycalendar').monthly({});
-                    $('.monthly-event-list').attr('id','monthly-day-expenses');
-                }
-                $('#expense-card-container').hide(); // Hide normal card view container
-                mountCalendar();
-            }
 
             let expenses = expenseData.data.expenses;
             for(let i=0; i<expenses.length; i++){ 
@@ -412,7 +424,6 @@ async function refreshDashboard(){
 
                     }
                 }
-
                 
                 // Find Category info
                 let categoryInfo = {};
@@ -420,37 +431,15 @@ async function refreshDashboard(){
                 
                 // Add expense amount to currentRangeTotal and Populate
                 rangeExpense+=expenses[i].amount;
-                populateExpense(wallets,expenses[i],categoryInfo,containerId);
+                
+                if(containerId.length>0) populateExpense(wallets,expenses[i],categoryInfo,containerId);
             }
 
-            // Add loading indicator at end of containe
-            if(timeSpan=='Recent' && expenseData.data.expenses.length==15){
-                $('#expense-card-container').append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
-
-                // Load more expenses when reached expense container end
-                $('#expense-card-container').scroll(function(e){
-    
-                    // grab the scroll amount and the window height
-                    var scrollAmount   = $('#expense-card-container').scrollTop();
-                    var documentHeight = $('#expense-card-container').height();
-                
-                    // calculate the percentage the user has scrolled down the page
-                    var scrollPercent = (scrollAmount / documentHeight) * 100;
-                
-                    if(scrollPercent > 90) {
-                        $('#expense-card-container').off();
-                        pageNumber++;
-                        setTimeout( ()=>findAllExpenseDetails(null,null,'Recent',false,'expense-card-container'),1500)
-                    }
-                
-                });
-            }else $('#expense-card-container').find('#espinner').remove();
 
         }
 
         // Fetch Wallet Split and tag info then populateExpense [Trigger = findAllExpenseDetails()]
         async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMount){
-
 
             let allTagsInfo = [];
 
@@ -480,9 +469,9 @@ async function refreshDashboard(){
                 $('.dtb'+listingExpenseDate).find('.expenses-count').text(daysExpenseCount); 
             }
 
-            expenseContainer.appendChild(expenseTemplateClone);
-            let currentElement = document.getElementsByClassName("card")[document.getElementsByClassName("card").length-1];
-
+            let currentElement = expenseTemplateClone;
+            
+            
 
             // Find and append wallet Split;
             let isWalletMissSet =  null;
@@ -548,6 +537,7 @@ async function refreshDashboard(){
             $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
 
 
+
             // Setting dynamic attributes
             $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
             $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
@@ -555,7 +545,7 @@ async function refreshDashboard(){
             $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
 
             // Adding Dynamic Styling
-            $(currentElement).find('.card-body').css('background-color',colorTw);
+            $(currentElement).find('.expcard-body').css('background-color',colorTw);
             $(currentElement).find('.category-ico').css('background-color','#43cead');
             $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
             $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
@@ -625,9 +615,11 @@ async function refreshDashboard(){
             })
 
             // To Fix Modal Mounting inside container issues
-            $(currentElement).find('.card-body').click(()=>{
+            $(currentElement).find('.expcard-body').click(()=>{
                 $('#expense'+expense.id).appendTo('body');
             })
+
+            expenseContainer.appendChild(expenseTemplateClone);
 
 
             function newDateSection(newDate){
@@ -647,7 +639,7 @@ async function refreshDashboard(){
                 let daysExpenseTemplate = "<span class='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
                 dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: '+ daysExpenseTemplate;
                 dateSection.style.color = '#385170';
-                expenseContainer.appendChild(dateSection);
+                $(expenseContainer).append(dateSection);
 
             }
 
@@ -674,7 +666,11 @@ async function refreshDashboard(){
                     expenseTo = end.format('YYYYMMDD').split('-').join('');
                 }
 
-                findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true,'expense-card-container'); // true = refreshExpenseContainer
+                createMountPoint(timeSpan,true)
+                if(timeSpan=='Yesterday' || timeSpan=='Recent' || timeSpan=='Custom Range') findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true,'expense-card-container'); // true = refreshExpenseContainer
+
+                    // findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,true,null); // true = refreshExpenseContainer
+
 
                 $('#date-range-type').html(timeSpan);
                 currTimeSpan = timeSpan;
@@ -682,10 +678,8 @@ async function refreshDashboard(){
 
             let allDateRanges =  {
                 'Recent' : [moment(),moment()], // "Works based on count the keys has no usage",
-                // 'Today' : [moment(),moment()], // 
                 'Yesterday' : [moment().subtract(1, 'days'),moment().subtract(1, 'days')], // 
                 'Last 7 Days' : [moment().subtract(6, 'days'),moment()], //
-                // 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 'Monthly': [moment().startOf('month'), moment().endOf('month')],
             };
 
@@ -700,10 +694,8 @@ async function refreshDashboard(){
         }  
         
         // Called if no expenses for the user [Trigger = findAllExpenseDetails]
-        function zeroExpensesHandler(){
-            console.log(123);
-            $("#expense-card-container").html('<center class="card"><h1 class="card-body">No expense data found</h1></center>')
-            $("#monthly-day-expenses").html('<center class="card"><h1 class="card-body">No expense data found</h1></center>')
+        function zeroExpensesHandler(containerId){
+            $("#"+containerId).append('<center class="card mt-4"><h1 class="card-body">No expense data found</h1></center>')
         }
 
         
@@ -753,15 +745,6 @@ async function refreshDashboard(){
             isBannerListenerInitialized = true;
         }
 
-        function mountCalendar() {
-            $('.monthly-view').show();
-            calendarMounted = true;
-        }
-
-        function unmountCalendar() {
-            $('.monthly-view').hide();
-            calendarMounted = false;
-        }
 
         function calendarMonthExpensesChange(month,year){
             let start = year+""+month+"01";
@@ -780,6 +763,27 @@ async function refreshDashboard(){
 
         }
 
+
+        function createMountPoint(timeSpan,refreshExpenseContainer){
+
+            unmountRecentExpenses();
+            unmountWeeklyExpenses();
+            unmountCalendar();        
+
+            if(timeSpan=='Last 7 Days') mountWeeklyExpenses();
+            else if(timeSpan=='Recent' || timeSpan=='Yesterday' || timeSpan=='Custom Range') mountRecentExpensesSection();
+            else if(timeSpan=='Monthly'){
+                if(!isMonthlyViewOverriden){
+                    monthlyViewOverride();
+                    isMonthlyViewOverriden = true;
+                    $('#mycalendar').monthly({});
+                    $('.monthly-event-list').attr('id','monthly-day-expenses');
+                }
+                mountCalendarExpensesSection();
+            }else if(timeSpan=='Weekly') mountWeeklyExpenses();
+        }
+
+        // Weekly and Monthly view Override
         function monthlyViewOverride() {
 
             (function ($) {
@@ -1283,6 +1287,191 @@ async function refreshDashboard(){
                 });
             }(jQuery));
 
+        }
+
+        function mountWeeklyExpenses(){
+
+            if(weeklyTabInitialized) return;
+
+            (function($) {
+        
+                Date.prototype.addDays = function(days) {
+                    var date = new Date(this.valueOf());
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+            
+                $.fn.markyourcalendar = function(opts) {
+                    var prevHtml = `<div id="myc-prev-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-left"></i></div>`;
+                    // var prevHtml = `<a href="#" id="myc-prev-week"></a>`;
+                    
+                    var nextHtml = `<div id="myc-next-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-right"></i></div>`;
+                    var defaults = {
+                        isMultiple: false,
+                        months: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+                        prevHtml: prevHtml,
+                        nextHtml: nextHtml,
+                        startDate: new Date(),
+                        weekdays: ['sun', 'mon', 'tue', 'wed', 'thurs', 'fri', 'sat'],
+                    };
+                    var settings = $.extend({}, defaults, opts);
+                    var onClickNavigator = settings.onClickNavigator;
+                    var instance = this;
+            
+                    // kuhanin ang buwan
+                    this.getMonthName = function(idx) {  return settings.months[idx]; };
+            
+            
+                    // here is the controller to switch weeks
+                    // Controller to change 
+                    this.getNavControl = function() {
+                        var previousWeekHtml = `<div id="myc-prev-week-container">` + settings.prevHtml + `</div>`;
+                        var nextWeekHtml = `<div id="myc-prev-week-container">` + settings.nextHtml + `</div>`;
+                        var monthYearHtml = `
+                            <div id="myc-current-month-year-container" date='`+settings.startDate.getMonth()+ '-' + settings.startDate.getFullYear() +`'>
+                                ` + this.getMonthName(settings.startDate.getMonth()) + ' ' + settings.startDate.getFullYear() + `
+                            </div>
+                        `;
+            
+                        var navHtml = `
+                            <div id="myc-nav-container" class="d-flex align-items-center justify-content-between w-100">
+                                ` + previousWeekHtml + `
+                                ` + monthYearHtml + `
+                                ` + nextWeekHtml + `
+                            </div>
+                        `;
+                        return navHtml;
+                    };
+            
+        
+                    // Create weekly dates header tabs.
+                    this.getDatesHeader = function() {
+                        var tmp = ``;
+                        for (var i = 0; i < 7; i++) {
+                            var d = settings.startDate.addDays(i);
+                            settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
+                            let classes = "";
+                            let today = "";
+                            if(settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
+                                classes = `active-weekly-day"`;
+                                today = " (today)";
+                            }
+                            let dateAttr = d.getFullYear()+""+(d.getMonth()+1)+""+d.getDate()
+                            tmp += `
+                                <div date='`+dateAttr+`' class="myc-date-header `+classes+`" id="myc-date-header-` + i + `">
+                                    <div class="myc-date-number">` + d.getDate() + today + `</div>
+                                    <div class="myc-date-display">` + settings.weekdays[d.getDay()]+ `</div>
+                                    <hr>
+                                    <span class="">20 Expenses | ₹ 1,245 </span>
+                                </div>
+                            `;
+                        }
+                        var ret = `<div id="myc-dates-container" class="weekly-dates-container d-flex justify-content-around">` + tmp + `</div>`;                
+                        return ret;
+                    }
+        
+        
+                    // when last week was pressed
+                    this.on('click', '#myc-prev-week', function() {
+                        settings.startDate = settings.startDate.addDays(-7);
+                        render(instance);
+            
+                        if ($.isFunction(onClickNavigator)) {
+                            onClickNavigator.call(this, ...arguments, instance);
+                        }
+
+                        addDateFetchLister()
+                        $('#myc-dates-container .myc-date-header ').last().click();
+                    });
+            
+                    // when next week is pressed
+                    this.on('click', '#myc-next-week', function() {
+                        settings.startDate = settings.startDate.addDays(7);
+                        render(instance);
+            
+                        if ($.isFunction(onClickNavigator)) {
+                            onClickNavigator.call(this, ...arguments, instance);
+                        }
+                        addDateFetchLister()
+                        $('#myc-dates-container .myc-date-header ').first().click();
+                    });
+            
+                    var render = function() {
+                        var ret = `
+                            <div id="myc-container">
+                                <div id="myc-nav-container">` + instance.getNavControl() + `</div>
+                                <div id="myc-week-container">
+                                <div id="myc-dates-container">` + instance.getDatesHeader() + `</div>
+                                <div id="myc-available-time-container">` + `</div>
+                                </div>
+                            </div>
+                        `;
+                        instance.html(ret);
+                    };
+            
+                    render();
+                    addDateFetchLister();
+
+                    
+
+                    function addDateFetchLister (){
+                        $('.myc-date-header').off();
+                        $('.myc-date-header').click((e)=>{
+                            let element = $(e.target).closest('.myc-date-header');
+                            let date = $(element).attr('date');
+                            $('.active-weekly-day').removeClass('active-weekly-day');
+                            $(element).addClass('active-weekly-day');
+                            findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
+                        })
+
+                        $('#myc-current-month-year-container').off();
+                        $('#myc-current-month-year-container').click(()=>{
+                            let date = $(this).attr('date');
+                            createMountPoint('Monthly')
+                            $('.daterangepicker li[data-range-key=Monthly]').click();
+                            $('#date-range-type').text('Monthly')
+                        });
+                    }
+
+                };
+
+            })(jQuery);
+
+            $('#weekly-view').html('');
+            $('#weekly-view').markyourcalendar({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()-6)});
+
+
+            findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),false,'myc-available-time-container')
+            weeklyTabInitialized = true;
+
+
+        
+
+
+        }
+        
+        function mountCalendarExpensesSection() {
+            $('.monthly-view').show();
+            calendarMounted = true;
+        }
+        
+        function mountRecentExpensesSection(){
+            $('#expense-card-container').show();
+        } 
+
+        function unmountWeeklyExpenses(){ 
+
+            $('#weekly-view').html(""); 
+            weeklyTabInitialized = false; 
+        }
+        
+        function unmountRecentExpenses(){ 
+            $('#expense-card-container').hide() 
+        }
+
+        function unmountCalendar() {
+            $('.monthly-view').hide();
+            calendarMounted = false;
         }
 
     }  

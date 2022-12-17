@@ -110,17 +110,11 @@ let walletFormUtil = {
 
 
         if(newWalletObject.type=='Bank Account'){
+            // console.log($('#new-wallet-banknote').val());
             newWalletObject['walletInfo'] = {
-                "accountNumber": +($('#new-wallet-accno').val()),
-                "ifscCode": $('#new-wallet-ifsc').val(),
+                "note": util.isNotEmpty($('#new-wallet-banknote').val()) ? $('#new-wallet-banknote').val() : ""
             }
-            if(util.isNotEmpty(Number($('#new-wallet-accno').val()))){
-                isValid = util.isNumber(Number($('#new-wallet-accno').val()),$('#new-wallet-accno')) && isValid
-            }
-            if(util.isNotEmpty($('#new-wallet-ifsc').val())){
-                isValid = util.isIfscCode($('#new-wallet-ifsc').val(),$('#new-wallet-ifsc')) && isValid;
-            }
-
+            console.log(newWalletObject);
         }else if(newWalletObject.type=='Credit Card'){
             newWalletObject['walletInfo'] = {
                 "repayDate" : $('#new-wallet-repay').val(),
@@ -251,7 +245,6 @@ async function mountWallets(){
             let diffDays = '';
             diffDays= subInfo.repayDate +", "+name;
             if(d.getDate() == parseInt(subInfo.repayDate)) diffDays = 'Today'
-            console.log(d.getDate()+" "+parseInt(subInfo.repayDate))
 
             $(walletCardClone).find(".card-name").html('<i class="fa-solid '+walletSymbol[wallet.type]+'"></i>'+"  "+ wallet.name)
             $(walletCardClone).find('.amount').text(util.moneyFormat(wallet.balance))
