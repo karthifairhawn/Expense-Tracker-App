@@ -347,6 +347,7 @@ select {
 
 .expense-card{
     border-radius: 20px;
+    cursor: pointer;
 }
 .expense-card .expcard-body {
     border-radius: 10px;
@@ -356,21 +357,21 @@ select {
     margin-left: 10px;
 }
 .expense-card .category-ico{
-
     background-color: #131519 !important;
     border-color: 1px solid white;
     border-radius: 10px;
-
-
-}
-
-.expense-card .category-ico{
     overflow: hidden;
     width: 40px;
     border-radius: 0px;
     font-size: 25px;
     padding: 7px 30px;
     border-radius: 10px;
+}
+
+
+.modal-content .category-ico{
+    border-radius: 0px;
+    width: 60px;
 }
 
 .expense-card .expcard-body{
@@ -545,16 +546,19 @@ select {
     font-weight: 900;
 }
 
+#reload-expenses{
+    display: none;
+}
+
 .tags-section{
     background-color: #43cead;
-    padding: 2px 10px;
+    padding: 0px 5px 0px 0px;
     border-radius: 30px;
 }
 
  .tag-text{
-    background-color: #43cead;
-    padding: 1px 5px;
-    border-radius: 10px;
+    padding: 3px 10px;
+    border-radius: 5px 0px 15px 0px;
 
 }
 
@@ -845,12 +849,13 @@ select {
 }
 
 .all-tags-msection .fas{
-    background-color: #43cead;
-    border: 5px solid #F08080;
+    /* background-color: #000; */
+    border: 5px solid #43cead;
     padding: 7px;
     border-radius: 50%;
     /* font-weight: ; */
     font-size: 13px;
+    color: #000;
 }
 
 .card-field .expense-note{

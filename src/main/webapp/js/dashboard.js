@@ -33,6 +33,14 @@ async function refreshDashboard(){
     var formSelectedTags = [];  
     let totalWalletSplits = 1;
     let usingNewCategory = false;
+
+    let previousExpenseFetch = {
+        "expenseFrom" : null,
+        "expenseTo" : null,
+        "timeSpan" : null,
+        "refreshExpenseContainer" : null,
+        "containerId" : null
+    }
     
 
     let expenseFormUtil = {
@@ -296,6 +304,8 @@ async function refreshDashboard(){
     $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
 
 
+
+
     function mountExpenseSection(){
 
         // TEMPLATE MOUNT ---- added date range selector to the section
@@ -326,7 +336,25 @@ async function refreshDashboard(){
 
         
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
+
+        $('#reload-expenses').click(()=>{
+            console.log("refresh");
+            findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
+        });
+
+        function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){
+            previousExpenseFetch =  {
+                "expenseFrom" : expenseFrom,
+                "expenseTo" : expenseTo,
+                "timeSpan" : timeSpan,
+                "refreshExpenseContainer" : refreshExpenseContainer,
+                "containerId" : containerId
+            }
+        }
         async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
+
+
+            setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId);
 
             // Clearing up old expense section data
             listingExpenseDate = null;
@@ -343,7 +371,6 @@ async function refreshDashboard(){
             if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
             else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
             
-
             if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
             // Add loading indicator at end of container only for recent transactions
@@ -356,6 +383,7 @@ async function refreshDashboard(){
                 if(expenseData.data.expenses.length == 0) return;
 
                 // Load more expenses when reached expense container end
+                $('#'+containerId).off();
                 $('#'+containerId).scroll(function(e){
 
                     // grab the scroll amount and the window height
@@ -454,7 +482,24 @@ async function refreshDashboard(){
             let expenseTemplateClone = expenseTemplate.content.cloneNode(true);
 
             $(expenseTemplateClone).find('#editExpenseForm').attr('id','editExpenseForm'+expense.id);
-            $(expenseTemplateClone).find('#inExpEditForm').attr('data-bs-target','#'+'editExpenseForm'+expense.id)
+            // $(expenseTemplateClone).find('.edit-expense-btn').attr('data-bs-target',)
+            $(expenseTemplateClone).find('.edit-expense-btn').click(()=>{
+                $('#myModal').modal({ show: false})
+                $('#'+'editExpenseForm'+expense.id).modal('show');
+                $('#'+'editExpenseForm'+expense.id).appendTo('body');
+
+                mountEditExpenseForm(expense.id);
+            })
+
+            // console.log($(expenseTemplateClone));
+            $(expenseTemplateClone).find('.expcard-body').click(()=>{
+                $('#expense'+expense.id).modal({ show: false})
+                $('#expense'+expense.id).modal('show');
+            })
+
+
+
+
 
             // Grouping multiple days expense with dates and calculating per days's expense 
             if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
@@ -524,7 +569,6 @@ async function refreshDashboard(){
             let colorTw = '#'+colorTwo[expense.id%9];
 
             // Populating information to the card
-            $(currentElement).find('.expense-view-btn').attr('data-bs-target','#expense'+expense.id);
             $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
             $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
             $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
@@ -556,10 +600,7 @@ async function refreshDashboard(){
             if(isWalletMissSet === true) $(currentElement).find('.edit-expense-btn').remove();
             if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').remove();
             if(isWalletMissSet === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
-            $(currentElement).find('.expense-edit-btn').click((event)=>{
-                let walletId = $(event.target).attr('expense-id');
-                mountEditExpenseForm(walletId);
-            })
+
             if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').off()
             if(isWalletMissSet === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
             
@@ -588,31 +629,27 @@ async function refreshDashboard(){
             let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
             let allTagsSection = $(currentElement).find('.all-tags-section');
             let modelAllTagsSection = $(currentElement).find('.all-tags-msection');
-            if(allTagsInfo.length>0){
-                let newElement = newTag.clone();
-                newElement.find('.tag-text').text(allTagsInfo[0].data.name.toLowerCase());
-                allTagsSection.append(newElement.clone());
-                modelAllTagsSection.append(newElement.clone());
-            }
-            if(allTagsInfo.length>1){
-                let newElement = $('<div class="d-flex align-items-center justify-content-between" style=""> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
-                newElement.find('.tty').text('+ '+ (allTagsInfo.length -1) + ' more');
-                allTagsSection.append(newElement);
-            }
-            for(let i=1;i<allTagsInfo.length;i++){
+
+            for(let i=0;i<allTagsInfo.length;i++){
                 let newTagClone = newTag.clone();
                 newTagClone.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
                 modelAllTagsSection.append(newTagClone);
+
+                if(i<3){
+                    let newElement = newTag.clone();
+                    newElement.find('.tag-text').text(""+allTagsInfo[i].data.name.toLowerCase());
+                    allTagsSection.append(newElement.clone());
+                }
             }
 
-            // Edit button inside expense view
-            $(currentElement).find('.edit-expense-btn').click(()=>{ $(currentElement).find('#inExpEditForm').click(); })
+            if(allTagsInfo.length>3){
+                let newElement = $('<div class="d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
+                newElement.find('.tty').text('+ '+ (allTagsInfo.length -3) + ' more');
+                allTagsSection.append(newElement);
+            }
+            
 
-            $(currentElement).hover(()=>{
-                $(currentElement).find('.expense-view-btn').css('display', 'flex');
-            },()=>{
-                $(currentElement).find('.expense-view-btn').css('display', 'none');
-            })
+
 
             // To Fix Modal Mounting inside container issues
             $(currentElement).find('.expcard-body').click(()=>{
@@ -696,53 +733,6 @@ async function refreshDashboard(){
         // Called if no expenses for the user [Trigger = findAllExpenseDetails]
         function zeroExpensesHandler(containerId){
             $("#"+containerId).append('<center class="card mt-4"><h1 class="card-body">No expense data found</h1></center>')
-        }
-
-        
-        async function updateHeader(timeRange){
-            
-            // Show current set range total expense in header container
-            let dateRanges = {
-                'Today': [moment(), moment()],
-                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                'This Week': [moment().startOf('week'), moment()],
-                'This Month' : [moment().startOf('month'), moment().endOf('month')],
-            }
-            let st = dateRanges[timeRange][0].format('YYYYMMDD');
-            let end = dateRanges[timeRange][1].format('YYYYMMDD');
-
-            let expenseData = null;
-            await findTransactions(st,end,'expenses').then((data)=>expenseData = data.data.expenses);
-
-            let rangeExpense = 0;
-            for(let i=0; i<expenseData.length; i++) rangeExpense+=expenseData[i].amount;
-            
-
-            $('.reporting-days-total').text(rangeExpense);
-            $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
-            $('.main-balance .header-timespan ').text(", "+timeRange+"");
-
-
-            initiateBannerListeners();
-        }
-
-        let isBannerListenerInitialized = false;
-        function initiateBannerListeners(){
-            if(isBannerListenerInitialized) return;
-
-            $('.htimespan-select .fa-chevron-down').click(()=>{
-                $('.htimespan-select .options').toggle();
-            })
-
-            // $('.htimespan-select .option').off()
-            $('.htimespan-select .option').click((e)=>{
-                $('.htimespan-select .options').toggle();
-                localStorage.setItem("spendingsBannerTime",$(e.target).text());
-                let timeSpan = $(e.target).text();
-                updateHeader(timeSpan);
-            });
-
-            isBannerListenerInitialized = true;
         }
 
 
@@ -950,128 +940,9 @@ async function refreshDashboard(){
                         }
 
                         // Events
-                        if (options.mode === "event") {
-                            addEvents(month, year);
-                        }
                         var divs = $(parent + " .m-d");
                         for(index = 0; index < divs.length; index += 7) {
                             divs.slice(index, index + 7).wrapAll('<div class="monthly-week"></div>');
-                        }
-                    }
-
-                    function addEvent(event, setMonth, setYear) {
-                        // Year [0]   Month [1]   Day [2]
-                        var fullStartDate = _getEventDetail(event, "startdate"),
-                            fullEndDate = _getEventDetail(event, "enddate"),
-                            startArr = fullStartDate.split("-"),
-                            startYear = parseInt(startArr[0], 10),
-                            startMonth = parseInt(startArr[1], 10),
-                            startDay = parseInt(startArr[2], 10),
-                            startDayNumber = startDay,
-                            endDayNumber = startDay,
-                            showEventTitleOnDay = startDay,
-                            startsThisMonth = startMonth === setMonth && startYear === setYear,
-                            happensThisMonth = startsThisMonth;
-
-                        if(fullEndDate) {
-                            // If event has an end date, determine if the range overlaps this month
-                            var	endArr = fullEndDate.split("-"),
-                                endYear = parseInt(endArr[0], 10),
-                                endMonth = parseInt(endArr[1], 10),
-                                endDay = parseInt(endArr[2], 10),
-                                startsInPastMonth = startYear < setYear || (startMonth < setMonth && startYear === setYear),
-                                endsThisMonth = endMonth === setMonth && endYear === setYear,
-                                endsInFutureMonth = endYear > setYear || (endMonth > setMonth && endYear === setYear);
-                            if(startsThisMonth || endsThisMonth || (startsInPastMonth && endsInFutureMonth)) {
-                                happensThisMonth = true;
-                                startDayNumber = startsThisMonth ? startDay : 1;
-                                endDayNumber = endsThisMonth ? endDay : daysInMonth(setMonth, setYear);
-                                showEventTitleOnDay = startsThisMonth ? startDayNumber : 1;
-                            }
-                        }
-                        if(!happensThisMonth) {
-                            return;
-                        }
-
-                        var startTime = _getEventDetail(event, "starttime"),
-                            timeHtml = "",
-                            eventURL = _getEventDetail(event, "url"),
-                            eventTitle = _getEventDetail(event, "name"),
-                            eventClass = _getEventDetail(event, "class"),
-                            eventColor = _getEventDetail(event, "color"),
-                            eventId = _getEventDetail(event, "id"),
-                            customClass = eventClass ? " " + eventClass : "",
-                            dayStartTag = "<div",
-                            dayEndTags = "</span></div>";
-
-                        if(startTime) {
-                            var endTime = _getEventDetail(event, "endtime");
-                            timeHtml = '<div><div class="monthly-list-time-start">' + formatTime(startTime) + "</div>"
-                                + (endTime ? '<div class="monthly-list-time-end">' + formatTime(endTime) + "</div>" : "")
-                                + "</div>";
-                        }
-
-                        if(options.linkCalendarToEventUrl && eventURL) {
-                            dayStartTag = "<a" + attr("href", eventURL);
-                            dayEndTags = "</span></a>";
-                        }
-
-                        var	markupDayStart = dayStartTag
-                                + attr("data-eventid", eventId)
-                                + attr("title", eventTitle)
-                                // BG and FG colors must match for left box shadow to create seamless link between dates
-                                + (eventColor ? attr("style", "background:" + eventColor + ";color:" + eventColor) : ""),
-                            markupListEvent = "<a"
-                                + attr("href", eventURL)
-                                + attr("class", "listed-event" + customClass)
-                                + attr("data-eventid", eventId)
-                                + (eventColor ? attr("style", "background:" + eventColor) : "")
-                                + attr("title", eventTitle)
-                                + ">" + eventTitle + " " + timeHtml + "</a>";
-                        for(var index = startDayNumber; index <= endDayNumber; index++) {
-                            var doShowTitle = index === showEventTitleOnDay;
-                            // Add to calendar view
-                            $(parent + ' *[data-number="' + index + '"] .monthly-indicator-wrap').append(
-                                    markupDayStart
-                                    + attr("class", "monthly-event-indicator" + customClass
-                                        // Include a class marking if this event continues from the previous day
-                                        + (doShowTitle ? "" : " monthly-event-continued")
-                                        )
-                                    + "><span>" + (doShowTitle ? eventTitle : "") + dayEndTags);
-                            // Add to event list
-                            $(parent + ' .monthly-list-item[data-number="' + index + '"]')
-                                .addClass("item-has-event")
-                                .append(markupListEvent);
-                        }
-                    }
-
-                    function addEvents(month, year) {
-                        if(options.events) {
-                            // Prefer local events if provided
-                            addEventsFromString(options.events, month, year);
-                        } else {
-                            var remoteUrl = options.dataType === "xml" ? options.xmlUrl : options.jsonUrl;
-                            if(remoteUrl) {
-                                // Replace variables for month and year to load from dynamic sources
-                                var url = String(remoteUrl).replace("{month}", month).replace("{year}", year);
-                                $.get(url, {now: $.now()}, function(data) {
-                                    addEventsFromString(data, month, year);
-                                }, options.dataType).fail(function() {
-                                    console.error("Monthly.js failed to import " + remoteUrl + ". Please check for the correct path and " + options.dataType + " syntax.");
-                                });
-                            }
-                        }
-                    }
-
-                    function addEventsFromString(events, setMonth, setYear) {
-                        if (options.dataType === "xml") {
-                            $(events).find("event").each(function(index, event) {
-                                addEvent(event, setMonth, setYear);
-                            });
-                        } else if (options.dataType === "json") {
-                            $.each(events.monthly, function(index, event) {
-                                addEvent(event, setMonth, setYear);
-                            });
                         }
                     }
 
@@ -1090,6 +961,7 @@ async function refreshDashboard(){
                         return " " + name + "=\"" + newValue + "\"";
                     }
 
+                    // Day names in top of calendar
                     function _appendDayNames(startOnMonday) {
                         var offset = startOnMonday ? 1 : 0,
                             dayName = "",
@@ -1156,26 +1028,6 @@ async function refreshDashboard(){
                         for(index = 0; index < count; index++) {
                             wrapperEl.prepend(markupBlankDay);
                         }
-                    }
-
-                    function _getEventDetail(event, nodeName) {
-                        return options.dataType === "xml" ? $(event).find(nodeName).text() : event[nodeName];
-                    }
-
-                    // Returns a 12-hour format hour/minute with period. Opportunity for future localization.
-                    function formatTime(value) {
-                        var timeSplit = value.split(":");
-                        var hour = parseInt(timeSplit[0], 10);
-                        var period = "AM";
-                        if(hour > 12) {
-                            hour -= 12;
-                            period = "PM";
-                        } else if (hour == 12) {
-                            period = "PM";
-                        } else if(hour === 0) {
-                            hour = 12;
-                        }
-                        return hour + ":" + String(timeSplit[1]) + " " + period;
                     }
 
                     function setNextMonth() {
@@ -1579,7 +1431,10 @@ async function refreshDashboard(){
                 await createTransactions(expenseInfoo).then((data)=> {
                     $('#newRecord .btn-close').click();
                     $('#spinner').css('display','none');
-                    refreshDashboard();
+                    // refreshDashboard();
+                    $('#reload-expenses').click();
+                    updateHeader();
+                    
                     util.handleApiResponse(data,"Expense Created ✅ ");
                     // util.toastResponse(data.statusCode,"Process Sucess","Expense Creation Failed");
                 })
@@ -1636,6 +1491,7 @@ async function refreshDashboard(){
 
 
                 $(form).find('.modal-title').text("Edit Expense")
+                $(form).find('#save-expense-btn').attr("id","editexp-submit-btn");
                 $(form).find('#expense-time').val(time);
                 $(form).find('#expense-name').val(expenseData.transactionInfo.reason);
                 $(form).find('#all-categories-options').val(expenseData.transactionInfo.categoryId);
@@ -1688,7 +1544,9 @@ async function refreshDashboard(){
                 });
 
                 // Save button Handler
-                $(form).find('#save-expense-btn').click(()=>{ updateExpenseDetails(); })
+                $(form).find('#editexp-submit-btn').click(()=>{ 
+                    updateExpenseDetails();
+                 })
 
             }
 
@@ -1766,6 +1624,7 @@ async function refreshDashboard(){
             // Validate the new expense json
             if(expenseFormUtil.validateExpenseInfo(expenseInfo)){
                 if(usingNewCategory==true) expenseInfo.transactionInfo.categoryId = await expenseFormUtil.createNewCategory();    
+                $('.edit-expense-form .btn-close').click();
                 updateExpenseApiCall(expenseInfo)
             }
 
@@ -1778,7 +1637,8 @@ async function refreshDashboard(){
                     $('#spinner').css('display','none');
                     $('.modal-backdrop').remove();
                     util.handleApiResponse(data,"Expense Edited ✏️ ");
-                    refreshDashboard();
+                    $('#reload-expenses').click();
+                    updateHeader();
                 });
                 $('body').css('overflow', 'scroll');
             }
@@ -1787,6 +1647,53 @@ async function refreshDashboard(){
         }
 
     }
+
+    let isBannerListenerInitialized = false;
+    async function updateHeader(timeRange){
+            
+        // Show current set range total expense in header container
+        if(timeRange==null || timeRange.length==0 ){ timeRange = localStorage.getItem("spendingsBannerTime"); }
+        let dateRanges = {
+            'Today': [moment(), moment()],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'This Week': [moment().startOf('week'), moment()],
+            'This Month' : [moment().startOf('month'), moment().endOf('month')],
+        }
+        let st = dateRanges[timeRange][0].format('YYYYMMDD');
+        let end = dateRanges[timeRange][1].format('YYYYMMDD');
+
+        let expenseData = null;
+        await findTransactions(st,end,'expenses').then((data)=>expenseData = data.data.expenses);
+
+        let rangeExpense = 0;
+        for(let i=0; i<expenseData.length; i++) rangeExpense+=expenseData[i].amount;
+        
+
+        $('.reporting-days-total').text(rangeExpense);
+        $('#mi-bal-amount').text(util.moneyFormat(rangeExpense));
+        $('.main-balance .header-timespan ').text(", "+timeRange+"");
+
+
+        initiateBannerListeners();
+        function initiateBannerListeners(){
+            if(isBannerListenerInitialized) return;
+
+            $('.htimespan-select .fa-chevron-down').click(()=>{
+                $('.htimespan-select .options').toggle();
+            })
+
+            // $('.htimespan-select .option').off()
+            $('.htimespan-select .option').click((e)=>{
+                $('.htimespan-select .options').toggle();
+                localStorage.setItem("spendingsBannerTime",$(e.target).text());
+                let timeSpan = $(e.target).text();
+                updateHeader(timeSpan);
+            });
+
+            isBannerListenerInitialized = true;
+        }
+    }
+
 
 
 
