@@ -68,6 +68,10 @@ public class UsersKeyController extends RestController {
 		resp.getWriter().write(gson.toJson(jsonResponse));
 		
 	}
+	
+	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+	}
 
 	public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 

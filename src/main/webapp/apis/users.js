@@ -16,7 +16,7 @@ async function createUser(raw) {
 
 // Retrieve user information
 async function findUserById(id) {
-    var postRequestOptions = {method: 'GET',headers: myHeaders,body: raw,redirect: 'follow'};
+    var postRequestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};
     const response = await fetch(server+"/api/v1/users/"+id, postRequestOptions);
     return await response.json();
 }

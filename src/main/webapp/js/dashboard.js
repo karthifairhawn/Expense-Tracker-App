@@ -290,6 +290,8 @@ async function refreshDashboard(){
         for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
     });
 
+    
+
     for(let key in userWallets) userWalletsMap[userWallets[key].id] = userWallets[key];
     
     let template = document.getElementById('tt-balance-header').content.cloneNode(true);
@@ -371,6 +373,7 @@ async function refreshDashboard(){
             if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
             else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
             
+            // console.log(expenseData);
             if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
             // Add loading indicator at end of container only for recent transactions
