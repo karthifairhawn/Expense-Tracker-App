@@ -57,11 +57,11 @@ public class WalletsController extends RestController {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		// Retrieve All Wallets
-		Map<String, List<Wallets>> allWallets =  walletsService.findAll();
+		Map<String, List<Wallets<?>>> allWallets =  walletsService.findAll();
 		
 		
 		// Processing Response
-		CommonObjectResponse<Map<String, List<Wallets>>> responseObject = new CommonObjectResponse<Map<String, List<Wallets>>>();
+		CommonObjectResponse<Map<String, List<Wallets<?>>>> responseObject = new CommonObjectResponse<Map<String, List<Wallets<?>>>>();
 		responseObject.setData(allWallets);
 		responseObject.setStatusCode(200);
 		response.setContentType("application/json");

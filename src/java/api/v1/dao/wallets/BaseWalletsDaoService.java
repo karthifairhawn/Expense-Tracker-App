@@ -27,6 +27,10 @@ public class BaseWalletsDaoService {
 	private static BaseWalletsDaoService baseWalletsDaoService;
 	DatabaseUtil dbUtil;
 	UsersService usersDaoService;
+	private static BankWalletsDaoService bankWalletsDaoService;
+	private static BonusWalletsDaoService bonusWalletsDaoService;
+	private static CreditCardWalletsDaoService creditCardWalletsDaoService;
+	private static OtherWalletsDaoService otherWalletsDaoService;
 	
 	
 	private BaseWalletsDaoService() {
@@ -38,6 +42,11 @@ public class BaseWalletsDaoService {
 			baseWalletsDaoService.gson = new Gson();
 			baseWalletsDaoService.dbUtil = DatabaseUtil.getInstance();
 			baseWalletsDaoService.usersDaoService = UsersService.getInstance();
+			
+			bankWalletsDaoService = BankWalletsDaoService.getInstance();
+			bonusWalletsDaoService = BonusWalletsDaoService.getInstance();
+			creditCardWalletsDaoService = CreditCardWalletsDaoService.getInstance();
+			otherWalletsDaoService = OtherWalletsDaoService.getInstance();
 		}
 		return baseWalletsDaoService;
 	}
@@ -68,11 +77,11 @@ public class BaseWalletsDaoService {
 		return wallet;
 	}
 
-	public List<Wallets> findAll(){
+	public List<Wallets<?>> findAll(){
 		// Getting Client Info
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
-		List<Wallets> allWallets = new LinkedList<Wallets>();
+		List<Wallets<?>> allWallets = new LinkedList<Wallets<?>>();
 		
 		// Wallet Retrivel
 		String sql = "SELECT * FROM `wallets` where user_id = '" + operatingUser.getId() + "' && deleted=0";
@@ -91,6 +100,18 @@ public class BaseWalletsDaoService {
 				fetchingWallet.setBalance(Integer.parseInt(rs.getString(5)));
 				fetchingWallet.setExcludeFromStats(Integer.parseInt(rs.getString(6))==1 ? true : false);
 				fetchingWallet.setUserId(Long.parseLong(rs.getString(7)));
+				
+				
+				Object subWallet = null;
+
+				if(fetchingWallet.getType().equals("Bank Account")) 			subWallet = bankWalletsDaoService.findById(fetchingWallet.getId());
+				else if(fetchingWallet.getType().equals("Credit Card")) 		subWallet = creditCardWalletsDaoService.findById(fetchingWallet.getId());
+				else if(fetchingWallet.getType().equals("Bonus Account")) 	subWallet = bonusWalletsDaoService.findById(fetchingWallet.getId());
+				else if(fetchingWallet.getType().equals("Other")) 			subWallet = otherWalletsDaoService.findById(fetchingWallet.getId());
+
+				fetchingWallet.setWalletInfo(subWallet);
+				
+				System.out.println(fetchingWallet);
 				allWallets.add(fetchingWallet);
 			}
 			
@@ -125,8 +146,6 @@ public class BaseWalletsDaoService {
 			wallet.setExcludeFromStats(Integer.parseInt(rs.getString(6))==1 ? true : false);
 			wallet.setUserId(Long.parseLong(rs.getString(7)));
 			
-
-
 
 		} catch (SQLException e) {
 			System.out.println("Single wallet retrivel failure");

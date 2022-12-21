@@ -4,9 +4,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.gson.Gson;
 
+import api.v1.contexts.RequestContext;
 import api.v1.dao.UsersDaoService;
+import api.v1.dto.PasswordChangeDto;
 import api.v1.dto.auth.LoginDto;
 import api.v1.entity.Users;
 import api.v1.exception.CustomException;
@@ -129,6 +134,54 @@ public class UsersService {
 
 		return true;
     }
+	
+    public Users update(Users updatingUser) {
+		
+		// Getting Client Data
+		HttpServletRequest request = RequestContext.getAttribute("request");
+		HttpServletResponse response = RequestContext.getAttribute("response");
+		String[] path =  request.getPathInfo().length()>0 ? request.getPathInfo().substring(1).split("/") : null ;
+		
+		Long userId = Long.parseLong(path[path.length - 1]);
+		
+		updatingUser.setId(userId);
+		
+		return usersDaoService.update(updatingUser);
+	}
+	
+    public String changePasswordByUserId(PasswordChangeDto passwordChangeDto, Long userId) {
+    	 usersDaoService.changePasswordByUserId(passwordChangeDto,userId);
+    	 return "Password has been Changed";
+	}
+	
+    public Boolean isValidPasswordChangeDTO(PasswordChangeDto passwordChangeDto) {
+		
+    	Map<String,String> errors = new HashMap<String,String>();
+    	
+    	// Super type Validation
+    	validatorUtil.nullValidation(passwordChangeDto,errors,"Request body");
+    	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
+    	
+    	
+    	// Null Validation
+    	validatorUtil.nullValidation(passwordChangeDto.getOldPassword(),errors,"Old Password ");
+    	validatorUtil.nullValidation(passwordChangeDto.getNewPassword(),errors,"New Password ");
+    	
+    	// Value Validation
+    	Users operatingUser = (Users)RequestContext.getAttribute("user");
+    	if( !usersDaoService.getPasswordById(operatingUser.getId()).equals(passwordChangeDto.getOldPassword()) ){
+    		errors.put("Old password", "Old password is wrong");
+    	}
+
+    	if(passwordChangeDto.getNewPassword().length()<8) {
+    		errors.put("New password", "New password must be length 8");
+    	}
+    	
+    	System.out.println("\033[0m "+errors.toString());
+    	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
+		
+    	return true;
+	}
     
 }
 

@@ -2,6 +2,7 @@ package api.v1.controllers.users;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -78,6 +79,23 @@ public class UsersKeyController extends RestController {
 		
 	}
 
+	public void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+		// Getting client data
+		Users newUser = gson.fromJson( (String)RequestContext.getAttribute("requestBody"), Users.class); 
+		
+		// User Creation
+		newUser =  usersService.update(newUser);
+		
+		
+		// Response Processing
+		CommonObjectResponse<Users> responseObject = new CommonObjectResponse<>();
+		responseObject.setStatusCode(200);
+		responseObject.setData(newUser);
+		response.setContentType("application/json");
+		response.setStatus(200);
+		response.getWriter().write(gson.toJson(responseObject));
+	}
 
 
 	@Override

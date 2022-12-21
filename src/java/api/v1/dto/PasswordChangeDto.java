@@ -1,19 +1,20 @@
-package api.v1.entity;
+package api.v1.dto;
+
+import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Users {
-	private String email;
-	private String phoneNumber;
-	private Long id;
-	private String password;
-	private String name;
+public class PasswordChangeDto {
+	
+	String oldPassword; 
+	String newPassword; 
 	
 }

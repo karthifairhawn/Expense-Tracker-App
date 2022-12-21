@@ -76,17 +76,17 @@ public class WalletsService {
 	}
 	
 	
-	public Map<String, List<Wallets>> findAll() {
+	public Map<String, List<Wallets<?>>> findAll() {
 		
-		List<Wallets> list = new ArrayList<Wallets>();
+		List<Wallets<?>> list = new ArrayList<Wallets<?>>();
 		list.addAll(baseWalletsDaoService.findAll());
 		
-		Map<String,List<Wallets>> allWallets = new HashMap<String, List<Wallets>>();
+		Map<String,List<Wallets<?>>> allWallets = new HashMap<String, List<Wallets<?>>>();
 		
-		allWallets.put("Bank Account", new ArrayList<Wallets>());
-		allWallets.put("Credit Card", new ArrayList<Wallets>());
-		allWallets.put("Bonus Account", new ArrayList<Wallets>());
-		allWallets.put("Other", new ArrayList<Wallets>());
+		allWallets.put("Bank Account", new ArrayList<Wallets<?>>());
+		allWallets.put("Credit Card", new ArrayList<Wallets<?>>());
+		allWallets.put("Bonus Account", new ArrayList<Wallets<?>>());
+		allWallets.put("Other", new ArrayList<Wallets<?>>());
 		
 		
 		for(Wallets w:list) {
@@ -96,6 +96,7 @@ public class WalletsService {
 			else if(w.getType().equals("Other")) allWallets.get("Other").add(w);
 		}
 		
+//		System.out.println(allWallets);
 		return allWallets;
 	}
 
@@ -115,7 +116,6 @@ public class WalletsService {
 		else if(walletType.equals("Other")) 			subWallet = otherWalletsDaoService.findById(walletId);
 
 		wallet.setWalletInfo(subWallet);
-		System.out.println(wallet);
 		return wallet;
 	}
 	
@@ -165,7 +165,6 @@ public class WalletsService {
 		else if(wallet.getType().equals("Other")) validateOtherWallet(new OtherWallets((LinkedTreeMap) wallet.getWalletInfo()),wallet.getId());
 
 	}
-	
 	private void validateOtherWallet(OtherWallets otherWallet, long id) {
 		
 		
@@ -249,8 +248,6 @@ public class WalletsService {
 		
 		
 	}
-	
-	
 	public Boolean validateIsOwnerById(Long userId, Long walletId) {
 		
 		Map<String,String> errors = new HashMap<String,String>();

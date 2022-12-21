@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import api.v1.dto.PasswordChangeDto;
 import api.v1.entity.Users;
 import api.v1.exception.CustomException;
 import api.v1.utils.DatabaseUtil;
@@ -28,7 +29,7 @@ public class UsersDaoService {
         try {
             rs = dbUtil.executeSelectionQuery("SELECT * FROM `users` where session_key='"+authToken+"' ");
             rs.next();
-            Users foundUser = new Users(rs.getString("email"),rs.getString("phone_number"),Integer.parseInt(rs.getString("id")),null,rs.getString("name"));
+            Users foundUser = new Users(rs.getString("email"),rs.getString("phone_number"),Long.parseLong(rs.getString("id")),null,rs.getString("name"));
             return foundUser;
 
         } catch (SQLException e) {
@@ -41,7 +42,7 @@ public class UsersDaoService {
         try {
             ResultSet rs = dbUtil.executeSelectionQuery("SELECT * FROM `users` where (email='"+email+"' and password='"+password+"')");
             rs.next();
-            Users foundUser = new Users(rs.getString("email"),rs.getString("phone_number"),Integer.parseInt(rs.getString("id")),"",rs.getString("name"));
+            Users foundUser = new Users(rs.getString("email"),rs.getString("phone_number"),Long.parseLong(rs.getString("id")),"",rs.getString("name"));
             return foundUser;
 
         } catch (SQLException e) {
@@ -87,7 +88,7 @@ public class UsersDaoService {
     public Users save(Users newUser){
         ResultSet rs = dbUtil.executeInsertionQuery("INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone_number`,`session_key`) VALUES (NULL, '"+newUser.getName()+"', '"+newUser.getEmail()+"', '"+newUser.getPassword()+"', '"+newUser.getPhoneNumber()+"','"+newUser.getEmail()+"')");
 		try {
-	        if(rs.next()) newUser.setId(rs.getInt(1));
+	        if(rs.next()) newUser.setId(rs.getLong(1));
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new CustomException("User Creation failed",500,new Date().toLocaleString());
@@ -95,4 +96,30 @@ public class UsersDaoService {
 
 		return newUser;
     }
+	
+    public Users update(Users updatingUser) {
+        ResultSet rs = dbUtil.executeInsertionQuery("UPDATE `users` SET `name`='"+updatingUser.getName()+"',`phone_number`='"+updatingUser.getPhoneNumber()+"',`email`='"+updatingUser.getEmail()+"' WHERE 1");
+		return updatingUser;
+	}
+	
+    public void changePasswordByUserId(PasswordChangeDto passwordChangeDto, Long userId) {
+    	
+        ResultSet rs = dbUtil.executeInsertionQuery("UPDATE `users` SET `password` = '"+passwordChangeDto.getNewPassword()+"' WHERE `users`.`id` = "+userId);
+		
+	}
+	
+    
+    public String getPasswordById(Long userId) {
+        try {
+            ResultSet rs = dbUtil.executeSelectionQuery("SELECT * FROM `users` where (id='"+userId+"')");
+            rs.next();
+            return rs.getString("password");
+            
+        } catch (SQLException e) {
+        	e.printStackTrace();
+        	return null;
+        }
+    	
+//		return null;
+	}
 }
