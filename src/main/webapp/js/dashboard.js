@@ -1,25 +1,24 @@
 import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById, findTransactionsPaginated} from '../apis/transactions.js';
-import {findWalletById, findWallets,createWallet,deleteWalletById,updateWalletById} from '../apis/wallets.js';
-import {findTagById,findTags,createTag} from '../apis/tags.js';
-import {findCategoryById,findCategories,createCategory} from '../apis/categories.js';
+import {findWalletById, findWallets} from '../apis/wallets.js';
+import {findTags,createTag} from '../apis/tags.js';
+import {findCategories,createCategory} from '../apis/categories.js';
 
 import * as util from './util.js';
 
 // Mount Dashboard by default
 var currTimeSpan = 'Recent';
+let isBannerListenerInitialized = false;
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 let colorOne = ['d6eb70','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorTwo = ['ebf5b8','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 let isMonthlyViewOverriden = false; 
 $('.nav-item[tabs=dashboard]').addClass('active')
-let initialDomLoaded = false;
 refreshDashboard();
-async function refreshDashboard(){ 
 
+async function refreshDashboard(){ 
 
     let userCardWallets = [];
     let userNonCardWallets = [];
-    let totalBalance = 0;
 
     let userTags = null;
     let userTagsMap = {};
@@ -42,7 +41,6 @@ async function refreshDashboard(){
         "containerId" : null
     }
     
-
     let expenseFormUtil = {
         
         listWalletsInForm : async function listWalletsInForm(){
@@ -71,7 +69,7 @@ async function refreshDashboard(){
         listCategoriesInForm : async function listCategoriesInForm(){
 
             let allCategories = userCategories;
-        
+            console.log(allCategories);
             let allCategoriesHTML = '';
             allCategoriesHTML+='<option ico="f219" value="0">General Expense</option>';
             for(let i=0;i<allCategories.length;i++){
@@ -266,48 +264,64 @@ async function refreshDashboard(){
 
     }
 
-    await findCategories().then((data)=> {
-        userCategories= (data.data)
-        for(let k=0; k<userCategories.length; k++){
-            userCategoriesMap[userCategories[k].id] = userCategories[k];
-        }
-    });
-
-    await findTags().then((data)=> {
-        userTags = data.data;
-        for(let k=0; k<userTags.length; k++){
-            userTagsMap[userTags[k].id] = userTags[k];
-        }
-    });
-
-    await findWallets().then((data)=> {
-        data = data.data;
-        for(const category in data){
-            if(category =='Credit Card') userCardWallets.push(...data[category]);
-            else userNonCardWallets.push(...data[category]);
-            userWallets.push(...data[category]);
-        }
-        for(let wallet in userWallets) totalBalance += userWallets[wallet].balance;
-    });
-
-    
-
-    for(let key in userWallets) userWalletsMap[userWallets[key].id] = userWallets[key];
-    
-    let template = document.getElementById('tt-balance-header').content.cloneNode(true);
-    $(template).find('#total-acct-count').text(userWallets.length);
-    $(template).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
-    $('#balance-header').html('');
-    $('#balance-header').append(template);
-    
-
+    updateHeader();
+    await findBasicEntities();
     mountExpenseSection();
 
-    $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
+    async function findBasicEntities(){
+        let promisePending = [];
+        promisePending.push(findCategories());
+        promisePending.push(findWallets())
+        promisePending.push(findTags());
 
+        await Promise.all(promisePending).then((values)=>{
 
+            userCategories= (values[0].data)
+            for(let k=0; k<userCategories.length; k++){
+                userCategoriesMap[userCategories[k].id] = userCategories[k];
+            }
+           
+            let wallets = values[1].data;
+            for(const category in wallets){
+                // console.log(wallets)
+                if(category =='Credit Card') userCardWallets.push(...wallets[category]);
+                else userNonCardWallets.push(...wallets[category]);
+                userWallets.push(...wallets[category]);
+            }
+            for(let key in userWallets) userWalletsMap[userWallets[key].id] = userWallets[key];
+    
+            userTags = values[2].data;
+            for(let k=0; k<userTags.length; k++){
+                userTagsMap[userTags[k].id] = userTags[k];
+            }
+        })
 
+        // await findCategories().then((data)=>{
+        //     userCategories= (data.data)
+        //     for(let k=0; k<userCategories.length; k++){
+        //         userCategoriesMap[userCategories[k].id] = userCategories[k];
+        //     }
+        // })
 
+        // await findWallets().then((data)=>{
+        //     let wallets = data.data;
+        //     for(const category in wallets){
+        //         // console.log(wallets)
+        //         if(category =='Credit Card') userCardWallets.push(...wallets[category]);
+        //         else userNonCardWallets.push(...wallets[category]);
+        //         userWallets.push(...wallets[category]);
+        //     }
+        //     for(let key in userWallets) userWalletsMap[userWallets[key].id] = userWallets[key];
+        // });
+
+        // await findTags().then((data)=>{
+        //     userTags = data.data;
+        //     for(let k=0; k<userTags.length; k++){
+        //         userTagsMap[userTags[k].id] = userTags[k];
+        //     }
+        // });
+    }
+    
     function mountExpenseSection(){
 
         // TEMPLATE MOUNT ---- added date range selector to the section
@@ -319,31 +333,17 @@ async function refreshDashboard(){
         $(dateRangeContainer).html('');
         dateRangeContainer.appendChild(clone);  
 
-        // Hide monthly view section by default
-
-
-        
+        // Hide monthly view section by default   
         let listingExpenseDate = null;
         let daysTotalExpense = 0;
         let daysExpenseCount = 0
+        let rangeExpense =0;
         let calendarMounted = false;
         let weeklyTabInitialized = false;    
 
-
         initiateDateSelectorPlugin();
-
-        let spendingsBannerTime = localStorage.getItem("spendingsBannerTime");
-        if (spendingsBannerTime==undefined) spendingsBannerTime = 'This Month';
-        updateHeader(spendingsBannerTime);
-
         
         // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
-
-        $('#reload-expenses').click(()=>{
-            console.log("refresh");
-            findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
-        });
-
         function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){
             previousExpenseFetch =  {
                 "expenseFrom" : expenseFrom,
@@ -353,15 +353,15 @@ async function refreshDashboard(){
                 "containerId" : containerId
             }
         }
+
         async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
 
-
+            // Store arg values in ana object that will be used for refresh 
             setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId);
 
             // Clearing up old expense section data
             listingExpenseDate = null;
             daysTotalExpense = 0;
-            let rangeExpense = 0;
             let expenseData = null;
 
             
@@ -377,11 +377,11 @@ async function refreshDashboard(){
             if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
             // Add loading indicator at end of container only for recent transactions
-            if(timeSpan=='Recent' && expenseData.data.expenses.length==15) mountLiveUpdateBar();
+            if(timeSpan=='Recent' && expenseData.data.expenses.length==15) mountLoadingScreen();
             
 
             // Only appliable for recent transactions section
-            function mountLiveUpdateBar(){
+            function mountLoadingScreen(){
 
                 if(expenseData.data.expenses.length == 0) return;
 
@@ -452,7 +452,6 @@ async function refreshDashboard(){
                                 userWalletsMap[resp.data.id] = resp.data;
                             }
                         });
-
                     }
                 }
                 
@@ -463,7 +462,7 @@ async function refreshDashboard(){
                 // Add expense amount to currentRangeTotal and Populate
                 rangeExpense+=expenses[i].amount;
                 
-                if(containerId.length>0) populateExpense(wallets,expenses[i],categoryInfo,containerId);
+                populateExpense(wallets,expenses[i],categoryInfo,containerId);
             }
 
 
@@ -473,224 +472,243 @@ async function refreshDashboard(){
         async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMount){
 
             let allTagsInfo = [];
-
-            let tagsIds = expense.transactionInfo.tagId;
-
-            // Get all tags information
-            for(let i=0;i<tagsIds.length;i++) allTagsInfo.push({data:userTagsMap[tagsIds[i]]});
-            
-
-            let expenseTemplate = $("#expense-card-template")[0];
-            let expenseContainer = $("#"+containerIdToMount)[0];
-            let expenseTemplateClone = expenseTemplate.content.cloneNode(true);
-
-            $(expenseTemplateClone).find('#editExpenseForm').attr('id','editExpenseForm'+expense.id);
-            // $(expenseTemplateClone).find('.edit-expense-btn').attr('data-bs-target',)
-            $(expenseTemplateClone).find('.edit-expense-btn').click(()=>{
-                $('#myModal').modal({ show: false})
-                $('#'+'editExpenseForm'+expense.id).modal('show');
-                $('#'+'editExpenseForm'+expense.id).appendTo('body');
-
-                mountEditExpenseForm(expense.id);
-            })
-
-            // console.log($(expenseTemplateClone));
-            $(expenseTemplateClone).find('.expcard-body').click(()=>{
-                $('#expense'+expense.id).modal({ show: false})
-                $('#expense'+expense.id).modal('show');
-            })
-
-
-
-
-
-            // Grouping multiple days expense with dates and calculating per days's expense 
-            if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
-                daysExpenseCount = 1;
-                daysTotalExpense = expense.amount;
-                newDateSection(expense.transactionInfo.spendOn.split(" ")[0]); 
-                listingExpenseDate = expense.transactionInfo.spendOn.split(" ")[0];
-            }else{
-                daysExpenseCount+=1;
-                daysTotalExpense+=expense.amount;
-                $('.days-expense'+listingExpenseDate).text(util.moneyFormat(daysTotalExpense)); 
-                $('.dtb'+listingExpenseDate).find('.expenses-count').text(daysExpenseCount); 
-            }
-
-            let currentElement = expenseTemplateClone;
-            
-            
-
-            // Find and append wallet Split;
-            let isWalletMissSet =  null;
-            for(let i=0; i<walletInfo.length;i++){
-                if(walletInfo[i].id <   0 ){
-                    isWalletMissSet = false;
-                    let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
-                    $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
-                    $(newWalletSplit).find('.account-spend').text('N/A');
-                    // $(currentElement).find(".wallet-splits").append(newWalletSplit);
-                    
-                }else{
-                    let id = walletInfo[i]?.id;
-                    let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
-                    $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
-                    $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
-                    $(currentElement).find(".wallet-splits").append(newWalletSplit);
-                }
-            }
-
-            if($(currentElement).find('.wallet-split').size()==0)  $(currentElement).find('.wallet-splits').parent().remove();
-
-            // Finding wallet name
             let walletName = null;
-            if(walletInfo[0].id<0){
-                walletName = '<span class="muted">N/A</span>'
-            }else if(walletInfo.length == 1){
-                walletName = (walletInfo[0]?.name);
-            }else{
-                let accounts = walletInfo.length;
-                walletName = +accounts+" Accounts "+'<i class="fa-solid fa-arrows-split-up-and-left"></i> '
-            }
-
-
-            // Format expense time
-            let expenseTime = expense.transactionInfo.spendOn;
-            expenseTime = formatExpenseTime(expenseTime);
-            let fullExpenseTime = formatExpenseTime(expense.transactionInfo.spendOn,'sdfsd')
-                    
-            // Setting expense data to the dom
-            if(categoryInfo.imagePath == undefined) categoryInfo.imagePath = 'f543';
-
-
-            // find wallet type
-            let walletType = walletInfo.length > 1 ? 'Multiple Wallet Split' : walletInfo[0]?.data?.type ;
-
-
-            // Populate info into card
+            let isWalletMissSet =  null;
+            let tagsIds = expense.transactionInfo.tagId;
+            
+            let expenseContainer = $("#"+containerIdToMount)[0];
+            let currentElement = null;
             let color = '#'+colorOne[expense.id%9];
             let colorTw = '#'+colorTwo[expense.id%9];
 
+            newDateSectionHandler();
+            cloneExpenseTemplate();
+
+            populateCardInformation();
+            populateWalletDetails();
+            populateTags();
+
+            setCustomAttributes();
+            setCustomStyling();
+
+            addViewListener();
+            addDeleteListener();
+            addEditListener();
+
+            
+            mountExpenseToDom();
+
+            // Grouping multiple days expense with dates and calculating per days's expense 
+            function newDateSectionHandler(){
+
+                if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
+                    daysExpenseCount = 1;
+                    daysTotalExpense = expense.amount;
+                    createNewDateSection(expense.transactionInfo.spendOn.split(" ")[0]); 
+                    listingExpenseDate = expense.transactionInfo.spendOn.split(" ")[0];
+                }else{
+                    daysExpenseCount+=1;
+                    daysTotalExpense+=expense.amount;
+                    $('.days-expense'+listingExpenseDate).text(util.moneyFormat(daysTotalExpense)); 
+                    $('.dtb'+listingExpenseDate).find('.expenses-count').text(daysExpenseCount); 
+                }
+                
+                function createNewDateSection(newDate){
+                    let dateSection = document.createElement("div");
+    
+                    // Monthly view calendar update
+                    let calander = $('.dt'+newDate);
+                    let calendarBoxContent = $('<div class="calendar-dtb dtb'+newDate+'"></div>');
+                    $(calendarBoxContent).append('<span> <span class="expenses-count">1 </span> Expenses</span>'); // Expense Count will be updated by newDateSection() in populateExpense();
+                    $(calendarBoxContent).append('<h4 class="dte-amount days-expense'+newDate+'">'+util.moneyFormat(daysTotalExpense)+'</h4>');
+                    $(calander).find('.monthly-indicator-wrap').html(calendarBoxContent);
+    
+                    let date = newDate.split("-").reverse();
+                    date[1] = months[date[1]-1];
+                    date = date.join(' ')
+    
+                    let daysExpenseTemplate = "<span class='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
+                    dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: '+ daysExpenseTemplate;
+                    dateSection.style.color = '#385170';
+                    $(expenseContainer).append(dateSection);
+    
+                }
+                
+            }
+    
+            function cloneExpenseTemplate(){
+                let expenseTemplate = $("#expense-card-template")[0];
+                let expenseTemplateClone = expenseTemplate.content.cloneNode(true);
+                $(expenseTemplateClone).find('#editExpenseForm').attr('id','editExpenseForm'+expense.id);
+                $(expenseTemplateClone).find('.edit-expense-btn').click(()=>{
+                    $('#myModal').modal({ show: false})
+                    $('#'+'editExpenseForm'+expense.id).modal('show');
+                    $('#'+'editExpenseForm'+expense.id).appendTo('body');
+                    mountEditExpenseForm(expense.id);
+                })
+                currentElement = expenseTemplateClone;
+            }
+
             // Populating information to the card
-            $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
-            $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
-            $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
-            $(currentElement).find(".timestamp").text(expense.timestamp);
-            $(currentElement).find(".category").text(categoryInfo.name);
+            function populateCardInformation(){
 
-            $(currentElement).find(".wallet-name").html(walletName);
-            $(currentElement).find(".wallet-type").text(walletType);
-            $(currentElement).find(".spend-on").text(fullExpenseTime);
-            $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
+                // Format expense time
+                let timeOnly = expense.transactionInfo.spendOn.split(" ")[1].split(":");
+                let fullExpenseTime = (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
+                        
+                // Setting expense data to the dom
+                if(categoryInfo.imagePath == undefined) categoryInfo.imagePath = 'f543';
+
+                
+
+                $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
+                $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
+                $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
+                $(currentElement).find(".timestamp").text(expense.timestamp);
+                $(currentElement).find(".category").text(categoryInfo.name);
+                $(currentElement).find(".spend-on").text(fullExpenseTime);
+                $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
+            }
+
+            // Find and append wallet Split;
+            function populateWalletDetails(){
+                
+                for(let i=0; i<walletInfo.length;i++){
+                    if(walletInfo[i].id <   0 ){
+                        isWalletMissSet = false;
+                        let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
+                        $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
+                        $(newWalletSplit).find('.account-spend').text('N/A');
+                        // $(currentElement).find(".wallet-splits").append(newWalletSplit);
+                        
+                    }else{
+                        let id = walletInfo[i]?.id;
+                        let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
+                        $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
+                        $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");
+                        $(currentElement).find(".wallet-splits").append(newWalletSplit);
+                    }
+                }
+    
+                if($(currentElement).find('.wallet-split').size()==0)  $(currentElement).find('.wallet-splits').parent().remove();
+    
+                // Finding wallet name
+                if(walletInfo[0].id<0){
+                    walletName = '<span class="muted">N/A</span>'
+                }else if(walletInfo.length == 1){
+                    walletName = (walletInfo[0]?.name);
+                }else{
+                    let accounts = walletInfo.length;
+                    walletName = +accounts+" Accounts "+'<i class="fa-solid fa-arrows-split-up-and-left"></i> '
+                }
+
+                let walletType = walletInfo.length > 1 ? 'Multiple Wallet Split' : walletInfo[0]?.data?.type ;
+                $(currentElement).find(".wallet-name").html(walletName);
+                $(currentElement).find(".wallet-type").text(walletType);
+
+                // Detection of isDeleted Wallets Expense
+                handleWalletedDeletedExpenses();
+                function handleWalletedDeletedExpenses(){
+                    if(isWalletMissSet === true) $(currentElement).find('.edit-expense-btn').remove();
+                    if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').remove();
+                    if(isWalletMissSet === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
+                    if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').off()
+                    if(isWalletMissSet === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
+                }
 
 
-
-            // Setting dynamic attributes
-            $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
-            $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
-            $(currentElement).find(".edit-expense-btn").attr('expense-id',expense.id);
-            $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
-
-            // Adding Dynamic Styling
-            $(currentElement).find('.expcard-body').css('background-color',colorTw);
-            $(currentElement).find('.category-ico').css('background-color','#43cead');
-            $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
-            $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
-            $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
-
-
-            // Detection of isDeleted Wallets Expense
-            if(isWalletMissSet === true) $(currentElement).find('.edit-expense-btn').remove();
-            if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').remove();
-            if(isWalletMissSet === true) $(currentElement).find('.wallet-splits').before('<div class="text-danger">Some wallets has been deleted.(editing disabled)</div>');
-
-            if(isWalletMissSet === true) $(currentElement).find('.expense-edit-btn').off()
-            if(isWalletMissSet === true) $(currentElement).find(".title").append('<i class="fas expired-expense-ico fa-ban"></i>'); 
-            
-
-
-            // Delete Button Listener
-            $(currentElement).find('.expense-delete-btn').click((event)=>{ 
-                let expenseId =$(event.target).attr('expense-id');
-                $('#spinner').css('display','block');
-
-                deleteTransactionsById(+expenseId).then((data)=> {
-                    util.handleApiResponse(data,"Expense Deleted 🗑️ ");
-                    $('#spinner').css('display','none');
-                    $('.btn-close').click();
-                    refreshDashboard();
-                });
-            
-            })
-
-            // Open edit on clicking title
-            $(currentElement).find('.modal-title').click((event)=>{
-                $(currentElement).find('.expense-edit-btn').click();
-            });
+            }
 
             // Populating Tags
-            let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
-            let allTagsSection = $(currentElement).find('.all-tags-section');
-            let modelAllTagsSection = $(currentElement).find('.all-tags-msection');
+            function populateTags(){
 
-            for(let i=0;i<allTagsInfo.length;i++){
-                let newTagClone = newTag.clone();
-                newTagClone.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
-                modelAllTagsSection.append(newTagClone);
+                for(let i=0;i<tagsIds.length;i++) allTagsInfo.push({data:userTagsMap[tagsIds[i]]});
 
-                if(i<3){
-                    let newElement = newTag.clone();
-                    newElement.find('.tag-text').text(""+allTagsInfo[i].data.name.toLowerCase());
-                    allTagsSection.append(newElement.clone());
+                let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
+                let allTagsSection = $(currentElement).find('.all-tags-section');
+                let modelAllTagsSection = $(currentElement).find('.all-tags-msection');
+    
+                for(let i=0;i<allTagsInfo.length;i++){
+                    let newTagClone = newTag.clone();
+                    newTagClone.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
+                    modelAllTagsSection.append(newTagClone);
+    
+                    if(i<3){
+                        let newElement = newTag.clone();
+                        newElement.find('.tag-text').text(""+allTagsInfo[i].data.name.toLowerCase());
+                        allTagsSection.append(newElement.clone());
+                    }
                 }
-            }
-
-            if(allTagsInfo.length>3){
-                let newElement = $('<div class="d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
-                newElement.find('.tty').text('+ '+ (allTagsInfo.length -3) + ' more');
-                allTagsSection.append(newElement);
+    
+                if(allTagsInfo.length>3){
+                    let newElement = $('<div class="d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tty">upi</span> </div>')
+                    newElement.find('.tty').text('+ '+ (allTagsInfo.length -3) + ' more');
+                    allTagsSection.append(newElement);
+                }
+                
             }
             
 
-
-
-            // To Fix Modal Mounting inside container issues
-            $(currentElement).find('.expcard-body').click(()=>{
-                $('#expense'+expense.id).appendTo('body');
-            })
-
-            expenseContainer.appendChild(expenseTemplateClone);
-
-
-            function newDateSection(newDate){
-                let dateSection = document.createElement("div");
-
-                // Monthly view calendar update
-                let calander = $('.dt'+newDate);
-                let calendarBoxContent = $('<div class="calendar-dtb dtb'+newDate+'"></div>');
-                $(calendarBoxContent).append('<span> <span class="expenses-count">1 </span> Expenses</span>'); // Expense Count will be updated by newDateSection() in populateExpense();
-                $(calendarBoxContent).append('<h4 class="dte-amount days-expense'+newDate+'">'+util.moneyFormat(daysTotalExpense)+'</h4>');
-                $(calander).find('.monthly-indicator-wrap').html(calendarBoxContent);
-
-                let date = newDate.split("-").reverse();
-                date[1] = months[date[1]-1];
-                date = date.join(' ')
-
-                let daysExpenseTemplate = "<span class='days-expense"+newDate+"'>"+daysTotalExpense+'</span></small></div>';                
-                dateSection.innerHTML = '<div class="date-grouping" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: '+ daysExpenseTemplate;
-                dateSection.style.color = '#385170';
-                $(expenseContainer).append(dateSection);
-
+            // Setting dynamic attributes
+            function setCustomAttributes(){
+                $(currentElement).find('#exampleModal').attr('id','expense'+expense.id)
+                $(currentElement).find(".expense-delete-btn").attr('expense-id',''+expense.id);
+                $(currentElement).find(".edit-expense-btn").attr('expense-id',expense.id);
+                $(currentElement).find(".expense-edit-btn").attr('expense-id',expense.id);
             }
 
-            function formatExpenseTime(expenseTime,groupBy){
-                let timeOnly = expenseTime.split(" ")[1].split(":");
-                return (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
+            // Adding Dynamic Styling
+            function setCustomStyling(){
+                $(currentElement).find('.category-ico').css('color','#363636');
+                $(currentElement).find('.category-ico').css('background-color','#'+colorOne[categoryInfo.id%9]);
+                $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
+                $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
+            }
+
+
+            function addViewListener(){
+                $(currentElement).find('.expcard-body').click(()=>{
+                    $('#expense'+expense.id).modal({ show: false})
+                    $('#expense'+expense.id).modal('show');
+                })
+            }
+            
+            // Delete Button Listener
+            function addDeleteListener() {
+                $(currentElement).find('.expense-delete-btn').click((event)=>{ 
+                    let expenseId =$(event.target).attr('expense-id');
+                    $('#spinner').css('display','block');
+    
+                    deleteTransactionsById(+expenseId).then((data)=> {
+                        util.handleApiResponse(data,"Expense Deleted 🗑️ ");
+                        $('#spinner').css('display','none');
+                        $('.btn-close').click();
+                        refreshDashboard();
+                    });
+                })
+            }
+
+            // Open edit on clicking title
+            function addEditListener(){
+                $(currentElement).find('.modal-title').click((event)=>{
+                    $(currentElement).find('.expense-edit-btn').click();
+                });
+            }
+
+
+            function mountExpenseToDom(){
+
+                // To Fix Modal Mounting inside container issues
+                $(currentElement).find('.expcard-body').click(()=>{
+                    $('#expense'+expense.id).appendTo('body');
+                })
+    
+                $(expenseContainer).append(currentElement);
             }
 
         }     
 
-        // Initiate the date range selector plugin
+        // Initiate the date range selector plugin and trigger populateExpense for Recent
         function initiateDateSelectorPlugin(){
 
             function cb(start, end, timeSpan) {
@@ -774,560 +792,566 @@ async function refreshDashboard(){
                 }
                 mountCalendarExpensesSection();
             }else if(timeSpan=='Weekly') mountWeeklyExpenses();
-        }
 
-        // Weekly and Monthly view Override
-        function monthlyViewOverride() {
-
-            (function ($) {
-                "use strict";
-                $.fn.extend({
-                    monthly: function(customOptions) {
-
-                        // These are overridden by options declared in footer
-                        var defaults = {
-                            dataType: "xml",
-                            disablePast: false,
-                            eventList: true,
-                            events: "",
-                            jsonUrl: "",
-                            linkCalendarToEventUrl: false,
-                            maxWidth: false,
-                            mode: "event",
-                            setWidth: false,
-                            showTrigger: "",
-                            startHidden: false,
-                            stylePast: false,
-                            target: "",
-                            useIsoDateFormat: false,
-                            weekStart: 0,	// Sunday
-                            xmlUrl: ""
-                        };
-
-                        var	options = $.extend(defaults, customOptions),
-                            uniqueId = $(this).attr("id"),
-                            parent = "#" + uniqueId,
-                            currentDate = new Date(),
-                            currentMonth = currentDate.getMonth() + 1,
-                            currentYear = currentDate.getFullYear(),
-                            currentDay = currentDate.getDate(),
-                            locale = (options.locale || defaultLocale()).toLowerCase(),
-                            monthNameFormat = options.monthNameFormat || "short",
-                            weekdayNameFormat = options.weekdayNameFormat || "short",
-                            monthNames = options.monthNames || defaultMonthNames(),
-                            dayNames = options.dayNames || defaultDayNames(),
-                            markupBlankDay = '<div class="m-d monthly-day-blank"><div class="monthly-day-number"></div></div>',
-                            weekStartsOnMonday = options.weekStart === "Mon" || options.weekStart === 1 || options.weekStart === "1",
-                            primaryLanguageCode = locale.substring(0, 2).toLowerCase();
-
-                    if (options.maxWidth !== false) {
-                        $(parent).css("maxWidth", options.maxWidth);
-                    }
-                    if (options.setWidth !== false) {
-                        $(parent).css("width", options.setWidth);
-                    }
-
-                    if (options.startHidden) {
-                        $(parent).addClass("monthly-pop").css({
-                            display: "none",
-                            position: "absolute"
-                        });
-                        $(document).on("focus", String(options.showTrigger), function (event) {
-                            $(parent).show();
-                            event.preventDefault();
-                        });
-                        $(document).on("click", String(options.showTrigger) + ", .monthly-pop", function (event) {
-                            event.stopPropagation();
-                            event.preventDefault();
-                        });
-                        $(document).on("click", function () {
-                            $(parent).hide();
-                        });
-                    }
-
-                    // Add Day Of Week Titles
-                    _appendDayNames(weekStartsOnMonday);
-
-                    // Add CSS classes for the primary language and the locale. This allows for CSS-driven
-                    // overrides of the language-specific header buttons. Lowercased because locale codes
-                    // are case-insensitive but CSS is not.
-                    $(parent).addClass("monthly-locale-" + primaryLanguageCode + " monthly-locale-" + locale);
-
-                    // Add Header & event list markup
-                    $(parent).prepend('<div class="monthly-header"><div class="monthly-header-title"><a href="#" class="monthly-header-title-date" onclick="return false"></a></div><a href="#" class="monthly-prev"></a><a href="#" class="monthly-next"></a></div>').append('<div class="monthly-event-list"></div>');
-
-                    // Set the calendar the first time
-                    setMonthly(currentMonth, currentYear);
-
-                    // How many days are in this month?
-                    function daysInMonth(month, year) {
-                        return month === 2 ? (year & 3) || (!(year % 25) && year & 15) ? 28 : 29 : 30 + (month + (month >> 3) & 1);
-                    }
-
-                    // Build the month
-                    function setMonthly(month, year) {
-                        
-
-                        calendarMonthExpensesChange(month, year);
-                        $(parent).data("setMonth", month).data("setYear", year);
-
-                        // Get number of days
-                        var index = 0,
-                            dayQty = daysInMonth(month, year),
-                            // Get day of the week the first day is
-                            mZeroed = month - 1,
-                            firstDay = new Date(year, mZeroed, 1, 0, 0, 0, 0).getDay(),
-                            settingCurrentMonth = month === currentMonth && year === currentYear;
-
-                        // Remove old days
-                        $(parent + " .monthly-day, " + parent + " .monthly-day-blank").remove();
-                        $(parent + " .monthly-event-list, " + parent + " .monthly-day-wrap").empty();
-                        // Print out the days
-                        for(var dayNumber = 1; dayNumber <= dayQty; dayNumber++) {
-                            // Check if it's a day in the past
-                            var isInPast = options.stylePast && (
-                                year < currentYear
-                                || (year === currentYear && (
-                                    month < currentMonth
-                                    || (month === currentMonth && dayNumber < currentDay)
-                                ))),
-                                innerMarkup = '<div class="monthly-day-number">' + (dayNumber) + '</div><div class="monthly-indicator-wrap"></div>';
-                            if(options.mode === "event") {
-                                var thisDate = new Date(year, mZeroed, dayNumber, 0, 0, 0, 0);
-                                $(parent + " .monthly-day-wrap").append("<div"
-                                    + attr("class", "m-d monthly-day monthly-day-event"
-                                        + (isInPast ? " monthly-past-day" : "")
-                                        // + " dt" + year+"-"+mZeroed+"-"+dayNumber
-                                        + " dt" + thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate())
-                                        )
-                                    + attr("data-number", dayNumber)
-                                    + attr("date",thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate()))
-                                    + ">" + innerMarkup + "</div>");
-                            } else {
-                                $(parent + " .monthly-day-wrap").append("<a"
-                                    + attr("href", "#")
-                                    + attr("class", "m-d monthly-day monthly-day-pick" + (isInPast ? " monthly-past-day" : ""))
-                                    + attr("data-number", dayNumber)
-                                    + ">" + innerMarkup + "</a>");
-                            }
+            // Weekly and Monthly view Override
+            function monthlyViewOverride() {
+    
+                (function ($) {
+                    "use strict";
+                    $.fn.extend({
+                        monthly: function(customOptions) {
+    
+                            // These are overridden by options declared in footer
+                            var defaults = {
+                                dataType: "xml",
+                                disablePast: false,
+                                eventList: true,
+                                events: "",
+                                jsonUrl: "",
+                                linkCalendarToEventUrl: false,
+                                maxWidth: false,
+                                mode: "event",
+                                setWidth: false,
+                                showTrigger: "",
+                                startHidden: false,
+                                stylePast: false,
+                                target: "",
+                                useIsoDateFormat: false,
+                                weekStart: 0,	// Sunday
+                                xmlUrl: ""
+                            };
+    
+                            var	options = $.extend(defaults, customOptions),
+                                uniqueId = $(this).attr("id"),
+                                parent = "#" + uniqueId,
+                                currentDate = new Date(),
+                                currentMonth = currentDate.getMonth() + 1,
+                                currentYear = currentDate.getFullYear(),
+                                currentDay = currentDate.getDate(),
+                                locale = (options.locale || defaultLocale()).toLowerCase(),
+                                monthNameFormat = options.monthNameFormat || "short",
+                                weekdayNameFormat = options.weekdayNameFormat || "short",
+                                monthNames = options.monthNames || defaultMonthNames(),
+                                dayNames = options.dayNames || defaultDayNames(),
+                                markupBlankDay = '<div class="m-d monthly-day-blank"><div class="monthly-day-number"></div></div>',
+                                weekStartsOnMonday = options.weekStart === "Mon" || options.weekStart === 1 || options.weekStart === "1",
+                                primaryLanguageCode = locale.substring(0, 2).toLowerCase();
+    
+                        if (options.maxWidth !== false) {
+                            $(parent).css("maxWidth", options.maxWidth);
                         }
-
-                        if (settingCurrentMonth) {
-                            $(parent + ' *[data-number="' + currentDay + '"]').addClass("monthly-today");
+                        if (options.setWidth !== false) {
+                            $(parent).css("width", options.setWidth);
                         }
-
-                        // Reset button
-                        $(parent + " .monthly-header-title").html('<a href="#" class="monthly-header-title-date" onclick="return false">' + monthNames[month - 1] + " " + year + "</a>" + (settingCurrentMonth && $(parent + " .monthly-event-list").hide() ? "" : '<a href="#" class="monthly-reset"></a>'));
-
-                        // Account for empty days at start
-                        if(weekStartsOnMonday) {
-                            if (firstDay === 0) {
-                                _prependBlankDays(6);
-                            } else if (firstDay !== 1) {
-                                _prependBlankDays(firstDay - 1);
-                            }
-                        } else if(firstDay !== 7) {
-                            _prependBlankDays(firstDay);
+    
+                        if (options.startHidden) {
+                            $(parent).addClass("monthly-pop").css({
+                                display: "none",
+                                position: "absolute"
+                            });
+                            $(document).on("focus", String(options.showTrigger), function (event) {
+                                $(parent).show();
+                                event.preventDefault();
+                            });
+                            $(document).on("click", String(options.showTrigger) + ", .monthly-pop", function (event) {
+                                event.stopPropagation();
+                                event.preventDefault();
+                            });
+                            $(document).on("click", function () {
+                                $(parent).hide();
+                            });
                         }
-
-                        // Account for empty days at end
-                        var numdays = $(parent + " .monthly-day").length,
-                            numempty = $(parent + " .monthly-day-blank").length,
-                            totaldays = numdays + numempty,
-                            roundup = Math.ceil(totaldays / 7) * 7,
-                            daysdiff = roundup - totaldays;
-                        if(totaldays % 7 !== 0) {
-                            for(index = 0; index < daysdiff; index++) {
-                                $(parent + " .monthly-day-wrap").append(markupBlankDay);
-                            }
-                        }
-
-                        // Events
-                        var divs = $(parent + " .m-d");
-                        for(index = 0; index < divs.length; index += 7) {
-                            divs.slice(index, index + 7).wrapAll('<div class="monthly-week"></div>');
-                        }
-                    }
-
-                    function attr(name, value) {
-                        var parseValue = String(value);
-                        var newValue = "";
-                        for(var index = 0; index < parseValue.length; index++) {
-                            switch(parseValue[index]) {
-                                case "'": newValue += "&#39;"; break;
-                                case "\"": newValue += "&quot;"; break;
-                                case "<": newValue += "&lt;"; break;
-                                case ">": newValue += "&gt;"; break;
-                                default: newValue += parseValue[index];
-                            }
-                        }
-                        return " " + name + "=\"" + newValue + "\"";
-                    }
-
-                    // Day names in top of calendar
-                    function _appendDayNames(startOnMonday) {
-                        var offset = startOnMonday ? 1 : 0,
-                            dayName = "",
-                            dayIndex = 0;
-                        for(dayIndex = 0; dayIndex < 6; dayIndex++) {
-                            dayName += "<div>" + dayNames[dayIndex + offset] + "</div>";
-                        }
-                        dayName += "<div>" + dayNames[startOnMonday ? 0 : 6] + "</div>";
-                        $(parent).append('<div class="monthly-day-title-wrap">' + dayName + '</div><div class="monthly-day-wrap"></div>');
-                    }
-
-                    // Detect the user's preferred language
-                    function defaultLocale() {
-                        if(navigator.languages && navigator.languages.length) {
-                            return navigator.languages[0];
-                        }
-                        return navigator.language || navigator.browserLanguage;
-                    }
-
-                    // Use the user's locale if possible to obtain a list of short month names, falling back on English
-                    function defaultMonthNames() {
-                        if(typeof Intl === "undefined") {
-                            return ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                        }
-                        var formatter = new Intl.DateTimeFormat(locale, {month: monthNameFormat});
-                        var names = [];
-                        for(var monthIndex = 0; monthIndex < 12; monthIndex++) {
-                            var sampleDate = new Date(2017, monthIndex, 1, 0, 0, 0);
-                            names[monthIndex] = formatter.format(sampleDate);
-                        }
-                        return names;
-                    }
-
-                    function formatDate(year, month, day) {
-                        if(options.useIsoDateFormat) {
-                            return new Date(year, month - 1, day, 0, 0, 0).toISOString().substring(0, 10);
-                        }
-                        if(typeof Intl === "undefined") {
-                            return month + "/" + day + "/" + year;
-                        }
-                        return new Intl.DateTimeFormat(locale).format(new Date(year, month - 1, day, 0, 0, 0));
-                    }
-
-                    // Use the user's locale if possible to obtain a list of short weekday names, falling back on English
-                    function defaultDayNames() {
-                        if(typeof Intl === "undefined") {
-                            return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                        }
-                        var formatter = new Intl.DateTimeFormat(locale, {weekday: weekdayNameFormat}),
-                            names = [],
-                            dayIndex = 0,
-                            sampleDate = null;
-                        for(dayIndex = 0; dayIndex < 7; dayIndex++) {
-                            // 2017 starts on a Sunday, so use it to capture the locale's weekday names
-                            sampleDate = new Date(2017, 0, dayIndex + 1, 0, 0, 0);
-                            names[dayIndex] = formatter.format(sampleDate);
-                        }
-                        return names;
-                    }
-
-                    function _prependBlankDays(count) {
-                        var wrapperEl = $(parent + " .monthly-day-wrap"),
-                            index = 0;
-                        for(index = 0; index < count; index++) {
-                            wrapperEl.prepend(markupBlankDay);
-                        }
-                    }
-
-                    function setNextMonth() {
-                        var	setMonth = $(parent).data("setMonth"),
-                            setYear = $(parent).data("setYear"),
-                            newMonth = setMonth === 12 ? 1 : setMonth + 1,
-                            newYear = setMonth === 12 ? setYear + 1 : setYear;
-                        setMonthly(newMonth, newYear);
-                        viewToggleButton();
-                    }
-
-                    function setPreviousMonth() {
-                        var setMonth = $(parent).data("setMonth"),
-                            setYear = $(parent).data("setYear"),
-                            newMonth = setMonth === 1 ? 12 : setMonth - 1,
-                            newYear = setMonth === 1 ? setYear - 1 : setYear;
-                        setMonthly(newMonth, newYear);
-                        viewToggleButton();
-                    }
-
-                    // Function to go back to the month view
-                    function viewToggleButton() {
-                        if($(parent + " .monthly-event-list").is(":visible")) {
-                            $(parent + " .monthly-cal").remove();   
-                            $(parent + " .monthly-header-title").prepend('<a href="#" class="monthly-cal"></a>');
-                        }
-                        // $(".monthly-event-list").html("");
-                    }
-
-                    // Advance months
-                    $(document.body).on("click", parent + " .monthly-next", function (event) {
-                        $('.monthly-event-list').css('display', 'none');
-                        setNextMonth();
-                        event.preventDefault();
-                    });
-
-                    // Go back in months
-                    $(document.body).on("click", parent + " .monthly-prev", function (event) {
-                        $('.monthly-event-list').css('display', 'none');
-                        setPreviousMonth();
-                        event.preventDefault();
-                    });
-
-                    // Reset Month
-                    $(document.body).on("click", parent + " .monthly-reset", function (event) {
-                        $(this).remove();
+    
+                        // Add Day Of Week Titles
+                        _appendDayNames(weekStartsOnMonday);
+    
+                        // Add CSS classes for the primary language and the locale. This allows for CSS-driven
+                        // overrides of the language-specific header buttons. Lowercased because locale codes
+                        // are case-insensitive but CSS is not.
+                        $(parent).addClass("monthly-locale-" + primaryLanguageCode + " monthly-locale-" + locale);
+    
+                        // Add Header & event list markup
+                        $(parent).prepend('<div class="monthly-header"><div class="monthly-header-title"><a href="#" class="monthly-header-title-date" onclick="return false"></a></div><a href="#" class="monthly-prev"></a><a href="#" class="monthly-next"></a></div>').append('<div class="monthly-event-list"></div>');
+    
+                        // Set the calendar the first time
                         setMonthly(currentMonth, currentYear);
-                        viewToggleButton();
-                        event.preventDefault();
-                        event.stopPropagation();
-                    });
-
-                    // Back to month view
-                    $(document.body).on("click", parent + " .monthly-cal", function (event) {
-                        $(this).remove();
-                        $(parent + " .monthly-event-list").css("transform", "scale(0)");
-                        setTimeout(function() {
-                            $(parent + " .monthly-event-list").hide();
-                        }, 250);
-                        event.preventDefault();
-                    });
-
-                    // Click A Day
-                    $(document.body).on("click touchstart", parent + " .monthly-day", function (event) {
-                        // If events, show events list
-                        var whichDay = $(this).data("number");
-                        if(options.mode === "event" && options.eventList) {
-                            var	theList = $(parent + " .monthly-event-list");
-                            theList.show();
-                            theList.css("transform");
-                            theList.css("transform", "scale(1)");
-                            $(parent + ' .monthly-list-item[data-number="' + whichDay + '"]').show();
+    
+                        // How many days are in this month?
+                        function daysInMonth(month, year) {
+                            return month === 2 ? (year & 3) || (!(year % 25) && year & 15) ? 28 : 29 : 30 + (month + (month >> 3) & 1);
+                        }
+    
+                        // Build the month
+                        function setMonthly(month, year) {
                             
-                            viewToggleButton();
-                            if(!options.linkCalendarToEventUrl) {
-                                event.preventDefault();
-                            }
-                            calendarSingleDayExpense(this);
-                        // If picker, pick date
-                        } else if (options.mode === "picker") {
-                            var	setMonth = $(parent).data("setMonth"),
-                                setYear = $(parent).data("setYear");
-                            // Should days in the past be disabled?
-                            if($(this).hasClass("monthly-past-day") && options.disablePast) {
-                                // If so, don't do anything.
-                                event.preventDefault();
-                            } else {
-                                // Otherwise, select the date ...
-                                $(String(options.target)).val(formatDate(setYear, setMonth, whichDay));
-                                // ... and then hide the calendar if it started that way
-                                if(options.startHidden) {
-                                    $(parent).hide();
+    
+                            calendarMonthExpensesChange(month, year);
+                            $(parent).data("setMonth", month).data("setYear", year);
+    
+                            // Get number of days
+                            var index = 0,
+                                dayQty = daysInMonth(month, year),
+                                // Get day of the week the first day is
+                                mZeroed = month - 1,
+                                firstDay = new Date(year, mZeroed, 1, 0, 0, 0, 0).getDay(),
+                                settingCurrentMonth = month === currentMonth && year === currentYear;
+    
+                            // Remove old days
+                            $(parent + " .monthly-day, " + parent + " .monthly-day-blank").remove();
+                            $(parent + " .monthly-event-list, " + parent + " .monthly-day-wrap").empty();
+                            // Print out the days
+                            for(var dayNumber = 1; dayNumber <= dayQty; dayNumber++) {
+                                // Check if it's a day in the past
+                                var isInPast = options.stylePast && (
+                                    year < currentYear
+                                    || (year === currentYear && (
+                                        month < currentMonth
+                                        || (month === currentMonth && dayNumber < currentDay)
+                                    ))),
+                                    innerMarkup = '<div class="monthly-day-number">' + (dayNumber) + '</div><div class="monthly-indicator-wrap"></div>';
+                                if(options.mode === "event") {
+                                    var thisDate = new Date(year, mZeroed, dayNumber, 0, 0, 0, 0);
+                                    $(parent + " .monthly-day-wrap").append("<div"
+                                        + attr("class", "m-d monthly-day monthly-day-event"
+                                            + (isInPast ? " monthly-past-day" : "")
+                                            // + " dt" + year+"-"+mZeroed+"-"+dayNumber
+                                            + " dt" + thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate())
+                                            )
+                                        + attr("data-number", dayNumber)
+                                        + attr("date",thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate()))
+                                        + ">" + innerMarkup + "</div>");
+                                } else {
+                                    $(parent + " .monthly-day-wrap").append("<a"
+                                        + attr("href", "#")
+                                        + attr("class", "m-d monthly-day monthly-day-pick" + (isInPast ? " monthly-past-day" : ""))
+                                        + attr("data-number", dayNumber)
+                                        + ">" + innerMarkup + "</a>");
                                 }
                             }
-                            event.preventDefault();
-                        }
-                    });
-
-                    // Clicking an event within the list
-                    $(document.body).on("click", parent + " .listed-event", function (event) {
-                        var href = $(this).attr("href");
-                        // If there isn't a link, don't go anywhere
-                        if(!href) {
-                            event.preventDefault();
-                        }
-                    });
-
-                }
-                });
-            }(jQuery));
-
-        }
-
-        function mountWeeklyExpenses(){
-
-            if(weeklyTabInitialized) return;
-
-            (function($) {
-        
-                Date.prototype.addDays = function(days) {
-                    var date = new Date(this.valueOf());
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
-            
-                $.fn.markyourcalendar = function(opts) {
-                    var prevHtml = `<div id="myc-prev-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-left"></i></div>`;
-                    // var prevHtml = `<a href="#" id="myc-prev-week"></a>`;
-                    
-                    var nextHtml = `<div id="myc-next-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-right"></i></div>`;
-                    var defaults = {
-                        isMultiple: false,
-                        months: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
-                        prevHtml: prevHtml,
-                        nextHtml: nextHtml,
-                        startDate: new Date(),
-                        weekdays: ['sun', 'mon', 'tue', 'wed', 'thurs', 'fri', 'sat'],
-                    };
-                    var settings = $.extend({}, defaults, opts);
-                    var onClickNavigator = settings.onClickNavigator;
-                    var instance = this;
-            
-                    // kuhanin ang buwan
-                    this.getMonthName = function(idx) {  return settings.months[idx]; };
-            
-            
-                    // here is the controller to switch weeks
-                    // Controller to change 
-                    this.getNavControl = function() {
-                        var previousWeekHtml = `<div id="myc-prev-week-container">` + settings.prevHtml + `</div>`;
-                        var nextWeekHtml = `<div id="myc-prev-week-container">` + settings.nextHtml + `</div>`;
-                        var monthYearHtml = `
-                            <div id="myc-current-month-year-container" date='`+settings.startDate.getMonth()+ '-' + settings.startDate.getFullYear() +`'>
-                                ` + this.getMonthName(settings.startDate.getMonth()) + ' ' + settings.startDate.getFullYear() + `
-                            </div>
-                        `;
-            
-                        var navHtml = `
-                            <div id="myc-nav-container" class="d-flex align-items-center justify-content-between w-100">
-                                ` + previousWeekHtml + `
-                                ` + monthYearHtml + `
-                                ` + nextWeekHtml + `
-                            </div>
-                        `;
-                        return navHtml;
-                    };
-            
-        
-                    // Create weekly dates header tabs.
-                    this.getDatesHeader = function() {
-                        var tmp = ``;
-                        for (var i = 0; i < 7; i++) {
-                            var d = settings.startDate.addDays(i);
-                            settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
-                            let classes = "";
-                            let today = "";
-                            if(settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
-                                classes = `active-weekly-day"`;
-                                today = " (today)";
+    
+                            if (settingCurrentMonth) {
+                                $(parent + ' *[data-number="' + currentDay + '"]').addClass("monthly-today");
                             }
-                            let dateAttr = d.getFullYear()+""+(d.getMonth()+1)+""+d.getDate()
-                            tmp += `
-                                <div date='`+dateAttr+`' class="myc-date-header `+classes+`" id="myc-date-header-` + i + `">
-                                    <div class="myc-date-number">` + d.getDate() + today + `</div>
-                                    <div class="myc-date-display">` + settings.weekdays[d.getDay()]+ `</div>
-                                    <hr>
-                                    <span class="">20 Expenses | ₹ 1,245 </span>
+    
+                            // Reset button
+                            $(parent + " .monthly-header-title").html('<a href="#" class="monthly-header-title-date" onclick="return false">' + monthNames[month - 1] + " " + year + "</a>" + (settingCurrentMonth && $(parent + " .monthly-event-list").hide() ? "" : '<a href="#" class="monthly-reset"></a>'));
+    
+                            // Account for empty days at start
+                            if(weekStartsOnMonday) {
+                                if (firstDay === 0) {
+                                    _prependBlankDays(6);
+                                } else if (firstDay !== 1) {
+                                    _prependBlankDays(firstDay - 1);
+                                }
+                            } else if(firstDay !== 7) {
+                                _prependBlankDays(firstDay);
+                            }
+    
+                            // Account for empty days at end
+                            var numdays = $(parent + " .monthly-day").length,
+                                numempty = $(parent + " .monthly-day-blank").length,
+                                totaldays = numdays + numempty,
+                                roundup = Math.ceil(totaldays / 7) * 7,
+                                daysdiff = roundup - totaldays;
+                            if(totaldays % 7 !== 0) {
+                                for(index = 0; index < daysdiff; index++) {
+                                    $(parent + " .monthly-day-wrap").append(markupBlankDay);
+                                }
+                            }
+    
+                            // Events
+                            var divs = $(parent + " .m-d");
+                            for(index = 0; index < divs.length; index += 7) {
+                                divs.slice(index, index + 7).wrapAll('<div class="monthly-week"></div>');
+                            }
+                        }
+    
+                        function attr(name, value) {
+                            var parseValue = String(value);
+                            var newValue = "";
+                            for(var index = 0; index < parseValue.length; index++) {
+                                switch(parseValue[index]) {
+                                    case "'": newValue += "&#39;"; break;
+                                    case "\"": newValue += "&quot;"; break;
+                                    case "<": newValue += "&lt;"; break;
+                                    case ">": newValue += "&gt;"; break;
+                                    default: newValue += parseValue[index];
+                                }
+                            }
+                            return " " + name + "=\"" + newValue + "\"";
+                        }
+    
+                        // Day names in top of calendar
+                        function _appendDayNames(startOnMonday) {
+                            var offset = startOnMonday ? 1 : 0,
+                                dayName = "",
+                                dayIndex = 0;
+                            for(dayIndex = 0; dayIndex < 6; dayIndex++) {
+                                dayName += "<div>" + dayNames[dayIndex + offset] + "</div>";
+                            }
+                            dayName += "<div>" + dayNames[startOnMonday ? 0 : 6] + "</div>";
+                            $(parent).append('<div class="monthly-day-title-wrap">' + dayName + '</div><div class="monthly-day-wrap"></div>');
+                        }
+    
+                        // Detect the user's preferred language
+                        function defaultLocale() {
+                            if(navigator.languages && navigator.languages.length) {
+                                return navigator.languages[0];
+                            }
+                            return navigator.language || navigator.browserLanguage;
+                        }
+    
+                        // Use the user's locale if possible to obtain a list of short month names, falling back on English
+                        function defaultMonthNames() {
+                            if(typeof Intl === "undefined") {
+                                return ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            }
+                            var formatter = new Intl.DateTimeFormat(locale, {month: monthNameFormat});
+                            var names = [];
+                            for(var monthIndex = 0; monthIndex < 12; monthIndex++) {
+                                var sampleDate = new Date(2017, monthIndex, 1, 0, 0, 0);
+                                names[monthIndex] = formatter.format(sampleDate);
+                            }
+                            return names;
+                        }
+    
+                        function formatDate(year, month, day) {
+                            if(options.useIsoDateFormat) {
+                                return new Date(year, month - 1, day, 0, 0, 0).toISOString().substring(0, 10);
+                            }
+                            if(typeof Intl === "undefined") {
+                                return month + "/" + day + "/" + year;
+                            }
+                            return new Intl.DateTimeFormat(locale).format(new Date(year, month - 1, day, 0, 0, 0));
+                        }
+    
+                        // Use the user's locale if possible to obtain a list of short weekday names, falling back on English
+                        function defaultDayNames() {
+                            if(typeof Intl === "undefined") {
+                                return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                            }
+                            var formatter = new Intl.DateTimeFormat(locale, {weekday: weekdayNameFormat}),
+                                names = [],
+                                dayIndex = 0,
+                                sampleDate = null;
+                            for(dayIndex = 0; dayIndex < 7; dayIndex++) {
+                                // 2017 starts on a Sunday, so use it to capture the locale's weekday names
+                                sampleDate = new Date(2017, 0, dayIndex + 1, 0, 0, 0);
+                                names[dayIndex] = formatter.format(sampleDate);
+                            }
+                            return names;
+                        }
+    
+                        function _prependBlankDays(count) {
+                            var wrapperEl = $(parent + " .monthly-day-wrap"),
+                                index = 0;
+                            for(index = 0; index < count; index++) {
+                                wrapperEl.prepend(markupBlankDay);
+                            }
+                        }
+    
+                        function setNextMonth() {
+                            var	setMonth = $(parent).data("setMonth"),
+                                setYear = $(parent).data("setYear"),
+                                newMonth = setMonth === 12 ? 1 : setMonth + 1,
+                                newYear = setMonth === 12 ? setYear + 1 : setYear;
+                            setMonthly(newMonth, newYear);
+                            viewToggleButton();
+                        }
+    
+                        function setPreviousMonth() {
+                            var setMonth = $(parent).data("setMonth"),
+                                setYear = $(parent).data("setYear"),
+                                newMonth = setMonth === 1 ? 12 : setMonth - 1,
+                                newYear = setMonth === 1 ? setYear - 1 : setYear;
+                            setMonthly(newMonth, newYear);
+                            viewToggleButton();
+                        }
+    
+                        // Function to go back to the month view
+                        function viewToggleButton() {
+                            if($(parent + " .monthly-event-list").is(":visible")) {
+                                $(parent + " .monthly-cal").remove();   
+                                $(parent + " .monthly-header-title").prepend('<a href="#" class="monthly-cal"></a>');
+                            }
+                            // $(".monthly-event-list").html("");
+                        }
+    
+                        // Advance months
+                        $(document.body).on("click", parent + " .monthly-next", function (event) {
+                            $('.monthly-event-list').css('display', 'none');
+                            setNextMonth();
+                            event.preventDefault();
+                        });
+    
+                        // Go back in months
+                        $(document.body).on("click", parent + " .monthly-prev", function (event) {
+                            $('.monthly-event-list').css('display', 'none');
+                            setPreviousMonth();
+                            event.preventDefault();
+                        });
+    
+                        // Reset Month
+                        $(document.body).on("click", parent + " .monthly-reset", function (event) {
+                            $(this).remove();
+                            setMonthly(currentMonth, currentYear);
+                            viewToggleButton();
+                            event.preventDefault();
+                            event.stopPropagation();
+                        });
+    
+                        // Back to month view
+                        $(document.body).on("click", parent + " .monthly-cal", function (event) {
+                            $(this).remove();
+                            $(parent + " .monthly-event-list").css("transform", "scale(0)");
+                            setTimeout(function() {
+                                $(parent + " .monthly-event-list").hide();
+                            }, 250);
+                            event.preventDefault();
+                        });
+    
+                        // Click A Day
+                        $(document.body).on("click touchstart", parent + " .monthly-day", function (event) {
+                            // If events, show events list
+                            var whichDay = $(this).data("number");
+                            if(options.mode === "event" && options.eventList) {
+                                var	theList = $(parent + " .monthly-event-list");
+                                theList.show();
+                                theList.css("transform");
+                                theList.css("transform", "scale(1)");
+                                $(parent + ' .monthly-list-item[data-number="' + whichDay + '"]').show();
+                                
+                                viewToggleButton();
+                                if(!options.linkCalendarToEventUrl) {
+                                    event.preventDefault();
+                                }
+                                calendarSingleDayExpense(this);
+                            // If picker, pick date
+                            } else if (options.mode === "picker") {
+                                var	setMonth = $(parent).data("setMonth"),
+                                    setYear = $(parent).data("setYear");
+                                // Should days in the past be disabled?
+                                if($(this).hasClass("monthly-past-day") && options.disablePast) {
+                                    // If so, don't do anything.
+                                    event.preventDefault();
+                                } else {
+                                    // Otherwise, select the date ...
+                                    $(String(options.target)).val(formatDate(setYear, setMonth, whichDay));
+                                    // ... and then hide the calendar if it started that way
+                                    if(options.startHidden) {
+                                        $(parent).hide();
+                                    }
+                                }
+                                event.preventDefault();
+                            }
+                        });
+    
+                        // Clicking an event within the list
+                        $(document.body).on("click", parent + " .listed-event", function (event) {
+                            var href = $(this).attr("href");
+                            // If there isn't a link, don't go anywhere
+                            if(!href) {
+                                event.preventDefault();
+                            }
+                        });
+    
+                    }
+                    });
+                }(jQuery));
+    
+            }
+    
+            function mountWeeklyExpenses(){
+    
+                if(weeklyTabInitialized) return;
+    
+                (function($) {
+            
+                    Date.prototype.addDays = function(days) {
+                        var date = new Date(this.valueOf());
+                        date.setDate(date.getDate() + days);
+                        return date;
+                    }
+                
+                    $.fn.markyourcalendar = function(opts) {
+                        var prevHtml = `<div id="myc-prev-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-left"></i></div>`;
+                        // var prevHtml = `<a href="#" id="myc-prev-week"></a>`;
+                        
+                        var nextHtml = `<div id="myc-next-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-right"></i></div>`;
+                        var defaults = {
+                            isMultiple: false,
+                            months: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+                            prevHtml: prevHtml,
+                            nextHtml: nextHtml,
+                            startDate: new Date(),
+                            weekdays: ['sun', 'mon', 'tue', 'wed', 'thurs', 'fri', 'sat'],
+                        };
+                        var settings = $.extend({}, defaults, opts);
+                        var onClickNavigator = settings.onClickNavigator;
+                        var instance = this;
+                
+                        // kuhanin ang buwan
+                        this.getMonthName = function(idx) {  return settings.months[idx]; };
+                
+                
+                        // here is the controller to switch weeks
+                        // Controller to change 
+                        this.getNavControl = function() {
+                            var previousWeekHtml = `<div id="myc-prev-week-container">` + settings.prevHtml + `</div>`;
+                            var nextWeekHtml = `<div id="myc-prev-week-container">` + settings.nextHtml + `</div>`;
+                            var monthYearHtml = `
+                                <div id="myc-current-month-year-container" date='`+settings.startDate.getMonth()+ '-' + settings.startDate.getFullYear() +`'>
+                                    ` + this.getMonthName(settings.startDate.getMonth()) + ' ' + settings.startDate.getFullYear() + `
                                 </div>
                             `;
-                        }
-                        var ret = `<div id="myc-dates-container" class="weekly-dates-container d-flex justify-content-around">` + tmp + `</div>`;                
-                        return ret;
-                    }
-        
-        
-                    // when last week was pressed
-                    this.on('click', '#myc-prev-week', function() {
-                        settings.startDate = settings.startDate.addDays(-7);
-                        render(instance);
-            
-                        if ($.isFunction(onClickNavigator)) {
-                            onClickNavigator.call(this, ...arguments, instance);
-                        }
-
-                        addDateFetchLister()
-                        $('#myc-dates-container .myc-date-header ').last().click();
-                    });
-            
-                    // when next week is pressed
-                    this.on('click', '#myc-next-week', function() {
-                        settings.startDate = settings.startDate.addDays(7);
-                        render(instance);
-            
-                        if ($.isFunction(onClickNavigator)) {
-                            onClickNavigator.call(this, ...arguments, instance);
-                        }
-                        addDateFetchLister()
-                        $('#myc-dates-container .myc-date-header ').first().click();
-                    });
-            
-                    var render = function() {
-                        var ret = `
-                            <div id="myc-container">
-                                <div id="myc-nav-container">` + instance.getNavControl() + `</div>
-                                <div id="myc-week-container">
-                                <div id="myc-dates-container">` + instance.getDatesHeader() + `</div>
-                                <div id="myc-available-time-container">` + `</div>
+                
+                            var navHtml = `
+                                <div id="myc-nav-container" class="d-flex align-items-center justify-content-between w-100">
+                                    ` + previousWeekHtml + `
+                                    ` + monthYearHtml + `
+                                    ` + nextWeekHtml + `
                                 </div>
-                            </div>
-                        `;
-                        instance.html(ret);
-                    };
+                            `;
+                            return navHtml;
+                        };
+                
             
-                    render();
-                    addDateFetchLister();
-
-                    
-
-                    function addDateFetchLister (){
-                        $('.myc-date-header').off();
-                        $('.myc-date-header').click((e)=>{
-                            let element = $(e.target).closest('.myc-date-header');
-                            let date = $(element).attr('date');
-                            $('.active-weekly-day').removeClass('active-weekly-day');
-                            $(element).addClass('active-weekly-day');
-                            findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
-                        })
-
-                        $('#myc-current-month-year-container').off();
-                        $('#myc-current-month-year-container').click(()=>{
-                            let date = $(this).attr('date');
-                            createMountPoint('Monthly')
-                            $('.daterangepicker li[data-range-key=Monthly]').click();
-                            $('#date-range-type').text('Monthly')
+                        // Create weekly dates header tabs.
+                        this.getDatesHeader = function() {
+                            var tmp = ``;
+                            for (var i = 0; i < 7; i++) {
+                                var d = settings.startDate.addDays(i);
+                                settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
+                                let classes = "";
+                                let today = "";
+                                if(settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
+                                    classes = `active-weekly-day"`;
+                                    today = " (today)";
+                                }
+                                let dateAttr = d.getFullYear()+""+(d.getMonth()+1)+""+d.getDate()
+                                tmp += `
+                                    <div date='`+dateAttr+`' class="myc-date-header `+classes+`" id="myc-date-header-` + i + `">
+                                        <div class="myc-date-number">` + d.getDate() + today + `</div>
+                                        <div class="myc-date-display">` + settings.weekdays[d.getDay()]+ `</div>
+                                        <hr>
+                                        <span class="">20 Expenses | ₹ 1,245 </span>
+                                    </div>
+                                `;
+                            }
+                            var ret = `<div id="myc-dates-container" class="weekly-dates-container d-flex justify-content-around">` + tmp + `</div>`;                
+                            return ret;
+                        }
+            
+            
+                        // when last week was pressed
+                        this.on('click', '#myc-prev-week', function() {
+                            settings.startDate = settings.startDate.addDays(-7);
+                            render(instance);
+                
+                            if ($.isFunction(onClickNavigator)) {
+                                onClickNavigator.call(this, ...arguments, instance);
+                            }
+    
+                            addDateFetchLister()
+                            $('#myc-dates-container .myc-date-header ').last().click();
                         });
-                    }
-
-                };
-
-            })(jQuery);
-
-            $('#weekly-view').html('');
-            $('#weekly-view').markyourcalendar({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()-6)});
-
-
-            findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),false,'myc-available-time-container')
-            weeklyTabInitialized = true;
-
-
-        
-
+                
+                        // when next week is pressed
+                        this.on('click', '#myc-next-week', function() {
+                            settings.startDate = settings.startDate.addDays(7);
+                            render(instance);
+                
+                            if ($.isFunction(onClickNavigator)) {
+                                onClickNavigator.call(this, ...arguments, instance);
+                            }
+                            addDateFetchLister()
+                            $('#myc-dates-container .myc-date-header ').first().click();
+                        });
+                
+                        var render = function() {
+                            var ret = `
+                                <div id="myc-container">
+                                    <div id="myc-nav-container">` + instance.getNavControl() + `</div>
+                                    <div id="myc-week-container">
+                                    <div id="myc-dates-container">` + instance.getDatesHeader() + `</div>
+                                    <div id="myc-available-time-container">` + `</div>
+                                    </div>
+                                </div>
+                            `;
+                            instance.html(ret);
+                        };
+                
+                        render();
+                        addDateFetchLister();
+    
+                        
+    
+                        function addDateFetchLister (){
+                            $('.myc-date-header').off();
+                            $('.myc-date-header').click((e)=>{
+                                let element = $(e.target).closest('.myc-date-header');
+                                let date = $(element).attr('date');
+                                $('.active-weekly-day').removeClass('active-weekly-day');
+                                $(element).addClass('active-weekly-day');
+                                findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
+                            })
+    
+                            $('#myc-current-month-year-container').off();
+                            $('#myc-current-month-year-container').click(()=>{
+                                let date = $(this).attr('date');
+                                createMountPoint('Monthly')
+                                $('.daterangepicker li[data-range-key=Monthly]').click();
+                                $('#date-range-type').text('Monthly')
+                            });
+                        }
+    
+                    };
+    
+                })(jQuery);
+    
+                $('#weekly-view').html('');
+                $('#weekly-view').markyourcalendar({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()-6)});
+    
+    
+                findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),false,'myc-available-time-container')
+                weeklyTabInitialized = true;
+    
+    
+            
+    
+    
+            }
+            
+            function mountCalendarExpensesSection() {
+                $('.monthly-view').show();
+                calendarMounted = true;
+            }
+            
+            function mountRecentExpensesSection(){
+                $('#expense-card-container').show();
+            } 
+    
+            function unmountWeeklyExpenses(){ 
+    
+                $('#weekly-view').html(""); 
+                weeklyTabInitialized = false; 
+            }
+            
+            function unmountRecentExpenses(){ 
+                $('#expense-card-container').hide() 
+            }
+    
+            function unmountCalendar() {
+                $('.monthly-view').hide();
+                calendarMounted = false;
+            }
 
         }
-        
-        function mountCalendarExpensesSection() {
-            $('.monthly-view').show();
-            calendarMounted = true;
-        }
-        
-        function mountRecentExpensesSection(){
-            $('#expense-card-container').show();
-        } 
 
-        function unmountWeeklyExpenses(){ 
-
-            $('#weekly-view').html(""); 
-            weeklyTabInitialized = false; 
-        }
-        
-        function unmountRecentExpenses(){ 
-            $('#expense-card-container').hide() 
-        }
-
-        function unmountCalendar() {
-            $('.monthly-view').hide();
-            calendarMounted = false;
-        }
+        $('#reload-expenses').off();
+        $('#reload-expenses').click(()=>{
+            findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
+        });
 
     }  
 
@@ -1651,8 +1675,12 @@ async function refreshDashboard(){
 
     }
 
-    let isBannerListenerInitialized = false;
+    
     async function updateHeader(timeRange){
+
+        let template = document.getElementById('tt-balance-header').content.cloneNode(true);
+        $('#balance-header').html('');
+        $('#balance-header').append(template);
             
         // Show current set range total expense in header container
         if(timeRange==null || timeRange.length==0 ){ timeRange = localStorage.getItem("spendingsBannerTime"); }
@@ -1698,6 +1726,7 @@ async function refreshDashboard(){
     }
 
 
+    $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
 
 
 }

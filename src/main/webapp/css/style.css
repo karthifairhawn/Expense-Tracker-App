@@ -357,15 +357,13 @@ select {
     margin-left: 10px;
 }
 .expense-card .category-ico{
-    background-color: #131519 !important;
+    background-color: #cbcbc9 ;
     border-color: 1px solid white;
     border-radius: 10px;
     overflow: hidden;
     width: 40px;
-    border-radius: 0px;
     font-size: 25px;
     padding: 7px 30px;
-    border-radius: 10px;
 }
 
 
