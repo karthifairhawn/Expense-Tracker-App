@@ -229,8 +229,9 @@ async function mountWallets(){
             let walletCardClone = $('#credit-card-template')[0].content.cloneNode(true);
 
             let subInfo =null;
-            let wallet = allWallets[i];            
-            await walletService.findWalletById(allWallets[i].id).then((data) =>{ userWalletFull.push(data.data); subInfo = data.data.walletInfo; })
+            let wallet = allWallets[i];  
+            userWalletFull.push(wallet)
+            subInfo = wallet.walletInfo;
 
             let creditCardUsagePercent = ((subInfo.limit - wallet.balance) / subInfo.limit) * 100;
 
@@ -406,59 +407,52 @@ async function mountWallets(){
             
 
             // Populate sub wallet info
-            await walletService.findWalletById(+(wallet.id)).then((data)=>{
+            userWalletFull.push(wallet);
+            let data = wallet.walletInfo;
+            let subWalletInfoHtml = '';
+            let formWalletInfo = $('<div></div>');
+
+            for(const obj in data) {
+
+                if(obj=='id') continue;
+
+                let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label"></div><div class="spend-on value wallet-info-label '+obj+'"></div> </div>');
                 
-                userWalletFull.push(data.data);
-                data = data.data.walletInfo;
-                let subWalletInfoHtml = '';
-                let formWalletInfo = $('<div></div>');
-
-                for(const obj in data) {
-
-                    if(obj=='id') continue;
-
-                    let newWalletInfo = $('<div class="mb-2 d-flex align-items-center card-field"> <div class="label"></div><div class="spend-on value wallet-info-label '+obj+'"></div> </div>');
-                    
-                    if(obj=='note'){
-                        newWalletInfo = $('<div class="mb-2 d-flex align-items-center flex-column w-100 card-field"> <div class="label w-100"></div><span class="w-100 d-flex align-items-center"><div class="w-100 spend-on value wallet-info-label '+obj+'" type="textarea"></div></span> </div>');
-                    }
-                    let key = obj;
-                    var text = obj;
-                    var result = text.replace( /([A-Z])/g, " $1" );
-                    key =  result;
+                if(obj=='note'){
+                    newWalletInfo = $('<div class="mb-2 d-flex align-items-center flex-column w-100 card-field"> <div class="label w-100"></div><span class="w-100 d-flex align-items-center"><div class="w-100 spend-on value wallet-info-label '+obj+'" type="textarea"></div></span> </div>');
+                }
+                let key = obj;
+                var text = obj;
+                var result = text.replace( /([A-Z])/g, " $1" );
+                key =  result;
 
 
-                    if(obj=='accountNumber'){
-                        key = 'Account';
-                        if(data[obj]=='0') data[obj] = "not specified";
-                    }
-                    if(obj=='ifscCode'){
-                        key = 'IFSC';
-                        if(data[obj]=='') data[obj] = "not specified";
-
-                    }
-
-                    if(obj!='note'){
-                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';
-                    }else{
-                        subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
-                    }
-
-
-                    $(newWalletInfo).find('.label').text(key);   
-                    $(newWalletInfo).find('.value').text(data[obj]);   
-                    $(formWalletInfo).append(newWalletInfo);
+                if(obj=='accountNumber'){
+                    key = 'Account';
+                    if(data[obj]=='0') data[obj] = "not specified";
+                }
+                if(obj=='ifscCode'){
+                    key = 'IFSC';
+                    if(data[obj]=='') data[obj] = "not specified";
 
                 }
 
-                $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(formWalletInfo);
-                $(walletCardClone).find('.uncommon-wallet-fields').append(subWalletInfoHtml);
-                
-            })
+                if(obj!='note'){
+                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';
+                }else{
+                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
+                }
 
+
+                $(newWalletInfo).find('.label').text(key);   
+                $(newWalletInfo).find('.value').text(data[obj]);   
+                $(formWalletInfo).append(newWalletInfo);
+
+            }
+
+            $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(formWalletInfo);
+            $(walletCardClone).find('.uncommon-wallet-fields').append(subWalletInfoHtml);
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) { walletUtil.deleteWalletById(event.target.getAttribute('wallet-id')) })
-            
-
             $('#all-wallets-container').append(walletCardClone);
 
         }
@@ -551,11 +545,6 @@ async function mountAllIncomes(){
             if(wallet.id == walletId){
                 walletInfo = wallet;
             }
-        }
-
-        if(walletInfo==null){
-            await walletService.findWalletById(walletId).then((data)=>walletInfo=data.data)
-            isDeletedWallet = true;
         }
 
         if(walletInfo==null) continue;
