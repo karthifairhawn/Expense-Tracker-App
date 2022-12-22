@@ -111,7 +111,7 @@ public class BaseWalletsDaoService {
 
 				fetchingWallet.setWalletInfo(subWallet);
 				
-				System.out.println(fetchingWallet);
+
 				allWallets.add(fetchingWallet);
 			}
 			
@@ -148,7 +148,6 @@ public class BaseWalletsDaoService {
 			
 
 		} catch (SQLException e) {
-			System.out.println("Single wallet retrivel failure");
 			e.printStackTrace();
 			throw new CustomException("Wallet not found in account",404);
 		}

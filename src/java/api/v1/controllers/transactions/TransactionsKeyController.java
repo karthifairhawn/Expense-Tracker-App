@@ -81,13 +81,13 @@ public class TransactionsKeyController  extends RestController {
 		Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
 		Long transactionId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 		
-		transactionsService.deleteById(transactionId);
+//		transactionsService.deleteById(transactionId);
 		
 		String requestBody = (String)RequestContext.getAttribute("requestBody");		
 		Transactions newTransaction = gson.fromJson(requestBody, new TypeToken<Transactions<?>>(){}.getType()); 
 		
 		
-		newTransaction = transactionsService.save(newTransaction);
+		newTransaction = transactionsService.updateById(newTransaction,transactionId);
 		
 		CommonObjectResponse<Transactions<?>> jsonResponse = new CommonObjectResponse<Transactions<?>>(200,newTransaction);
 		res.setContentType("application/json");

@@ -62,6 +62,9 @@ public class TransactionsService {
 		
 		Map<String, List<Transactions>> allTransactions = null;
 		
+		if(queryParams==null) {
+			throw new CustomException("Invalid request query param values",400);
+		}
 		if(queryParams.get("page")!=null) {
 			allTransactions = baseTransactionsDaoService.findAllExpenseByCount(queryParams);
 		}else if(queryParams.get("from")!=null) {
@@ -105,7 +108,6 @@ public class TransactionsService {
 			
 			// set tags to the transaction
 			List<Long> allTags = expense.getTagId();
-
 			tagsDaoService.assignTagsToExpenseById(allTags, expense.getId());
 
 			// assign wallet splits to the transaction
@@ -168,6 +170,45 @@ public class TransactionsService {
 		
 	}
 
+	
+	public Transactions updateById(Transactions newTransaction,Long id) {
+		
+		String transactionType = newTransaction.getType();
+		Long amount = newTransaction.getAmount();
+    	Map<Long,Long> walletSplits = newTransaction.getWalletSplits();
+
+    	baseTransactionsDaoService.updateById(newTransaction,id);
+    	
+		if(transactionType.equalsIgnoreCase("expense")) {
+
+			// Deleting old information
+			Expense expense = expenseTransactionsDaoService.findByTransactionId(id);
+			Map<Long,Long> expenseSplit = expenseTransactionsDaoService.findExpenseSplitByExpenseId(expense.getId());
+			for(Map.Entry<Long, Long> entry : expenseSplit.entrySet()) {
+				baseWalletsDaoService.increaseBalanceById(entry.getKey(), entry.getValue());
+			}
+			expenseTransactionsDaoService.deleteExpenseSplitByExpenseId(expense.getId());
+			expenseTransactionsDaoService.deleteTagMappingByExpenseId(expense.getId());
+			
+			
+			// updating expense info
+			Expense newExpense = new Expense( ((LinkedTreeMap)newTransaction.getTransactionInfo()) );
+			expenseTransactionsDaoService.updateByTransactionId(newExpense,id);	
+			List<Long> allTags = newExpense.getTagId();
+			tagsDaoService.assignTagsToExpenseById(allTags, expense.getId());
+			baseWalletsDaoService.assignWalletsForExpenses(walletSplits, expense.getId());
+			
+		}else if(transactionType.equalsIgnoreCase("transfer")) {
+//			rollbackTransferByTransactionId(id,amount);
+		}else if(transactionType.equalsIgnoreCase("income")){
+//			rollbackIncomeTransactionId(id,amount);
+		}
+		
+		
+		newTransaction.setId(id);
+		return newTransaction;
+	}
+	
 	public void deleteById(Long id){
 
 		Transactions transaction = baseTransactionsDaoService.findById(id);
@@ -213,8 +254,6 @@ public class TransactionsService {
 	private void rollbackIncomeTransactionId(Long transactionId, Long amount) {
 		
 		Income income = incomeTransactionDaoService.findByTransactionId(transactionId);
-		
-		System.out.println(income);
 		
 		incomeTransactionDaoService.deleteByTransactionId(transactionId);
 		

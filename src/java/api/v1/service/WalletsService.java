@@ -56,6 +56,7 @@ public class WalletsService {
 			walletsService.otherWalletsDaoService = OtherWalletsDaoService.getInstance();
 			walletsService.validatorUtil = ValidatorUtil.getInstance();
 		}
+		
 		return walletsService;
 	}
 	
@@ -78,6 +79,8 @@ public class WalletsService {
 	
 	public Map<String, List<Wallets<?>>> findAll() {
 		
+		System.out.println(walletsService.baseWalletsDaoService+"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		
 		List<Wallets<?>> list = new ArrayList<Wallets<?>>();
 		list.addAll(baseWalletsDaoService.findAll());
 		
@@ -96,7 +99,7 @@ public class WalletsService {
 			else if(w.getType().equals("Other")) allWallets.get("Other").add(w);
 		}
 		
-//		System.out.println(allWallets);
+
 		return allWallets;
 	}
 
@@ -172,7 +175,6 @@ public class WalletsService {
     	
     	// Supertype Validation
     	validatorUtil.nullValidation(otherWallet,errors,"Request body");
-    	System.out.println(otherWallet);
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
     	
     	
@@ -237,7 +239,6 @@ public class WalletsService {
     	
     	
     	// Null Validation
-    	System.out.println(wallet);
     	validatorUtil.nullValidation(wallet.getName(),errors,"Name");
     	validatorUtil.nullValidation(wallet.getType(),errors,"Type");
     	validatorUtil.nullValidation(wallet.getArchiveWallet(),errors,"Archive");

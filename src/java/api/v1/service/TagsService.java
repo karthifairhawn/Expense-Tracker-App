@@ -82,9 +82,7 @@ public class TagsService extends Thread {
 		
     	Long userId = (Long) ((ArrayList) RequestContext.getAttribute("pathKeys")).get(0);
 		Long tagId = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
-		
-		System.out.println(userId + " "+ tagId);
-		
+
     	Map<String,String> errors = new HashMap<String,String>();
     	
     	// Supertype Validation

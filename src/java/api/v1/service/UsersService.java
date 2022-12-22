@@ -111,8 +111,7 @@ public class UsersService {
     	// Length Constrain
     	if(newUser.getPhoneNumber().length()!=10) errors.put("PhoneNumber","Value must be in length 10");
 
-    	
-    	System.out.println("\033[0m "+errors.toString());
+
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
 
 		return true;
@@ -176,8 +175,7 @@ public class UsersService {
     	if(passwordChangeDto.getNewPassword().length()<8) {
     		errors.put("New password", "New password must be length 8");
     	}
-    	
-    	System.out.println("\033[0m "+errors.toString());
+
     	if(errors.size() > 0) throw new CustomException(errors.toString(),400);
 		
     	return true;

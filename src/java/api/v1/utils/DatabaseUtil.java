@@ -22,14 +22,13 @@ public class DatabaseUtil {
 
 
 	public ResultSet executeInsertionQuery(String query) {
-		System.out.println("Query Execution recieved : " + query);
+
 
 		try {
-//			con = intiateConnection();
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
-			System.out.println("This query is executed : " + query);
 			ResultSet rs = stmt.getGeneratedKeys();
+			System.out.println("Insertion query executed "+query);
 			return rs;
 		} catch (SQLException e) {
 			System.err.println("Query Execution failed = " + query);

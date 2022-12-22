@@ -3,6 +3,7 @@ package api.v1.dao.transactions;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import api.v1.contexts.RequestContext;
+import api.v1.entity.Users;
 import api.v1.entity.transactions.Expense;
 import api.v1.exception.CustomException;
 import api.v1.utils.DatabaseUtil;
@@ -122,6 +125,7 @@ public class ExpenseTransactionsDaoService {
 		}	
 		return allTags;
 	}
+	
 	public void deleteExpenseSplitByExpenseId(Long expenseId) {
 		String sql = "DELETE FROM expense_split WHERE `expense_id` = "+expenseId;
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);
@@ -132,11 +136,39 @@ public class ExpenseTransactionsDaoService {
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);
 	}
 
-
 	
 	public void deleteTagMappingByExpenseId(Long expenseId) {
 		String sql = "DELETE FROM expense_tag_mapping WHERE `expense_id` = "+expenseId;
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);
+	}
+
+
+	
+	public void updateByTransactionId(Expense expense, Long transactionId) {
+		
+		
+		String spendOn = expense.getSpendOn();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy, hh:mm:ss aa");
+	    Date parsedDate;
+	    Timestamp spendOnTimestamp = null;
+		try {
+			parsedDate = dateFormat.parse(spendOn);
+			spendOnTimestamp = new Timestamp(parsedDate.getTime());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	    
+		
+		Long categoryId = expense.getCategoryId();
+		String reason = expense.getReason();
+		String note = expense.getNote();
+		
+    	Users operatingUser = (Users)RequestContext.getAttribute("user");
+    	
+		String sql = "UPDATE `expenses` SET `spend_on`='"+spendOnTimestamp+"',`category_id`='"+categoryId+"',`reason`='"+reason+"',`note`='"+note+"',`transaction_id`='"+transactionId+"' WHERE transaction_id = "+transactionId;
+	
+		dbUtil.executeUpdateQuery(sql);
+		
 	}
 
 

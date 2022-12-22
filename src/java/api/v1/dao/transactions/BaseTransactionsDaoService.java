@@ -209,8 +209,6 @@ public class BaseTransactionsDaoService {
 				if(type.equals("expense")) expenses.add(transaction);
 				else if(type.equals("income")) incomes.add(transaction);
 				else if(type.equals("transfer")) transfers.add(transaction);
-				
-				System.out.println(expenses);
 
 			}	
 		} catch (SQLException e) {
@@ -223,7 +221,7 @@ public class BaseTransactionsDaoService {
 		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
 		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
 		
-		System.out.println(allTransactions);
+//		System.out.println(allTransactions);
 		return allTransactions;
 	}
 	
@@ -268,8 +266,7 @@ public class BaseTransactionsDaoService {
 			e.printStackTrace();
 			throw new CustomException("Transaction not found.",404);
 		}
-		
-		System.out.println(transactionType);
+	
 		
 		
 	}
@@ -279,7 +276,20 @@ public class BaseTransactionsDaoService {
 		ResultSet rs = dbUtil.executeInsertionQuery(sql);
 		
 	}
+
+
 	
+	public Transactions updateById(Transactions newTransaction, Long id) {
+		
+    	Users operatingUser = (Users)RequestContext.getAttribute("user");
+		String sql = "UPDATE `transactions` SET `amount`='"+newTransaction.getAmount()+"' WHERE id="+id;
+	
+		dbUtil.executeUpdateQuery(sql);
+
+		return newTransaction;
+		
+	}
+		
 	
 	
 }

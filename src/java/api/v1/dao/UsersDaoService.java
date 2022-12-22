@@ -53,7 +53,6 @@ public class UsersDaoService {
 	
     public void updateAuthTokenByEmail(String email,String authToken) {
     	DatabaseUtil dbUtil = DatabaseUtil.getInstance();
-    	System.out.println("trying to update session key " + email);
     	dbUtil.executeInsertionQuery("update users set session_key = '" + authToken +"' where email = '" + email + "' ");
     }
 
