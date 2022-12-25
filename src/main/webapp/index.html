@@ -158,10 +158,31 @@
                 </div>
 
 
-                <select class="view-type" name="" id="">
+                <!-- <select class="view-type" name="" id="">
                     <option selected value="minimal">&#xf03a</i></option>
                     <option selected value="minimal">&#xf828</option>
-                </select>
+                </select> -->
+
+                <span class="settings-btn" data-bs-toggle="modal" data-bs-target="#dashboard-settings">
+                    <i class="fas fa-gear"></i>
+                </span>
+
+                <!-- Dashboard Settings -->
+                <div class="modal fade" id="dashboard-settings" tabindex="-1" aria-labelledby="dashboard-settings" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Dashboard Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                           
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+                    </div>
+                </div>
 
                 <div class="btn btn-secondary ml-2" id="reload-expenses"><i class="fa fa-refresh" aria-hidden="true"></i></div>
 
@@ -455,89 +476,26 @@
     </div>
 </template>
 
-<!-- 
-<template id="tt-edit-expense-form">
-
-            <form onsubmit="return false;" action="" >
-            <div class="mb-3">
-                <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                <input placeholder="new clothes" maxlength="50" required type="text" class="form-control" id="expense-name">
-            </div>
-
-            <div class="d-flex flex-row justify-content-between ml-2">
-                <label class="message-text" for="recipient-name" class="col-form-label">Amount :</label>
-                <span class="url" id="split-wallet">split</span>
-            </div>
-
-            <div id="all-wallet-splits" class="all-wallet-splits">
-                <div class="w-split wallet-split1 d-flex mb-2">                            
-
-                    <div class="wallet-name-section  w-75">
-                        <select required class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
-                        </select>    
-
-                    </div>
-                    <div class="m-2"></div>
-                    <div class="d-flex flex-column justify-content-center w-25">
-                        <div></div>
-                        <input placeholder="0.00 ₹"type="number" min="1" max="10000000" class="form-control" id="expense-amount"></input>
-                        
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="more-expense-info" style="display:block;">
-
-                <div class="mb-3 d-flex flex-column">
-                    <label for="message-text" class="col-form-label" id="category-label">Category:</label>
-
-                    <div class="d-flex">
-                        
-                        <div id="form-category-icon">
-                        </div>
-
-
-                        <select name="new-category-icon" class="form-select" id="new-category-icon" style="display: none;">
-                        </select>
-
-                        <input type="text"  class="form-control edit-category-input" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
-
-
-                        <select class="form-select" aria-label="Default select" id="all-categories-options">
-                        </select>
-                        
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="recipient-name" class="col-form-label">Spend on:</label>
-                    <input placeholder="new clothes" step="any" type="datetime-local" class="form-control" id="expense-time">
-                </div>
-
-                <div class="mb-3">
-                    <label  class="col-form-label">Note:</label>
-                    <textarea placeholder="new clothes" class="form-control" id="expense-note"></textarea>  
-                </div>
-
-                <div class="mb-3">
-                    <label for="message-text" class="col-form-label">Tags:</label>
-                    
-                    <select name="locationSets" maxlength="10" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
-                    </select>
-
-                </div>
-
-            </div>
-            
-            <div class="modal-footer">
-                <button id="update-expense-btn" type="submit" class="btn btn-primary">Save</button>
-            </div>
-
-            </form>
-
-</template> -->
+<template id="tt-dashboard-settings">
+    <div class="set-home">
+        <div class="h5 border p-3 d-flex justify-content-between">
+            <span>Default View</span>
+            <select name="dashboard-view" id="dashboard-view">
+                <option value="Recent">Recent</option>
+                <option value="Last 7 Days">Weekly</option>
+                <option value="Monthly">Monthly</option>
+            </select>
+        </div>
+        <div class="h4 border p-3 d-flex justify-content-between" id="category-set">
+            <span class="label">Categories</span>
+            <span class="btn btn-primary" id="categories-view-btn">Open</span>
+        </div>
+        <div class="h4 border p-3 d-flex justify-content-between" id="tags-set">
+            <span class="label">Tags</span>    
+            <span class="btn btn-primary" id="tags-view-btn">Open</span>
+        </div>
+    </div>
+</template>
 
 
 

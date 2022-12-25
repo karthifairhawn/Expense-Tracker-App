@@ -39,6 +39,7 @@ public class CategoryService {
 	
 
     public void deleteById(Long categoryId) {
+    	categoryDaoService.removeAssociationById(categoryId);
     	categoryDaoService.deleteById(categoryId);
 	}
     

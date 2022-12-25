@@ -40,6 +40,7 @@ public class TagsService extends Thread {
 	}
     
 	public void deleteById(Long tagId) {
+		tagsDaoService.removeAssociationById(tagId);
 		tagsDaoService.deleteById(tagId);	
 	}
 

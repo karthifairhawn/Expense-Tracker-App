@@ -139,6 +139,12 @@ public class CategoryDaoService {
 		}
 		return category;
 	}
+	
+    public void removeAssociationById(Long categoryId) {
+    	Users operatingUser = (Users)RequestContext.getAttribute("user");
+		String sql = "UPDATE `expenses` SET `category_id`=0 WHERE `category_id`="+categoryId;
+		int rs = dbUtil.executeUpdateQuery(sql);
+	}
     
     
 

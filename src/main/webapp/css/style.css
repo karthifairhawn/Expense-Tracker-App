@@ -135,14 +135,6 @@ html, body{
     color: #000;
 }
 
-
-
-.label{
-    background-color: #142d4c;
-    padding: 0px 10px;
-    color: white;
-}
-
 .form-select{
     border-radius: 0px !important;
 }
@@ -1089,3 +1081,12 @@ form[name='profile-form'] input{
     border: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.24);
 }
+
+
+
+/* Dashboard Settings */
+
+.settings-btn{
+    cursor: pointer;
+}
+

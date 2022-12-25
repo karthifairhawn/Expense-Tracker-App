@@ -71,7 +71,13 @@ public class TagsDaoService {
 		return result;
 	}
     
-	public void deleteById(Long tagId) {
+    public void removeAssociationById(Long id) {
+		Users operatingUser = (Users)RequestContext.getAttribute("user");
+		String sql = "DELETE FROM `expense_tag_mapping` WHERE tag_id = " + id;
+		int rs = dbUtil.executeDeletionionQuery(sql);
+    }
+	
+    public void deleteById(Long tagId) {
 
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		String sql = "DELETE FROM `tags` WHERE id = " + tagId+" and user_id = " + operatingUser.getId();

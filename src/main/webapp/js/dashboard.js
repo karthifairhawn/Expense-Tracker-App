@@ -1,12 +1,12 @@
 import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById, findTransactionsPaginated} from '../apis/transactions.js';
 import {findWalletById, findWallets} from '../apis/wallets.js';
-import {findTags,createTag} from '../apis/tags.js';
-import {findCategories,createCategory} from '../apis/categories.js';
+import {findTags,createTag,deleteTagById} from '../apis/tags.js';
+import {findCategories,createCategory,deleteCategoryById} from '../apis/categories.js';
 
 import * as util from './util.js';
 
 // Mount Dashboard by default
-var currTimeSpan = 'Recent';
+var currTimeSpan = JSON.parse(localStorage.getItem('config'))==null ? 'Recent' : JSON.parse(localStorage.getItem('config')).defaultView;
 let isBannerListenerInitialized = false;
 let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 let colorTwo = ['fff','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
@@ -60,7 +60,7 @@ let expenseFormUtil = {
             let option = '<option value="'+userWallets[i].id+'" >'+userWallets[i].name+overdraft+'</option>';
             allOptions+=(option);
         }
-        allOptions += '<option value="-100"> &#xf05a; Dont assign wallet</option>';
+        allOptions += '<option value="-100"> &#xf05a; Select wallet</option>';
 
 
         $('#all-wallets-options').html(allOptions);
@@ -265,7 +265,6 @@ let expenseFormUtil = {
 
 updateHeader();
 await findBasicEntities();
-// mountExpenseSection();
 
 async function findBasicEntities(){
     let promisePending = [];
@@ -514,7 +513,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         let fullExpenseTime = (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
                 
         // Setting expense data to the dom
-        if(categoryInfo.imagePath == undefined) categoryInfo.imagePath = 'f543';
+        if(categoryInfo?.imagePath == undefined) categoryInfo.imagePath = 'f543';
 
         
 
@@ -671,7 +670,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
 // Initiate the date range selector plugin and trigger populateExpense for Recent
 function initiateDateSelectorPlugin(){
 
-    function cb(start, end, timeSpan) {
+    function dateChangeCallback(start, end, timeSpan) {
 
         // No date in expense list for today and yesterday's expense
         let expenseFrom = start;
@@ -701,13 +700,15 @@ function initiateDateSelectorPlugin(){
         'Monthly': [moment().startOf('month'), moment().endOf('month')],
     };
 
-    let start = allDateRanges['Recent'][0];
-    let end = allDateRanges['Recent'][1];
+    let start = allDateRanges[currTimeSpan][0];
+    let end = allDateRanges[currTimeSpan][1];
 
     let now = moment().format('MM/DD/YYYY');
 
-    $('#reportrange').daterangepicker({ startDate: start, endDate: end,maxDate: now, ranges: allDateRanges }, cb);
-    findAllExpenseDetails(start, end, currTimeSpan,true,'expense-card-container');
+    $('#reportrange').daterangepicker({ startDate: start, endDate: end,maxDate: now, ranges: allDateRanges }, dateChangeCallback);
+
+    dateChangeCallback(start, end, currTimeSpan);
+
 
 }  
 
@@ -1722,7 +1723,6 @@ async function updateHeader(timeRange){
     // Show current set range total expense in header container
     if(timeRange==null || timeRange.length==0 ){ timeRange = localStorage.getItem("spendingsBannerTime"); }
     if(timeRange==null) timeRange = "This Week";
-    console.log(timeRange);
     let dateRanges = {
         'Today': [moment(), moment()],
         'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -1768,6 +1768,93 @@ async function updateHeader(timeRange){
 $('#create-expense-btn').click(()=>{ mountCreateExpenseForm() });
 
 
+// Dashboard setting configuration
 
 
 
+$('.settings-btn').click(()=>{
+    $('.set-home').show();
+    $('#category-set .label').append('('+userCategories.length+')');
+    $('#tags-set .label').append('('+userTags.length+')');
+    let dashboard = $('#tt-dashboard-settings')[0].content.cloneNode(true)
+    $('#dashboard-settings .modal-body').html("");
+    $('#dashboard-settings .modal-body').append(dashboard);
+    $('#dashboard-view').val(currTimeSpan); 
+
+    initiateSettingsListeners();
+
+})
+
+function initiateSettingsListeners(){
+
+    $('#dashboard-view').change(()=>{
+        let config = localStorage.getItem("config") == null ? {} : JSON.parse(localStorage.getItem("config"));
+        config.defaultView = $('#dashboard-view').val();
+        localStorage.setItem("config",JSON.stringify(config));
+        console.log(localStorage.getItem("config"));
+        util.handleApiResponse({statusCode: 200},"Default view updated");
+    })
+
+    $('#categories-view-btn').click(()=>{
+        $('#dashboard-settings .modal-body').html('');
+        mountCategories($('#dashboard-settings .modal-body'));
+    })
+    
+    $('#tags-view-btn').click(()=>{
+        $('#dashboard-settings .modal-body').html('');
+        mountTags($('#dashboard-settings .modal-body'));
+    })
+}
+
+
+function mountCategories(container){
+    $(container).append('<div class="h3">Categories</div>');
+    for(let i=0;i<userCategories.length;i++){
+        let newCategoryList = $('<div class="d-flex justify-content-between align-items-center border p-3 mb-1 cat-list-section ">'+
+                                    '<span class="cname h5"></span>'+
+                                    '<div>'+
+                                        '<span class="delete-btn me-1 btn btn-warning" category-id='+userCategories[i].id+'><i class=" fas fa-edit"></i></span>'+
+                                        '<span class="delete-btn me-1 btn btn-danger" category-id='+userCategories[i].id+'><i class=" fas fa-trash"></i></span>'+
+                                    '</div>'+
+                                '</div>');
+
+        $(newCategoryList).find('.cname').text(userCategories[i].name);
+        container.append(newCategoryList);
+    }
+
+    $('.cat-list-section .delete-btn').click((e)=>{
+        let element = $(e.target).closest('.delete-btn');
+        let categoryId = $(element).attr('category-id');
+        console.log(categoryId);
+
+        deleteCategoryById(categoryId).then((data)=>{
+            util.handleApiResponse(data,"Category deleted successfully","Category deletion failed");
+            // console.log(data);
+        });
+    });
+}
+
+function mountTags(container){
+    $(container).append('<div class="h3">Tags</div>');
+    for(let i=0;i<userTags.length;i++){
+        let newCategoryList = $('<div class="d-flex justify-content-between align-items-center border p-3 mb-1 tag-list-section">'+
+                                    '<span class="cname h5"></span>'+
+                                    '<div>'+
+                                        '<span class="delete-btn me-1 btn btn-warning" tag-id="'+userTags[i].id+'"><i class=" fas fa-edit"></i></span>'+
+                                        '<span class="delete-btn me-1 btn btn-danger" tag-id="'+userTags[i].id+'"><i class=" fas fa-trash"></i></span>'+
+                                    '</div>'+
+                                '</div>');
+
+        $(newCategoryList).find('.cname').text(userTags[i].name);
+        container.append(newCategoryList);
+    }
+
+    $('.tag-list-section .delete-btn').click((e)=>{
+        let element = $(e.target).closest('.delete-btn');
+        let tagId = $(element).attr('tag-id');
+        
+        deleteTagById(tagId).then((data)=>{
+            util.handleApiResponse(data,"Tag deleted successfully","Tag deletion failed");
+        })
+    });
+}
