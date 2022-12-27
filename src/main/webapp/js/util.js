@@ -53,7 +53,7 @@ export function handleApiResponse(data,success,error){
         if(error== undefined || error.length == 0 || error == null)  {
             message = getStatusMessage(data.statusCode);
         }else{
-            message = "Failed! Try again... 🛑";
+            message = error;
         }
     } 
     $('.toast-body').text(message);

@@ -243,9 +243,10 @@ html, body{
 
 #new-category-icon{
 
-    width: 80px;
+    width: 50px;
     padding: 10px;
-    /* font-size: 20px; */
+    background-color:#313131;
+    color: #fff;
 }
 
 .modal .spend-amount{
@@ -265,8 +266,36 @@ html, body{
 
 }
 
-#new-category-icon option{
+#new-category-icon option, #new-category-icon{
     font-family: 'Lato', 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+#new-category-ico span{
+    font-family: 'Lato', 'Font Awesome 5 Free';
+    padding:10px;
+    
+}
+
+
+#new-category-ico span:hover{
+    cursor: pointer;
+    background-color: #313131;
+    color: #fff;
+}
+
+.active-cat{
+    background-color:#29b6f6 !important;
+    color: #fff;
+    cursor: default;
+}
+
+#new-category-ico{
+    display: flex;
+    flex-wrap: wrap;
+    height: 200px;
+    overflow-y: scroll;
+    display: none;
 }
 
 #expense-more, .url{
@@ -541,13 +570,15 @@ select {
 }
 
 .tags-section{
-    background-color: #43cead;
+    /* background-color: #43cead; */
     border-radius: 30px;
 }
 
- .tag-text{
+.tag-text{
     padding: 3px 10px;
-    border-radius: 5px 0px 15px 0px;
+    border-radius: 15px;
+    background-color: #24232a;
+    color: #000;
 
 }
 
@@ -1090,3 +1121,53 @@ form[name='profile-form'] input{
     cursor: pointer;
 }
 
+
+/* Card Loading css */
+
+.post {
+    height: 80px;
+    display: flex;
+  }
+.post .avatar {
+    width: 52px;
+    height: 52px;
+    background-color: #ccc;
+    border-radius: 25%;
+    margin: 8px;
+    background-image: linear-gradient(90deg, #ddd 0px, #e8e8e8 40px, #ddd 80px);
+    background-size: 600px;
+    animation: shine-avatar 1.6s infinite linear;
+}
+.post .line {
+    float: left;
+    height: 52px;
+    margin-top: 12px;
+    border-radius: 7px;
+    background-image: linear-gradient(90deg, #ddd 0px, #e8e8e8 40px, #ddd 80px);
+    background-size: 600px;
+    animation: shine-lines 1.6s infinite linear;
+}
+.post .avatar + .line {
+    margin-top: 11px;
+    width: 100%;
+}
+.post .line ~ .line {
+    background-color: #ddd;
+}
+  
+@keyframes shine-lines {
+    0% {
+      background-position: -100px;
+    }
+    40%, 100% {
+      background-position: 140px;
+    }
+}
+@keyframes shine-avatar {
+    0% {
+      background-position: -32px;
+    }
+    40%, 100% {
+      background-position: 208px;
+    }
+}

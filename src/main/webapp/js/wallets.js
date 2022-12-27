@@ -159,6 +159,7 @@ async function refreshWalletsPage(){
     userNonCardWallets = [];
     totalBalance = 0;
     await walletService.findWallets().then((data)=> {
+        if(data==null) return;
         data = data.data;
         for(const category in data){
             if(category =='Credit Card') userCardWallets.push(...data[category]);
