@@ -75,15 +75,28 @@
                     <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
                 </div>
  
-                <div class="nav-right-options d-flex">
-                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
+                <div class="nav-right-options d-flex align-items-center">
                     <a  href="profile.html" tabs="profile" class="nav-item profile"><i class="fas fa-user"></i></a>
+                    <h5 class="nav-item nav-notification"><i class="fa-solid fa-bell"></i></h5>
+                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
                 </div>
  
             </div>
         </nav>
 
         <div id="balance-header" class="container"></div>
+
+        <div id="notifications" class="">
+            <div class="notifications-head d-flex align-items-center justify-content-between">
+                <h5>Notifications</h5>
+                <h5 id="clear-not" class="url">Clear all</h5>
+            </div>
+
+            <div id="notificaitons-container">
+                
+            </div>
+
+        </div>
 
 
         <!-- Information to show when no wallet is added -->
@@ -232,12 +245,56 @@
     </div>
 
 
+    <!-- Create Alert for cards Modal -->
+    <div class="modal fade" id="cardAlertModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Create Card Alert</h5>
+                    <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form onsubmit="return false;">
+                        <div class="mb-3">
+
+                            <div class="input-group mb-4">
+                                <span class="input-group-text"> Card</span>
+                                <select class="form-select alert-wallet" name="wallet-selection">
+        
+                                </select>
+                            </div>
+
+
+                            <label for="exampleInputEmail1" class="form-label">Type</label>
+                            <select  class="form-control"  name="alert-type" id="alert-type">
+                                <option value="due" selected>Due Alert</option>
+                                <option value="limit">Limit Alert</option>
+                            </select>
+                          </div>
+                          <div class="mb-3  limit-alert-form" style="display: none;">
+                            <label for="exampleInputPassword1" class="form-label w-50 h6">Notify on</label>
+                            <div class="d-flex align-items-center"> 
+                                <input type="number" min="10" max="99" class="form-control limitpercent">
+                                <span class="p-3">%</span>
+                            </div>
+                          </div>
+                          <div class="mb-3 align-items-center due-alert-form">
+                                <label class="form-check-label w-50 h6" for="exampleCheck1">Alert Before</label>
+                                <div class="d-flex align-items-center"> 
+                                    <input type="number" min="1" max="25" class="form-control due-alert-before"> 
+                                    <span class="p-3">Days</span>
+                                </div>
+                          </div>
+                          <button type="submit" class="btn btn-primary submit-alert-creation">Create</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
     
-
-
-    
-
 </template>
 
 <template id="tt-ce-wallet-modal">
@@ -438,6 +495,17 @@
                             <div class="card-limit value wallet-info-label"></div>
                         </div>
 
+                        <div class="mt-3">
+                            <hr>
+                            <div class="alert-header d-flex justify-content-between align-items-center">
+                                <h4>🔔 Alerts</h4> 
+                                <span class="btn url create-alert">Create alert </span>
+                            </div>
+
+                            <div class="card-alerts">
+
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -598,7 +666,22 @@
 
 </template>
 
+<template id="tt-notification">
+    <div class="notifications-body d-flex align-items-center">
+        <div class="not-ico d-flex align-items-center justify-content-center">
+            <i class="fa-sharp fa-solid fa-money-bill"></i>
+        </div>
 
+        <div class="not-right">
+            <h5 class="not-title">Credit card bill.</h5>
+            <span class="not-body">HDFC Card bill payment due in 2 days.</span>
+        </div>
+
+        <div class="not-time">5 min ago</div>
+
+        <div class="not-del-btn"><i class="fa-regular fa-circle-xmark"></i></div>
+    </div>
+</template>
 
 <script type="module" src="./js/wallets.js"></script>
 <script  type="module" src="./js/common.js"></script>     

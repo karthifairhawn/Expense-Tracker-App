@@ -60,6 +60,7 @@ public class CategoryDaoService {
 		if(rs==0) throw new CustomException("Updation failed pass in valid data.",400,new Date().toLocaleString());
 		
 		return category;
+		
     }
     
     public List<Categories> findAll(){

@@ -15,6 +15,7 @@ import api.v1.dao.transactions.ExpenseTransactionsDaoService;
 import api.v1.dao.transactions.IncomeTransactionDaoService;
 import api.v1.dao.transactions.TransferTransactionsDaoService;
 import api.v1.dao.wallets.BaseWalletsDaoService;
+import api.v1.dao.wallets.CreditCardWalletsDaoService;
 import api.v1.entity.transactions.Expense;
 import api.v1.entity.transactions.Income;
 import api.v1.entity.transactions.Transactions;
@@ -112,6 +113,10 @@ public class TransactionsService {
 
 			// assign wallet splits to the transaction
 			baseWalletsDaoService.assignWalletsForExpenses(walletSplits, expense.getId());
+			
+			// Check for any possible limit alerts
+			WalletsService.getInstance().handleLimitAlerts(walletSplits);
+			
 		}else if(type.equalsIgnoreCase("income")){
 			
 			Income income = new Income( ((LinkedTreeMap) transaction.getTransactionInfo()) );
@@ -197,6 +202,8 @@ public class TransactionsService {
 			List<Long> allTags = newExpense.getTagId();
 			tagsDaoService.assignTagsToExpenseById(allTags, expense.getId());
 			baseWalletsDaoService.assignWalletsForExpenses(walletSplits, expense.getId());
+			
+			WalletsService.getInstance().handleLimitAlerts(walletSplits);
 			
 		}else if(transactionType.equalsIgnoreCase("transfer")) {
 //			rollbackTransferByTransactionId(id,amount);

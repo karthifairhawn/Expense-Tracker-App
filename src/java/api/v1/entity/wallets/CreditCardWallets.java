@@ -3,6 +3,7 @@ package api.v1.entity.wallets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -24,4 +25,6 @@ public class CreditCardWallets{
 	Long id;
 	Integer repayDate;
 	Long limit;
+	
+	List<CardAlerts> alerts;
 }

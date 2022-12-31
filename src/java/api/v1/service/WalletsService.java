@@ -15,8 +15,11 @@ import api.v1.dao.wallets.BaseWalletsDaoService;
 import api.v1.dao.wallets.BonusWalletsDaoService;
 import api.v1.dao.wallets.CreditCardWalletsDaoService;
 import api.v1.dao.wallets.OtherWalletsDaoService;
+import api.v1.entity.Notifications;
+import api.v1.entity.Users;
 import api.v1.entity.wallets.BankWallets;
 import api.v1.entity.wallets.BonusCardWallets;
+import api.v1.entity.wallets.CardAlerts;
 import api.v1.entity.wallets.CreditCardWallets;
 import api.v1.entity.wallets.OtherWallets;
 import api.v1.entity.wallets.Wallets;
@@ -79,7 +82,6 @@ public class WalletsService {
 	
 	public Map<String, List<Wallets<?>>> findAll() {
 		
-		System.out.println(walletsService.baseWalletsDaoService+"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 		
 		List<Wallets<?>> list = new ArrayList<Wallets<?>>();
 		list.addAll(baseWalletsDaoService.findAll());
@@ -125,7 +127,6 @@ public class WalletsService {
 	
 	public Wallets update(Wallets wallet) {
 
-
 		String walletType = wallet.getType();
 		Long walletId = wallet.getId();
 
@@ -155,6 +156,50 @@ public class WalletsService {
 		baseWalletsDaoService.deleteById(walletId);
 	}
 
+	public void handleLimitAlerts(Map<Long, Long> walletSplits) {
+
+
+		Users operatingUser = (Users)RequestContext.getAttribute("user");
+
+		
+		for(Map.Entry<Long,Long> entry : walletSplits.entrySet()) {
+			Long walletId = entry.getKey();
+			Long amount = entry.getValue();
+			
+			Wallets wallet = findById(walletId);
+
+			if(wallet.getType().equals("Credit Card")){
+
+				
+				Long limit = ((CreditCardWallets) wallet.getWalletInfo()).getLimit();
+				Long balance = wallet.getBalance();
+				
+				Long totalSpend = limit - balance;
+				
+
+				Double percentageUsed = (totalSpend.doubleValue() / limit.doubleValue()) * 100;
+				
+				List<CardAlerts> alerts = CardAlertsService.getInstance().findByCardId(walletId);
+				
+				for(CardAlerts cardAlert: alerts) {
+					Long alertLimit = cardAlert.getLimitAlertOn();
+					if(alertLimit<0) return;
+					System.out.println("----------------------------------------------------"+percentageUsed);
+					if(alertLimit<=percentageUsed){
+						String title = wallet.getName()+" Limit reached";
+						String info =  "Used "+percentageUsed+" % of "+wallet.getName();
+						Notifications notification = new Notifications(
+								null,title,"limit",info,null,System.currentTimeMillis(),walletId,operatingUser.getId(),false
+								);
+						
+						System.out.println("----------------------------------------------------"+notification);
+						NotificationsService.getInstance().save(notification);
+					}
+				}
+			}
+		}
+
+	}
 	
 	public void validateNewWallet(String requestBody){
 		
@@ -262,5 +307,7 @@ public class WalletsService {
 		return true;
 		
 	}
+	
+
 	
 }

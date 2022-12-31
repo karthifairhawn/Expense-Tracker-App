@@ -4,6 +4,7 @@ import {findTags,createTag,deleteTagById} from '../apis/tags.js';
 import {findCategories,createCategory,deleteCategoryById} from '../apis/categories.js';
 
 import * as util from './util.js';
+import * as commonService from './common.js';
 
 // Mount Dashboard by default
 var currTimeSpan = JSON.parse(localStorage.getItem('config'))==null ? 'Recent' : JSON.parse(localStorage.getItem('config')).defaultView;
@@ -1430,6 +1431,7 @@ function mountCreateExpenseForm(){
                 updateHeader();
                 pushExpenseToSection(data);
                 util.handleApiResponse(data,"Expense Created ✅ ");
+                commonService.fetchNotifications();
             })
 
         }
@@ -1716,6 +1718,7 @@ function mountEditExpenseForm(expenseId){
                 util.handleApiResponse(data,"Expense Edited ✏️ ");
                 updateHeader();
                 replaceExpenseInSection(data);
+                commonService.fetchNotifications();
             });
             $('body').css('overflow', 'scroll');
         }
@@ -1855,6 +1858,8 @@ function mountTags(container){
 }
 
 
+
+
 $('#reload-expenses').click(()=>{
     findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
 });
@@ -1872,3 +1877,4 @@ $('.settings-btn').click(()=>{
     initiateSettingsListeners();
 
 })
+

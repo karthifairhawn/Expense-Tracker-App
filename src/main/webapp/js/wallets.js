@@ -1,7 +1,8 @@
 import * as trasnsactionService from '../apis/transactions.js';
 import * as walletService from '../apis/wallets.js';
 import * as util from './util.js';
-
+import * as cardAlertsService from '../apis/cardAlerts.js'
+import * as commonService from './common.js';
 
 
 
@@ -179,6 +180,7 @@ async function refreshWalletsPage(){
     $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
     $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
     $('.view-income-btn').click(()=>{ mountAllIncomes() })
+    $('.create-alert').click(()=>{ mountCreateAlertForm() })
 
     if(userWallets.length==0){
         $('.no-wallet-available').show();
@@ -274,10 +276,43 @@ async function mountWallets(){
                 mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('type')) 
             });
 
+            
 
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) { walletUtil.deleteWalletById(event.target.getAttribute('wallet-id')) })
             $(walletCardClone).find('.pay-bill-btn').click((event)=>{
                 mountCreditCardBillModal(event) 
+            })
+
+            let cardAlerts = allWallets[i].walletInfo.alerts;
+            // console.log(allWallets[i])
+            for(let j=0; j<cardAlerts.length; j++){
+                let alertElement = $('<div class="mb-2 card-field alert-ele d-flex"> <div class="alert-key label">Limit: </div> <div class="alert-value value wallet-info-label"></div><i class="alert-del-btn fa-solid fa-delete-left" style="display:none"></i> </div>');
+                let alertType = cardAlerts[j].type=='due' ? "Due Alert" : "Limit Alert";
+                let alertValue = alertType == "Due Alert" ? "Before " + cardAlerts[j].dueAlertBefore +" Days" : " on "+cardAlerts[j].limitAlertOn +" %";
+                $(alertElement).find('.alert-key').text(alertType);
+                $(alertElement).find('.alert-value').text(alertValue);
+                // $(alertElement).hover()
+                $(alertElement).find(".alert-del-btn").attr('alert-id',cardAlerts[j].id);
+                $(alertElement).find(".alert-del-btn").attr('wallet-id',wallet.id);
+                $(alertElement).hover(()=>{
+                    $(alertElement).find('.alert-del-btn ').show();
+                },()=>{
+                    $(alertElement).find('.alert-del-btn ').hide();
+                });
+                $(walletCardClone).find(".card-alerts").append(alertElement);
+
+            }
+
+            if(cardAlerts.length==0){
+                $(walletCardClone).find(".card-alerts").append($("<h3><center>No Card Alerts</center></h3>"));
+            }
+
+            $(walletCardClone).find(".alert-del-btn").click((e)=>{
+                let alertId = $(e.target).attr('alert-id');
+                let walletId = $(e.target).attr('wallet-id');
+                cardAlertsService.deleteById(walletId,alertId).then(()=>{
+                    $(e.target).closest('.card-field').remove();
+                })
             })
 
 
@@ -338,7 +373,7 @@ async function mountWallets(){
             $('#credit-cards').append($(walletCardClone));
             totalCardExpense +=subInfo.limit - wallet.balance;
 
-             
+
         }
 
         $('.card-used-amount').text(totalCardExpense);
@@ -623,4 +658,57 @@ function mountAddIncomeModal(isBill,billMax){
 
 }
 
+function mountCreateAlertForm(){
+    $('.btn-close').click();
+    $('#cardAlertModal').modal({ show: false})
+    $('#cardAlertModal').modal('show');
+
+    for(let i=0;i<userCardWallets.length;i++){
+        $('.alert-wallet').append('<option value='+userCardWallets[i].id+'>'+userCardWallets[i].name+'</option>');
+    }
+
+    $('#alert-type').off()
+    $('#alert-type').change(()=>{
+        let alertType = ($('#alert-type').val());
+
+        if(alertType == "due"){
+            $('.limit-alert-form').hide();
+            $('.due-alert-form').show();
+        }else if(alertType == "limit"){
+            $('.limit-alert-form').show();
+            $('.due-alert-form').hide();
+        }
+    })
+
+    $('.submit-alert-creation').off()
+    $('.submit-alert-creation').click(()=>{
+        let type = ($('#alert-type').val());
+        let value = null;
+        if(type=="due") value = $('.due-alert-before').val();
+        else if(type=="limit") value = $('.limitpercent').val();
+
+        let walletId = $('.alert-wallet').val();
+        
+        if(isValidAlert()){
+            let raw = {
+                "type" : type,
+                "limitAlertOn" : value,
+                "dueAlertBefore" : value
+            }
+            cardAlertsService.createAlert(walletId,JSON.stringify(raw)).then(()=>{
+                $('.btn-close').click();
+                refreshWalletsPage();
+            })
+        }
+    })
+
+    function isValidAlert(){
+
+        return true;
+        // return util.isGreaterThanZero( $('.due-alert-before').val(), $('.due-alert-before')) &&
+        // util.isGreaterThanZero( $('.due-alert-before').val(), $('.due-alert-before'));
+    }
+
+
+}
 

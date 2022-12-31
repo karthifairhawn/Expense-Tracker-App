@@ -15,8 +15,10 @@ import com.mysql.jdbc.ResultSetMetaData;
 import api.v1.contexts.RequestContext;
 import api.v1.entity.Users;
 import api.v1.entity.wallets.BankWallets;
+import api.v1.entity.wallets.CreditCardWallets;
 import api.v1.entity.wallets.Wallets;
 import api.v1.exception.CustomException;
+import api.v1.service.CardAlertsService;
 import api.v1.service.UsersService;
 import api.v1.utils.DatabaseUtil;
 
@@ -105,7 +107,14 @@ public class BaseWalletsDaoService {
 				Object subWallet = null;
 
 				if(fetchingWallet.getType().equals("Bank Account")) 			subWallet = bankWalletsDaoService.findById(fetchingWallet.getId());
-				else if(fetchingWallet.getType().equals("Credit Card")) 		subWallet = creditCardWalletsDaoService.findById(fetchingWallet.getId());
+				else if(fetchingWallet.getType().equals("Credit Card")) {
+					
+					CreditCardWallets ccw = creditCardWalletsDaoService.findById(fetchingWallet.getId());
+					ccw.setAlerts(CardAlertsService.getInstance().findByCardId(fetchingWallet.getId()));
+					subWallet = ccw;
+					
+					
+				}
 				else if(fetchingWallet.getType().equals("Bonus Account")) 	subWallet = bonusWalletsDaoService.findById(fetchingWallet.getId());
 				else if(fetchingWallet.getType().equals("Other")) 			subWallet = otherWalletsDaoService.findById(fetchingWallet.getId());
 

@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 
@@ -67,7 +70,6 @@ public class CreditCardWalletsDaoService {
 			rs.next();
 			creditCardWallets = new CreditCardWallets();
 			creditCardWallets.setId(Long.parseLong(rs.getString(1)));
-//			Date date=new SimpleDateFormat("yyyy-MM-dd").parse(rs.getString(2));  
 			creditCardWallets.setRepayDate(Integer.parseInt(rs.getString(2)));
 			creditCardWallets.setLimit((Long.parseLong(rs.getString(3))));
 			
@@ -97,6 +99,28 @@ public class CreditCardWalletsDaoService {
 		int rs = dbUtil.executeUpdateQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());
 		
+	}
+
+	public List<CreditCardWallets> findAllSuper() {
+
+		String query = "SELECT * FROM `credit_card_wallet`";
+		ResultSet rs;
+		List<CreditCardWallets> allWallets = new LinkedList<>();
+		try {
+			rs = dbUtil.executeSelectionQuery(query);
+			while(rs.next()) {
+				CreditCardWallets creditCardWallets = null;
+				creditCardWallets = new CreditCardWallets();
+				creditCardWallets.setId(Long.parseLong(rs.getString(1)));
+				creditCardWallets.setRepayDate(Integer.parseInt(rs.getString(2)));
+				creditCardWallets.setLimit((Long.parseLong(rs.getString(3))));
+				allWallets.add(creditCardWallets);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new CustomException("AN unexpected error occured in credit card retrievel",500,new Date().toLocaleString());
+		}
+		return allWallets;
 	}
 
 

@@ -83,9 +83,10 @@
                     <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
                 </div>
  
-                <div class="nav-right-options d-flex">
-                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
+                <div class="nav-right-options d-flex align-items-center">
                     <a  href="profile.html" tabs="profile" class="nav-item profile"><i class="fas fa-user"></i></a>
+                    <h5 class="nav-item nav-notification"><i class="fa-solid fa-bell"></i></h5>
+                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
                 </div>
  
             </div>
@@ -94,7 +95,19 @@
         <!-- Balance Header -->
         <div id="balance-header" class="container"></div>
 
+        <div id="notifications" class="">
+            <div class="notifications-head d-flex align-items-center justify-content-between">
+                <h5>Notifications</h5>
+                <h5 id="clear-not" class="url">Clear all</h5>
+            </div>
 
+            <div id="notificaitons-container">
+                
+            </div>
+            <div class="d-flex flex-row-reverse me-3 mb-3">
+                <span class="mark-not-btn">Mark all as read</span>
+            </div>
+        </div>
 
         <!-- DashBoard -->
         <div id="dashboard"> 
@@ -498,7 +511,22 @@
     </div>
 </template>
 
+<template id="tt-notification">
+    <div class="notifications-body d-flex align-items-center">
+        <div class="not-ico d-flex align-items-center justify-content-center">
+            <i class="fa-sharp fa-solid fa-money-bill"></i>
+        </div>
 
+        <div class="not-right">
+            <h5 class="not-title">Credit card bill.</h5>
+            <span class="not-body">HDFC Card bill payment due in 2 days.</span>
+        </div>
+
+        <div class="not-time">5 min ago</div>
+
+        <div class="not-del-btn"><i class="fa-regular fa-circle-xmark"></i></div>
+    </div>
+</template>
 
 <script  type="module" src="./js/dashboard.js"></script>     
 <script  type="module" src="./js/common.js"></script>     

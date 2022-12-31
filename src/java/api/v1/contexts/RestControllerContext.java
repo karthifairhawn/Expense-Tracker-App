@@ -87,9 +87,9 @@ public class RestControllerContext {
 			controllersObject.put(controllerName,(RestController) (controllers.get(controllerName)).newInstance());
 			System.out.println("\033[35m ================ Created new controller instance and stored in context - "+controllerName+" \033[37m");
 			
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new CustomException("Internal server error, please contact admin",500);
+			throw new CustomException("404 URI not found",404);
 		}
 		return controllersObject.get(controllerName);
 	}
