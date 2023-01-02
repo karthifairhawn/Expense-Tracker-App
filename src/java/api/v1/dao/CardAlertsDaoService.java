@@ -4,9 +4,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import api.v1.contexts.RequestContext;
 import api.v1.entity.Notifications;
@@ -108,18 +111,22 @@ public class CardAlertsDaoService {
 		
 		return allCardAlerts;
 	}
-	public List<Long> findCardsToAlertByDay(Integer day) {
+	public Map<Long, Long> findCardsToAlertByDay(Integer day) {
 		
-		List<Long> ids = new LinkedList<>();
-	   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d");  
-	   LocalDateTime now = LocalDateTime.now();  
-	   String date = dtf.format(now);
-		String sql = "SELECT ccw.id FROM `credit_card_wallet` AS ccw INNER JOIN `card_alerts` AS ca on ccw.wallet_id = credit_card_id where (ca.type='due' and  (ccw.repay_date-ca.due_alert_before) = "+date+");";
+		Calendar cal = Calendar.getInstance();
+		Integer lastDay = cal.getActualMaximum(Calendar.DATE);
+		
+		
+		Map<Long,Long> ids = new HashMap<>();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d");  
+		LocalDateTime now = LocalDateTime.now();  
+		String date = dtf.format(now);
+		String sql = "SELECT ccw.wallet_id as id,ca.due_alert_before as bef FROM `credit_card_wallet` AS ccw INNER JOIN `card_alerts` AS ca on ccw.wallet_id = ca.credit_card_id where (ca.type='due') and ((SELECT SUBSTRING_INDEX(LAST_DAY(NOW()),'-',-1) as ld) + (SELECT IF(((ccw.repay_date-ca.due_alert_before)<0),(ccw.repay_date-ca.due_alert_before)+1,(ccw.repay_date-ca.due_alert_before)))  = "+date+")  || (ccw.repay_date-ca.due_alert_before) = "+date+";";
 		
 		try {
 			ResultSet rs = dbUtil.executeSelectionQuery(sql);
 			while(rs.next()) {				
-				ids.add(rs.getLong("id"));
+				ids.put(rs.getLong("id"),rs.getLong("bef"));
 			}
 		
 		} catch (SQLException e) {
@@ -127,6 +134,7 @@ public class CardAlertsDaoService {
 			throw new CustomException("Retrive all categories failed",400,new Date().toLocaleString());
 		}
 		
+		System.out.println(ids);
 		return ids;
 	}
 

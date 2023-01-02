@@ -191,8 +191,7 @@ public class WalletsService {
 						Notifications notification = new Notifications(
 								null,title,"limit",info,null,System.currentTimeMillis(),walletId,operatingUser.getId(),false
 								);
-						
-						System.out.println("----------------------------------------------------"+notification);
+
 						NotificationsService.getInstance().save(notification);
 					}
 				}

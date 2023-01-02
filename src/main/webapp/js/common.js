@@ -68,7 +68,6 @@ export function fetchNotifications(){
         let container = $("#"+containerId)[0];
         $(container).html("");
 
-        console.log(notifications);
         for(let i=notifications.length-1;i>=0;i--){
             let notificationElement = document.getElementById("tt-notification").content.cloneNode(true);
 
@@ -86,6 +85,7 @@ export function fetchNotifications(){
 
         }
         
+        
         zeroNotificationsHandler(notifications.length);
         notificationIndicator(totalNonReadNotifications);
         totalNotifications=notifications.length;
@@ -101,8 +101,8 @@ export function fetchNotifications(){
     }
 
     function zeroNotificationsHandler(count){
-        if(notifications.length==0){
-            $(container).append($("<h2 class='mt-3 zero-notification'><center>No Notifications</center></h2>"))
+        if(count==0){
+            $('#notificaitons-container').append($("<h2 class='mt-3 zero-notification'><center>No Notifications</center></h2>"))
         }else{
             $('.zero-notification').remove();
         }

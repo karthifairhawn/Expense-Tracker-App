@@ -20,8 +20,8 @@ public class DailySchedular implements ServletContextListener {
         scheduler = Executors.newSingleThreadScheduledExecutor();
 //        scheduler.scheduleAtFixedRate(new DailyJob(), 0, 1, TimeUnit.DAYS);
 //        scheduler.scheduleAtFixedRate(new SomeHourlyJob(), 0, 1, TimeUnit.HOURS);
-//        scheduler.scheduleAtFixedRate(new CreditCardDueJob(), 0, 15, TimeUnit.MINUTES);
-        scheduler.scheduleAtFixedRate(new CreditCardDueJob(), 0, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(new CreditCardDueJob(), 0, 15, TimeUnit.MINUTES);
+//        scheduler.scheduleAtFixedRate(new CreditCardDueJob(), 0, 60, TimeUnit.SECONDS);
     }
 
 

@@ -31,7 +31,11 @@ public class NotificationsDaoService {
     	// Getting operating user
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
+
+		
+		
 		Long userId = operatingUser.getId();
+		if(userId==-1) userId=notification.getUserId();
 		String type = notification.getType();
 		String title = notification.getTitle();
 		String info = notification.getInfo();
@@ -70,7 +74,6 @@ public class NotificationsDaoService {
 		String sql = "DELETE FROM `notifications` WHERE user_id = " + operatingUser.getId();
 		
 		int rs = dbUtil.executeDeletionionQuery(sql);
-		if(rs==0) throw new CustomException("The category is not found in this account",404,new Date().toLocaleString());
 		
 		return true;
     }

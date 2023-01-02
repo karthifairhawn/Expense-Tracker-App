@@ -135,11 +135,19 @@ public class BaseWalletsDaoService {
 
 	public Wallets findById(long walletId) {
 		
+
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
+		if(operatingUser==null) {
+			operatingUser = new Users("","",-1l,"","");
+		}
+		
 		Wallets wallet = new Wallets();
 		
 		// Wallet Retrieve
 		String query = "SELECT * FROM `wallets` where id = " + walletId +" and user_id="+operatingUser.getId();
+		if(operatingUser.getId()==-1l) {
+			query = "SELECT * FROM `wallets` where id = " + walletId;
+		}
 		ResultSet rs;
 		try {
 			rs = dbUtil.executeSelectionQuery(query);
@@ -163,6 +171,8 @@ public class BaseWalletsDaoService {
 		
 		return wallet;
 	}
+	
+	
 
 	public void deleteById(long walletId) {
 		

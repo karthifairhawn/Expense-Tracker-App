@@ -8,8 +8,11 @@ import api.v1.entity.wallets.CreditCardWallets;
 import api.v1.entity.wallets.Wallets;
 import api.v1.utils.ValidatorUtil;
 
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,15 +62,18 @@ public class CardAlertsService {
 		return cardAlertsDaoService.findAllSuper();
 	}
 	
-	public List<Wallets> findCardsToAlertByDay(Integer day){
-		List<Long> allCreditCardWalletsIds = cardAlertsDaoService.findCardsToAlertByDay(day);
-		List<Wallets> allCreditCardWallets = new LinkedList<>();
+	public Map<Wallets, Long> findCardsToAlertByDay(Integer day){
 		
-		for(Long id:allCreditCardWalletsIds) {
-			allCreditCardWallets.add(WalletsService.getInstance().findById(id));
+
+		Map<Wallets,Long> res = new HashMap<>();
+		Map<Long, Long> allCreditCardWalletsIds = cardAlertsDaoService.findCardsToAlertByDay(day);
+
+
+		for(Map.Entry<Long,Long> e:allCreditCardWalletsIds.entrySet()) {
+			res.put(WalletsService.getInstance().findById(e.getKey()),e.getValue());
 		}
 		
-		return allCreditCardWallets;
+		return res;
 	}
 	
 	
