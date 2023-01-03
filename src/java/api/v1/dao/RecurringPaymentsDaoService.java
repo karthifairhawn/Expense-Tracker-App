@@ -35,8 +35,8 @@ public class RecurringPaymentsDaoService {
 
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 		
-		int autoAdd = recurringPayment.getAutoAdd()==false ? 0 : 1;
-		String sql = "INSERT INTO `recurring_payments`( `user_id`, `wallet_id`, `name`, `type`, `amount`, `occur`, `end_by`, `auto_add`) "
+		Long autoAdd = recurringPayment.getLastPaid();
+		String sql = "INSERT INTO `recurring_payments`( `user_id`, `wallet_id`, `name`, `type`, `amount`, `occur`, `end_by`, `last_paid`) "
 				+ "VALUES ('"+operatingUser.getId()+"','"+recurringPayment.getWalletId()+"','"+recurringPayment.getName()+"',"
 				+ "'"+recurringPayment.getType()+"','"+recurringPayment.getAmount()+"','"+recurringPayment.getOccur()+"','"+recurringPayment.getEndBy()+"','"+autoAdd+"')";
 		
@@ -62,7 +62,7 @@ public class RecurringPaymentsDaoService {
 			ResultSet rs = dbUtil.executeSelectionQuery(sql);
 			
 			while(rs.next()){
-				RecurringPayments c = new RecurringPayments(rs.getLong("id"),rs.getLong("user_id"),rs.getLong("wallet_id"),rs.getString("name"),rs.getString("type"),rs.getLong("amount"),rs.getString("occur"),rs.getString("end_by"),rs.getBoolean("auto_add"));
+				RecurringPayments c = new RecurringPayments(rs.getLong("id"),rs.getLong("user_id"),rs.getLong("wallet_id"),rs.getString("name"),rs.getString("type"),rs.getLong("amount"),rs.getString("occur"),rs.getString("end_by"),rs.getLong("last_paid"));
 				result.add(c);
 			}
 			
@@ -84,7 +84,7 @@ public class RecurringPaymentsDaoService {
 		try {
 			rs = dbUtil.executeSelectionQuery(sql);
 			rs.next();
-			recurringPayments = new RecurringPayments(rs.getLong("id"),rs.getLong("user_id"),rs.getLong("wallet_id"),rs.getString("name"),rs.getString("type"),rs.getLong("amount"),rs.getString("occur"),rs.getString("end_by"),rs.getBoolean("auto_add"));
+			recurringPayments = new RecurringPayments(rs.getLong("id"),rs.getLong("user_id"),rs.getLong("wallet_id"),rs.getString("name"),rs.getString("type"),rs.getLong("amount"),rs.getString("occur"),rs.getString("end_by"),rs.getLong("last_paid"));
 
 			
 		}catch(Exception e){
@@ -107,9 +107,9 @@ public class RecurringPaymentsDaoService {
 	public RecurringPayments update(RecurringPayments recurringPayment) {
 
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
-		int autoAdd = recurringPayment.getAutoAdd()==false ? 0 : 1;
+		Long autoAdd = recurringPayment.getLastPaid();
 		String sql = "UPDATE `recurring_payments` SET "
-				+ "`wallet_id`='"+recurringPayment.getWalletId()+"',`name`='"+recurringPayment.getName()+"',`type`='"+recurringPayment.getType()+"',`amount`='"+recurringPayment.getAmount()+"',`occur`='"+recurringPayment.getOccur()+"',`end_by`='"+recurringPayment.getEndBy()+"',`auto_add`='"+autoAdd+"'"
+				+ "`wallet_id`='"+recurringPayment.getWalletId()+"',`name`='"+recurringPayment.getName()+"',`type`='"+recurringPayment.getType()+"',`amount`='"+recurringPayment.getAmount()+"',`occur`='"+recurringPayment.getOccur()+"',`end_by`='"+recurringPayment.getEndBy()+"',`last_paid`='"+autoAdd+"'"
 						+ " WHERE id="+recurringPayment.getId()+" and user_id="+operatingUser.getId();
 		
 		int rs = dbUtil.executeUpdateQuery(sql);

@@ -20,5 +20,5 @@ public class RecurringPayments {
 	Long amount;
 	String occur;
 	String endBy;
-	Boolean autoAdd;
+	Long lastPaid;
 }
