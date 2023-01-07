@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 07, 2022 at 10:54 AM
+-- Generation Time: Jan 07, 2023 at 05:48 AM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 8.1.6
 
@@ -28,10 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `bank_wallet` (
-  `account_number` bigint(20) NOT NULL,
   `id` bigint(20) NOT NULL,
   `wallet_id` bigint(20) NOT NULL,
-  `ifsc_code` varchar(20) NOT NULL
+  `note` varchar(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -44,6 +43,21 @@ CREATE TABLE `bonus_wallet` (
   `id` bigint(20) NOT NULL,
   `note` varchar(500) NOT NULL,
   `wallet_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `card_alerts`
+--
+
+CREATE TABLE `card_alerts` (
+  `id` bigint(20) NOT NULL,
+  `credit_card_id` bigint(20) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `limit_alert_on` int(11) NOT NULL,
+  `due_alert_before` int(11) NOT NULL,
+  `user_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -67,7 +81,7 @@ CREATE TABLE `categories` (
 
 CREATE TABLE `credit_card_wallet` (
   `id` bigint(20) NOT NULL,
-  `repay_date` date NOT NULL,
+  `repay_date` int(11) NOT NULL,
   `limit` bigint(20) NOT NULL,
   `wallet_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -128,6 +142,24 @@ CREATE TABLE `incomes` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` bigint(20) NOT NULL,
+  `title` varchar(50) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `info` varchar(100) NOT NULL,
+  `action` varchar(150) NOT NULL,
+  `created_on` bigint(20) NOT NULL,
+  `entity_key` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `readed` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `other_wallet`
 --
 
@@ -135,6 +167,24 @@ CREATE TABLE `other_wallet` (
   `id` bigint(20) NOT NULL,
   `note` varchar(500) NOT NULL,
   `wallet_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `recurring_payments`
+--
+
+CREATE TABLE `recurring_payments` (
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `wallet_id` bigint(20) NOT NULL,
+  `name` varchar(25) NOT NULL,
+  `type` varchar(40) NOT NULL,
+  `amount` bigint(20) NOT NULL,
+  `occur` varchar(20) NOT NULL,
+  `end_by` varchar(30) NOT NULL,
+  `last_paid` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -207,7 +257,8 @@ CREATE TABLE `wallets` (
   `archive_wallet` tinyint(1) NOT NULL,
   `balance` bigint(20) NOT NULL,
   `exclude_from_stats` tinyint(1) NOT NULL,
-  `user_id` bigint(20) NOT NULL
+  `user_id` bigint(20) NOT NULL,
+  `deleted` smallint(6) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -219,8 +270,6 @@ CREATE TABLE `wallets` (
 --
 ALTER TABLE `bank_wallet`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `account_number` (`account_number`),
-  ADD UNIQUE KEY `ifsc_code` (`ifsc_code`),
   ADD KEY `fk_bank_wallet_wallets_id` (`wallet_id`);
 
 --
@@ -229,6 +278,12 @@ ALTER TABLE `bank_wallet`
 ALTER TABLE `bonus_wallet`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_bonus_wallet_wallets_id` (`wallet_id`);
+
+--
+-- Indexes for table `card_alerts`
+--
+ALTER TABLE `card_alerts`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `categories`
@@ -274,11 +329,23 @@ ALTER TABLE `incomes`
   ADD KEY `fk_incomes_transactions_id` (`transaction_id`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `other_wallet`
 --
 ALTER TABLE `other_wallet`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_other_wallet_wallets_id` (`wallet_id`);
+
+--
+-- Indexes for table `recurring_payments`
+--
+ALTER TABLE `recurring_payments`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tags`
@@ -333,6 +400,12 @@ ALTER TABLE `bonus_wallet`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `card_alerts`
+--
+ALTER TABLE `card_alerts`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
@@ -369,9 +442,21 @@ ALTER TABLE `incomes`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `other_wallet`
 --
 ALTER TABLE `other_wallet`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `recurring_payments`
+--
+ALTER TABLE `recurring_payments`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
