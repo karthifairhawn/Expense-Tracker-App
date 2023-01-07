@@ -61,8 +61,11 @@ let expenseFormUtil = {
             let option = '<option value="'+userWallets[i].id+'" >'+userWallets[i].name+overdraft+'</option>';
             allOptions+=(option);
         }
-        allOptions += '<option value="-100"> &#xf05a; Select wallet</option>';
-
+        allOptions += '<option value="-100"> &#xf555; N/A </option>';
+        if(userWallets.length==0){
+            $('#all-wallets-options').attr("disabled", true);
+            $('#all-wallets-options').after('<span style="position:absolute" class="text-secondary">You can create a new wallet in wallets page.</span>');
+        }
 
         $('#all-wallets-options').html(allOptions);
 
@@ -456,6 +459,7 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
         
         function createNewDateSection(newDate){
             let dateSection = document.createElement("div");
+            $(dateSection).addClass("date-section");
 
             // Monthly view calendar update
             let calander = $('.dt'+newDate);
@@ -664,7 +668,19 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
                 util.handleApiResponse(data,"Expense Deleted 🗑️ ");
                 $('#spinner').css('display','none');
                 $(event.target).closest('.modal-content').find('.btn-close').click();
+                
+
+                let mayDateElement = ($('.expense-card[expense-id='+expenseId+']').prev());
                 $('.expense-card[expense-id='+expenseId+']').remove();
+                let nextElement = $(mayDateElement).next();
+
+                if($(mayDateElement).hasClass('date-section') && ($(nextElement).length==0 || $(nextElement).hasClass('date-section'))){
+                    $(mayDateElement).remove();
+                    if($(('#'+previousExpenseFetch.containerId)).children().length==0){
+                        zeroExpensesHandler(previousExpenseFetch.containerId);
+                    }
+                }
+                
                 updateHeader();
             });
         })
@@ -1449,6 +1465,11 @@ function mountCreateExpenseForm(){
 function pushExpenseToSection(expenseData){
 
     let createdDate = moment(expenseData.data.transactionInfo.spendOn, 'MMM DD, YYYY').format('DD-MMM-YYYY');
+    console.log()
+    if($('.date-grouping[date='+createdDate+']').length==0){
+        $('#reload-expenses').click();
+        return;
+    }
     $('.date-grouping[date='+createdDate+']').parent().after('<div id="justCreated"></div>');
 
     let expense = expenseData.data;
@@ -1820,6 +1841,12 @@ function mountCategories(container){
         container.append(newCategoryList);
     }
 
+    if(userCategories.length==0){
+        $(container).append('<hr>');
+        $(container).append('<div class="h4">No categories found.</div>');
+        $(container).append('<div>One can be created when adding an expense.</div>');
+    }
+
     $('.cat-list-section .delete-btn').click((e)=>{
         let element = $(e.target).closest('.delete-btn');
         let categoryId = $(element).attr('category-id');
@@ -1845,6 +1872,12 @@ function mountTags(container){
 
         $(newCategoryList).find('.cname').text(userTags[i].name);
         container.append(newCategoryList);
+    }
+
+    if(userCategories.length==0){
+        $(container).append('<hr>');
+        $(container).append('<div class="h4">No tags found.</div>');
+        $(container).append('<div>One can be created when adding an expense.</div>');
     }
 
     $('.tag-list-section .delete-btn').click((e)=>{
