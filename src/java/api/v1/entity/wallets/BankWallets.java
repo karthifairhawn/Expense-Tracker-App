@@ -22,7 +22,7 @@ public class BankWallets{
 	public BankWallets(LinkedTreeMap walletInfo) {
 
 //		this.note = ((Double) walletInfo.get("accountNumber")).longValue();
-		this.note = (String) walletInfo.get("ifscCode");
+		this.note = (String) walletInfo.get("note");
 //		this.id = walletInfo.get("id")!=null ? (long) walletInfo.get("id") : null;
 	}
 }

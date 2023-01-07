@@ -79,6 +79,7 @@ public class BankWalletsDaoService {
 		Long walletIdd = (Long) ((ArrayList)RequestContext.getAttribute("pathKeys")).get(1);
 		
 		// Wallet Updation
+		
 		String sql = "UPDATE `bank_wallet` SET `note`='"+wallet.getNote()+"' WHERE wallet_id="+walletIdd;
 		int rs = dbUtil.executeUpdateQuery(sql);
 		if(rs==0) throw new CustomException("Wallet is not found in your account or no changes made.",400,new Date().toLocaleString());

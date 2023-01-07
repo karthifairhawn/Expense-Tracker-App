@@ -463,15 +463,11 @@ async function mountWallets(){
                 key =  result;
 
 
-                if(obj=='accountNumber'){
-                    key = 'Account';
-                    if(data[obj]=='0') data[obj] = "not specified";
+                if(obj=='note'){
+                    key = 'Note';
+                    if(data[obj]=='null') data[obj] = "-";
                 }
-                if(obj=='ifscCode'){
-                    key = 'IFSC';
-                    if(data[obj]=='') data[obj] = "not specified";
 
-                }
 
                 if(obj!='note'){
                     subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';

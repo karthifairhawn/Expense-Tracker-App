@@ -749,7 +749,7 @@ select {
 /* New wallet card design */
 
 .wallet-card{
-    width: 350px;
+    width: 360px;
     height: 100px;
     color: white;
     background-image: linear-gradient(135deg, #636262 0%, #3d3b43 100%);

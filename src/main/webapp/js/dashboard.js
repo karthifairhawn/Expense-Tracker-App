@@ -1209,13 +1209,13 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                             classes = `active-weekly-day"`;
                             today = " (today)";
                         }
-                        let dateAttr = d.getFullYear()+""+(d.getMonth()+1)+""+d.getDate()
+                        let monthtt = (d.getMonth()+1);
+                        if(monthtt.length == 1 ) monthtt = "0"+monthtt;
+                        let dateAttr = d.getFullYear()+""+monthtt+""+d.getDate()
                         tmp += `
                             <div date='`+dateAttr+`' class="myc-date-header `+classes+`" id="myc-date-header-` + i + `">
                                 <div class="myc-date-number">` + d.getDate() + today + `</div>
                                 <div class="myc-date-display">` + settings.weekdays[d.getDay()]+ `</div>
-                                <hr>
-                                <span class="">20 Expenses | ₹ 1,245 </span>
                             </div>
                         `;
                     }

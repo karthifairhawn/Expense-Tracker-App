@@ -87,6 +87,10 @@ $(function() {
             password: {
                 required: true,
                 minlength: 5
+            },
+            phonenumber:{
+                required: true,
+                minlength: 10
             }
         },
         
@@ -97,7 +101,11 @@ $(function() {
                 required: "Please provide a password",
                 minlength: "Your password must be at least 5 characters long"
             },
-            email: "Please enter a valid email address"
+            email: "Please enter a valid email address",
+            phonenumber: {
+                required: "Please enter your phone number",
+                minlength: "Your phone number must be length 10."
+            }
         },
         submitHandler: function(form) {
             submitForm();

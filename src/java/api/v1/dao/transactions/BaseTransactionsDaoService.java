@@ -105,6 +105,7 @@ public class BaseTransactionsDaoService {
 		if(fetchType.equals(null) || fetchType.equals("expenses")) allTransactions.put("expenses",expenses);
 		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
 		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
+		System.out.println(allTransactions);
 		return allTransactions;
 	}
 	
@@ -127,7 +128,12 @@ public class BaseTransactionsDaoService {
 		
 		String dateTo = filters.get("to");
 		dateTo = dateTo.substring(0, 4)+"-"+dateTo.substring(4, 6)+"-"+dateTo.substring(6)+" 23:59";
-		String query = "SELECT * FROM `transactions` LEFT JOIN `expenses` on transactions.id = expenses.transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (expenses.spend_on>='"+dateFrom +"' and  expenses.spend_on<='"+dateTo+"') order	 by `spend_on` desc";
+		String query = null;
+		if(fetchType.equals("expenses")) {	
+			 query = "SELECT * FROM `transactions` LEFT JOIN `"+fetchType+"` on transactions.id = "+fetchType+".transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (expenses.spend_on>='"+dateFrom +"' and  expenses.spend_on<='"+dateTo+"') order	 by `spend_on` desc";
+		}else if(fetchType.equals("incomes")){
+			 query = "SELECT * FROM `transactions` LEFT JOIN `"+fetchType+"` on "+fetchType+".id = "+fetchType+".transaction_id WHERE transactions.user_id="+operatingUser.getId()+" and (transactions.timestamp>='"+dateFrom +"' and  transactions.timestamp<='"+dateTo+"') order	 by `timestamp` desc";
+		}
 		
 		
 		
@@ -143,6 +149,7 @@ public class BaseTransactionsDaoService {
 				transaction.setTimestamp(rs.getTimestamp("timestamp"));
 				
 				String type = transaction.getType();
+				System.out.println(type);
 				
 				
 				if(type.equals("expense")) expenses.add(transaction);
@@ -160,6 +167,7 @@ public class BaseTransactionsDaoService {
 		if(fetchType.equals(null) || fetchType.equals("expenses")) allTransactions.put("expenses",expenses);
 		if(fetchType.equals(null) || fetchType.equals("incomes"))  allTransactions.put("incomes",incomes);
 		if(fetchType.equals(null) || fetchType.equals("transfer"))  allTransactions.put("transfers",transfers);
+		System.out.println(allTransactions);
 		return allTransactions;
 	}
 

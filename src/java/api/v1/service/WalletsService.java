@@ -131,7 +131,7 @@ public class WalletsService {
 		Long walletId = wallet.getId();
 
 		baseWalletsDaoService.update(wallet);
-		
+		System.out.println("------------------------"+ wallet);
 		if(walletType.equals("Bank Account")) 			bankWalletsDaoService.update(new BankWallets((LinkedTreeMap) wallet.getWalletInfo()),walletId);
 		else if(walletType.equals("Credit Card")) 		creditCardWalletsDaoService.update(new CreditCardWallets((LinkedTreeMap) wallet.getWalletInfo()),walletId);
 		else if(walletType.equals("Bonus Account")) 	bonusWalletsDaoService.update(new BonusCardWallets((LinkedTreeMap) wallet.getWalletInfo()),walletId);
@@ -166,8 +166,8 @@ public class WalletsService {
 			Long walletId = entry.getKey();
 			Long amount = entry.getValue();
 			
+			if(walletId==-100) continue; // If in case no wallet for a transaction -100 will be here.
 			Wallets wallet = findById(walletId);
-
 			if(wallet.getType().equals("Credit Card")){
 
 				

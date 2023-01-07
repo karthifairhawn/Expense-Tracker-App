@@ -2,9 +2,11 @@
     margin: 0px;
     padding: 0px;
 }
-
+html{
+    height: 100%;
+}
 body{
-    overflow: hidden;
+    height: 100%;
 }
 
 
@@ -47,12 +49,13 @@ h1,h2,h3{
 
 .curved-bottom{
     position: absolute;
-    bottom: -80px;
     left: 0;
     size: 100px;
     /* border: 1px solid black; */
 }
-
+.right-pane{
+    width: 500px;
+}
 .tx-tfm{
     text-transform:uppercase;
 }
