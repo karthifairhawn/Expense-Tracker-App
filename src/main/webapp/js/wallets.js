@@ -39,10 +39,7 @@ let walletFormUtil = {
         }else if(walletType =='Credit Card'){
             let creditCardForm = $('#create-wallet-credit-card')[0];
             let w2c = creditCardForm.content.cloneNode(true);
-            $('#wallet-info-form').append(w2c);      
-            $('#new-wallet-balance').bind('keyup mouseup', function () {
-                $('#new-wallet-limit').val($(this).val());            
-            });
+            $('#wallet-info-form').append(w2c);                  
         }else if(walletType == 'Bonus Account'){
             let bonusAccountForm = $('#create-wallet-bonus-account')[0];
             let w3c = bonusAccountForm.content.cloneNode(true);
@@ -390,20 +387,24 @@ async function mountWallets(){
         function moveCreditCardLeft(){
             $('.card-sc-right').css('display', 'flex');
                 
-            $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() - 400) }, 300);
-        
-            if($('.credit-cards').scrollLeft()==0){
-                $('.card-sc-left').css('display', 'none');
-            }
+            $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() - 400) }, 150);
+            
+            setTimeout(() => {                
+                if($('.credit-cards').scrollLeft()==0){
+                    $('.card-sc-left').css('display', 'none');
+                }
+            }, 150);
         }
 
         function moveCreditCardRight(){
-            $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() + 400) }, 300);
+            $('.credit-cards').animate({scrollLeft:  ($('.credit-cards').scrollLeft() + 400) }, 150);
             
-            let totalWidth =  $('.credit-cards')[0].scrollWidth - $('.credit-cards').width() ;
-            let occuredWidth =  $('.credit-cards').scrollLeft();
-
-            if(totalWidth==occuredWidth){ $(".card-sc-right").hide(); }
+            
+            setTimeout(() => {
+                let totalWidth =  $('.credit-cards')[0].scrollWidth - $('.credit-cards').width() ;
+                let occuredWidth =  $('.credit-cards').scrollLeft();
+                if(totalWidth==occuredWidth){ $(".card-sc-right").hide(); }
+            }, 150);
 
         }
 
