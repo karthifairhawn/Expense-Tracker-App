@@ -1,5 +1,5 @@
 import { server,orgin } from '../config/apiConfig.js';
-
+import * as util from './util.js'
 
 
 $("#signup").click(function() {
@@ -14,8 +14,7 @@ $("#signin").click(function() {
     });
 });
 
-
-
+// Login handling
 $( function() {
     $("form[name='login']").validate({
         rules: {
@@ -50,19 +49,27 @@ $( function() {
         // myHeaders.append("")
 
         var postRequestOptions = {method: 'POST',body: raw,headers: myHeaders,redirect: 'follow'};
+
+        $('#spinner').show();
         fetch(server+"/api/v1/login", postRequestOptions).then((data)=> data.json()).then((data)=>{
             processLogin(data);
+        }).catch((error)=>{
+            util.handleApiResponse({data:400},"","Failed in server communication, Try again later.")
         })
 
         function processLogin(data){
-            console.log(data);
-            if(data.statusCode==400) alert("Invalid Request")
-            else if(data.statusCode == 404) alert("Invalid Credentials")
+            if(data.statusCode==400) util.handleApiResponse(data,"Invalid information.","Invalid information.");
+            else if(data.statusCode == 404) util.handleApiResponse(data,"Invalid information.","Invalid email or password.");
             else if(data.statusCode==200){
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
                 window.location.href = "index.html"
             }
+
+            // To be removed - timeout
+            setTimeout(() => {                
+                $('#spinner').hide();
+            }, 1200);
         }
   
         
@@ -73,7 +80,7 @@ $( function() {
 });
 
 
-
+// New account registration
 $(function() {
 
     let res = $("form[name='registration']").validate({
@@ -111,7 +118,6 @@ $(function() {
             submitForm();
         }
     });
-
     
 
     function submitForm(form){
@@ -128,19 +134,22 @@ $(function() {
         myHeaders.append("Access-Control-Allow-Origin", orgin);
 
         var postRequestOptions = {method: 'POST',body: raw,headers: myHeaders,redirect: 'follow'};
+        $('#spinner').show();
         fetch(server+"/api/v1/users", postRequestOptions).then((data)=> data.json()).then((data)=>{
             processLogin(data);
+        }).catch((error)=>{
+            util.handleApiResponse({data:400},"","Failed in server communication, Try again later.")
         })
 
         function processLogin(data){
-            if(data.statusCode==400) alert(data.data);
-            else if(data.statusCode == 404) alert("Invalid Credentials")
+            if(data.statusCode==400) util.handleApiResponse(data,"Invalid information.","Invalid information.");
+            else if(data.statusCode == 404) util.handleApiResponse(data,"Invalid information.","Invalid Credentials.");
             else if(data.statusCode==200){
-
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
-                window.location.href = "index.html"                
+                window.location.href = "index.html"       
             }
+            $('#spinner').hide();                         
         }
 
     }

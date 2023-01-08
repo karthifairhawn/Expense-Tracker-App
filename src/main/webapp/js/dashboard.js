@@ -1,7 +1,7 @@
 import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById, findTransactionsPaginated} from '../apis/transactions.js';
 import {findWalletById, findWallets} from '../apis/wallets.js';
-import {findTags,createTag,deleteTagById} from '../apis/tags.js';
-import {findCategories,createCategory,deleteCategoryById} from '../apis/categories.js';
+import {findTags,createTag,deleteTagById, findTagById} from '../apis/tags.js';
+import {findCategories,createCategory,deleteCategoryById, findCategoryById} from '../apis/categories.js';
 
 import * as util from './util.js';
 import * as commonService from './common.js';
@@ -13,7 +13,6 @@ let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 
 let colorTwo = ['99b8cc','cc7aa3','85cc70','99ff66','a3f5f5','9999f5','ada399','ffd6ff','f5b87a','fadbbd','99b8cc'];
 let colorOne = ['ccdbe6','e6bdd1','c2e6b8','ccffb3','d1fafa','ccccfa','d6d1cc','ffebff','fadbbd','c2c2d1','ccdbe6'];
 let isMonthlyViewOverriden = false; 
-$('.nav-item[tabs=dashboard]').addClass('active')
 
 
 let userCardWallets = [];
@@ -32,6 +31,21 @@ var formSelectedTags = [];
 let totalWalletSplits = 1;
 let usingNewCategory = false;
 
+let dateRangeContainer = document.getElementById("date-range-selector");
+let dateRangeElement = document.getElementById("date-range-template");
+let clone = dateRangeElement.content.cloneNode(true);
+let pageNumber = 1;
+let pageSize = 15;
+$(dateRangeContainer).html('');
+dateRangeContainer.appendChild(clone);  
+
+// Hide monthly view section by default   
+let listingExpenseDate = null;
+let daysTotalExpense = 0;
+let daysExpenseCount = 0
+let rangeExpense =0;
+let calendarMounted = false;
+let weeklyTabInitialized = false;  
 
 let previousExpenseFetch = {
     "expenseFrom" : null,
@@ -64,7 +78,7 @@ let expenseFormUtil = {
         allOptions += '<option value="-100"> &#xf555; N/A </option>';
         if(userWallets.length==0){
             $('#all-wallets-options').attr("disabled", true);
-            $('#all-wallets-options').after('<span style="position:absolute" class="text-secondary">You can create a new wallet in wallets page.</span>');
+            $('#all-wallets-options').after('<span style="position:absolute" class="text-secondary">You can create a new wallet in <a href="wallets.html" class="url">wallets page.</a> </span>');
         }
 
         $('#all-wallets-options').html(allOptions);
@@ -133,7 +147,7 @@ let expenseFormUtil = {
         }
 
         for(let item in selectedTags){
-            formSelectedTags.push(item)
+            formSelectedTags.push(selectedTags[item])
         }
 
         $('#locationSets').html(allTagsHTML);
@@ -279,16 +293,19 @@ let expenseFormUtil = {
 
 }
 
-updateHeader();
-await findBasicEntities();
+$(document).ready(()=>{
+    updateHeader();
+    findBasicEntities();
+    initiateDateSelectorPlugin();
+})
 
-async function findBasicEntities(){
+function findBasicEntities(){
     let promisePending = [];
     promisePending.push(findCategories());
     promisePending.push(findWallets())
     promisePending.push(findTags());
 
-    await Promise.all(promisePending).then((values)=>{
+    Promise.all(promisePending).then((values)=>{
 
         if(values[0]==null || values[1]==null || values[2]==null ) return;
 
@@ -299,7 +316,6 @@ async function findBasicEntities(){
         userCategoriesMap[0] = {
             id:0,
             name: 'General Expense',
-
         }
         
         let wallets = values[1].data;
@@ -318,25 +334,6 @@ async function findBasicEntities(){
     })
 
 }
-
-
-let dateRangeContainer = document.getElementById("date-range-selector");
-let dateRangeElement = document.getElementById("date-range-template");
-let clone = dateRangeElement.content.cloneNode(true);
-let pageNumber = 1;
-let pageSize = 15;
-$(dateRangeContainer).html('');
-dateRangeContainer.appendChild(clone);  
-
-// Hide monthly view section by default   
-let listingExpenseDate = null;
-let daysTotalExpense = 0;
-let daysExpenseCount = 0
-let rangeExpense =0;
-let calendarMounted = false;
-let weeklyTabInitialized = false;    
-
-initiateDateSelectorPlugin();
 
 // Fetch expense info or the selected date range  -- [TRIGGER = Any date range change in date selector plugin called at initiateDateSelectorPlugin()] 
 function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId,expenseData){
@@ -365,7 +362,7 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     // Seperate Fetching Mechanism for timespan view and Recent transactions
     if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
     else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
-    
+
     if(expenseData==null) return;
     if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
@@ -436,6 +433,16 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
         // Find Category info
         let categoryInfo = {};
         categoryInfo= userCategoriesMap[expenses[i].transactionInfo.categoryId];
+        // console.log(categoryInfo);
+        if(categoryInfo==null && expenses[i].transactionInfo.categoryId!=0){
+            await findCategoryById(expenses[i].transactionInfo.categoryId).then((data)=>{
+                categoryInfo = data.data;
+            })
+        }else{
+            categoryInfo = {
+                name : "General Expense"
+            }
+        }
         
         // Add expense amount to currentRangeTotal and Populate
         rangeExpense+=expenses[i].amount;
@@ -536,7 +543,12 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         let fullExpenseTime = (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
                 
         // Setting expense data to the dom
-        if(categoryInfo?.imagePath == undefined) categoryInfo.imagePath = 'f543';
+        if(categoryInfo?.imagePath == undefined){
+            categoryInfo= {
+                name : 'Syncing...',
+                imagePath : 'f543'
+            }
+        }
 
         
 
@@ -603,7 +615,15 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
     // Populating Tags
     function populateTags(){
 
-        for(let i=0;i<tagsIds.length;i++) allTagsInfo.push({data:userTagsMap[tagsIds[i]]});
+        for(let i=0;i<tagsIds.length;i++){
+            let tagInfo = {data:userTagsMap[tagsIds[i]]};
+            if(tagInfo.data==undefined){
+                tagInfo.data = {name:"syncing..."};
+                allTagsInfo.push(tagInfo);
+            }else{
+                allTagsInfo.push(tagInfo);
+            }
+        }
 
         let newTag =$('<div class="tag d-flex align-items-center justify-content-between"> <span>&nbsp;</span> <span class="tag-text">upi</span> </div>')
         let allTagsSection = $(currentElement).find('.all-tags-section');
@@ -612,13 +632,13 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         for(let i=0;i<allTagsInfo.length;i++){
             let newTagClone = newTag.clone();
             newTagClone.find('.tag-text').text(allTagsInfo[i].data.name.toLowerCase());
-            newTagClone.find('.tag-text').css('background-color',('#'+colorTwo[allTagsInfo[i].data.id%9]));
+            // newTagClone.find('.tag-text').css('background-color',('#'+colorTwo[allTagsInfo[i].data.id%9]));
             modelAllTagsSection.append(newTagClone);
 
             if(i<3){
                 let newElement = newTag.clone();
                 newElement.find('.tag-text').text(""+allTagsInfo[i].data.name.toLowerCase());
-                newElement.find('.tag-text').css('background-color',('#'+colorOne[allTagsInfo[i].data.id%9]));
+                // newElement.find('.tag-text').css('background-color',('#'+colorOne[allTagsInfo[i].data.id%9]));
                 allTagsSection.append(newElement);
             }
         }
@@ -745,7 +765,10 @@ function initiateDateSelectorPlugin(){
 
     $('#reportrange').daterangepicker({ startDate: start, endDate: end,maxDate: now, ranges: allDateRanges }, dateChangeCallback);
 
-    dateChangeCallback(start, end, currTimeSpan);
+    // To be removed
+    setTimeout(() => {
+        dateChangeCallback(start, end, currTimeSpan);
+    }, 300);
 
 
 }  
@@ -1359,6 +1382,7 @@ function mountCreateExpenseForm(){
     expenseFormUtil.listCategoriesInForm()
     expenseFormUtil.listTagsInForm();
     expenseFormUtil.setDateTimeInForm(currTime);    // Set current time initially
+    $('#all-wallets-options').val(-100);
     
 
     $('#split-wallet').click(()=>expenseFormUtil.splitWalletHandler())       // Split expense ampunt 
@@ -1496,13 +1520,22 @@ function pushExpenseToSection(expenseData){
     }
 
     let categoryid = expense.transactionInfo.categoryId;
-    let categoryInfo = (userCategoriesMap[categoryid]);;
+    let categoryInfo = (userCategoriesMap[categoryid]);
+    if(categoryInfo==null){
+        findCategoryById(categoryid).then((data)=>{
+            categoryInfo = data.data;
+            populateExpense(wallets,expense,categoryInfo,'justCreated');
+            $('#justCreated').attr('id','');
+            updateExistingDateSectionBalance(expenseData);
+        })
+    }else{
+        populateExpense(wallets,expense,categoryInfo,'justCreated');
+        $('#justCreated').attr('id','');
+    
+        updateExistingDateSectionBalance(expenseData);
+    }
 
 
-    populateExpense(wallets,expense,categoryInfo,'justCreated');
-    $('#justCreated').attr('id','');
-
-    updateExistingDateSectionBalance(expenseData);
 }
 
 function replaceExpenseInSection(expenseData){
@@ -1644,9 +1677,7 @@ function mountEditExpenseForm(expenseId){
             });
 
             // Save button Handler
-            $(form).find('#editexp-submit-btn').click(()=>{ 
-                updateExpenseDetails();
-                })
+            $(form).find('#editexp-submit-btn').click(()=>{ updateExpenseDetails(); })
 
         }
 
@@ -1751,10 +1782,7 @@ function mountEditExpenseForm(expenseId){
 
 async function updateHeader(timeRange){
 
-    let template = document.getElementById('tt-balance-header').content.cloneNode(true);
-    $('#balance-header').html('');
-    $('#balance-header').append(template);
-        
+
     // Show current set range total expense in header container
     if(timeRange==null || timeRange.length==0 ){ timeRange = localStorage.getItem("spendingsBannerTime"); }
     if(timeRange==null) timeRange = "This Week";
@@ -1850,11 +1878,10 @@ function mountCategories(container){
     $('.cat-list-section .delete-btn').click((e)=>{
         let element = $(e.target).closest('.delete-btn');
         let categoryId = $(element).attr('category-id');
-        console.log(categoryId);
 
         deleteCategoryById(categoryId).then((data)=>{
             util.handleApiResponse(data,"Category deleted successfully","Category deletion failed");
-            // console.log(data);
+            $(element).closest('.cat-list-section').remove();
         });
     });
 }
@@ -1874,7 +1901,7 @@ function mountTags(container){
         container.append(newCategoryList);
     }
 
-    if(userCategories.length==0){
+    if(userTags.length==0){
         $(container).append('<hr>');
         $(container).append('<div class="h4">No tags found.</div>');
         $(container).append('<div>One can be created when adding an expense.</div>');
@@ -1886,6 +1913,7 @@ function mountTags(container){
         
         deleteTagById(tagId).then((data)=>{
             util.handleApiResponse(data,"Tag deleted successfully","Tag deletion failed");
+            $(element).closest('.tag-list-section').remove();
         })
     });
 }

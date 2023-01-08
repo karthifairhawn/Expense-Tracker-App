@@ -1,0 +1,39 @@
+<div id="balance-header" class="container">
+    <div class=" mt-2 mb-2 card main-balance">
+
+        <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
+            <div class="mi-bal-right">
+                <span class="d-flex align-items-center justify-content-center">
+
+                    <span>Total Spendings </span>
+                    &nbsp;
+                    <span class="header-timespan ">(This Month)</span>
+                    &nbsp;&nbsp;
+                    <div class="htimespan-select">
+                        <i class="fa-solid fa-chevron-down d-flex flex-column"></i>
+                        <div class="options">
+                            <div class="option">Today</div>
+                            <div class="option">This Week</div>
+                            <div class="option">This Month</div>
+                        </div>
+                    </div>
+                </span>
+                <!-- <span>( <span id="total-acct-count">3</span> wallets)</span> -->
+
+                <div class="d-flex">
+                    <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
+                    <div id="mi-bal-amount" class="display-1">
+                        Loading... ₹
+                    </div>
+                    &nbsp;&nbsp;
+                </div>
+
+
+            </div>
+            <button type="button" class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal"
+                data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
+                + New Expense
+            </button>
+        </div>
+    </div>
+</div>

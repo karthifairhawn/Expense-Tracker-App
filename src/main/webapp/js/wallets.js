@@ -78,7 +78,7 @@ let walletFormUtil = {
             $('#spinner').css('display', 'none');
             $('#wallets .btn-close').click();
             refreshWalletsPage();
-            util.handleApiResponse(data,"Wallet Created ✅ ");
+            util.handleApiResponse(data,"Wallet Created ✅ ","Failed, Please try again..");
         })
         
     },
@@ -149,8 +149,9 @@ let walletFormUtil = {
     
 }
 
-
-refreshWalletsPage();
+$(document).ready(()=>{
+    refreshWalletsPage();
+})
 
 
 async function refreshWalletsPage(){
@@ -173,10 +174,13 @@ async function refreshWalletsPage(){
         }
     });
 
-
     populateBalanceContainer();
     mountWallets();
 
+    $('.add-income-btn').off();
+    $('.add-wallet-btn').off();
+    $('.view-income-btn').off();
+    $('.create-alert').off();
     $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
     $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
     $('.view-income-btn').click(()=>{ mountAllIncomes() })
@@ -186,6 +190,7 @@ async function refreshWalletsPage(){
         $('.no-wallet-available').show();
         $('.create-wallet-url').click(()=>{ $('.add-wallet-btn').click(); })
         $('.add-income-btn').hide();
+        $('.view-income-btn').hide();
     }else{
         $('.no-wallet-available').hide();
     }
@@ -201,11 +206,8 @@ async function refreshWalletsPage(){
 }
 
 function populateBalanceContainer(){
-    let balanceContainer = document.getElementById('balance-container').content.cloneNode(true);
-    $(balanceContainer).find('#total-acct-count').text(userWallets.length);
-    $(balanceContainer).find('#mi-bal-amount').text(util.moneyFormat(totalBalance));
-    $('#balance-header').html('');
-    $('#balance-header').append(balanceContainer);
+    $('#total-acct-count').text(userWallets.length);
+    $('#mi-bal-amount').text(util.moneyFormat(totalBalance));    
 }
 
 async function mountWallets(){
@@ -462,10 +464,10 @@ async function mountWallets(){
                 var result = text.replace( /([A-Z])/g, " $1" );
                 key =  result;
 
-
+                if(data[obj]=='null' || data[obj].length==0 || data[obj].length==null) data[obj] = "-";
                 if(obj=='note'){
                     key = 'Note';
-                    if(data[obj]=='null') data[obj] = "-";
+                   
                 }
 
 
@@ -691,8 +693,9 @@ function mountCreateAlertForm(){
                 "limitAlertOn" : value,
                 "dueAlertBefore" : value
             }
-            cardAlertsService.createAlert(walletId,JSON.stringify(raw)).then(()=>{
+            cardAlertsService.createAlert(walletId,JSON.stringify(raw)).then((data)=>{
                 $('.btn-close').click();
+                util.handleApiResponse(data,"Alert created successfully","Failed try again...")
                 refreshWalletsPage();
             })
         }

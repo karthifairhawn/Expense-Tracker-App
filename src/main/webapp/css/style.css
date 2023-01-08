@@ -575,11 +575,10 @@ select {
 }
 
 .tag-text{
-    padding: 3px 10px;
+    padding: 2px 15px;
     border-radius: 15px;
-    background-color: #24232a;
+    background-color: rgb(214, 214, 214);
     color: #000;
-
 }
 
 .credit-card:hover{
@@ -701,7 +700,9 @@ select {
     color:orange;
 }
 
-
+.wallet-info-label{
+    /* min-height: 20px; */
+}
 .card-sc-left{
     display: none;
 }
@@ -1363,4 +1364,22 @@ form[name='profile-form'] input{
 
 .edit-rp:hover{
     cursor: pointer;
+}
+
+.required::after{
+    content: '*';
+    color: red;
+}
+
+
+.tab-content .title{
+    font-size: 19px;
+}
+
+.delete-rp:hover{
+    cursor: pointer;
+}
+
+.rp-alert-img{
+    width: 450px;
 }

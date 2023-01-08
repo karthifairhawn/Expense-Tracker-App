@@ -21,51 +21,18 @@
        <link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
        <link rel="stylesheet" href="./css/style.css">
 
+       <script  type="module" src="./js/common.js"></script>     
+       <script  type="module" src="./js/profile.js"></script>     
+
 </head>
 <body>
 
-       <!-- Toast Notification -->
-       <button type="button" class="btn btn-primary" id="toastbtn">Show Toast</button>
-       <div aria-live="polite" aria-atomic="true" class="toast-container d-flex  justify-content-end w-100">
-           <div class="toast">
-               <div class="toast-header">
-               <strong class="me-auto">Notification</strong>
-               <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-               </div>
-               <div class="toast-body">
-                   <h3>hello worlds</h3>
-               </div>
-           </div>
-       </div>  
 
 
-       <!-- Navbar  -->
-       <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
-        <div class="container-fluid d-flex">
-            <div class="title d-flex align-items-center justify-content-center">
-                <h2 class="mt-1 mb-3">Expense Tracker App </h2>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <i class="fa-solid fa-chart-pie"></i>
-             </div>
 
-            <div class="d-flex">
-                <a class="nav-item" href="index.html" tabs="dashboard"><i class="fa-solid fa-house"></i></a>
-                <div class="vr"></div>
-                <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
-                <div class="vr"></div>
-                <a class="nav-item" href="payments.html" tabs="payments"><i class="fa-solid fa-repeat"></i></i></a>
-
-            </div>
-
-            <div class="nav-right-options d-flex align-items-center">
-                <a  href="profile.html" tabs="profile" class="nav-item profile"><i class="fas fa-user"></i></a>
-                <!-- <h5 class="nav-item nav-notification"><i class="fa-solid fa-bell"></i></h5> -->
-                <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
-            </div>
-
-        </div>
-    </nav>
-
+    <div data-include="./components/common/navbar.html"></div>
+    <div data-include="./components/common/notifications.html"></div>
+    <div data-include="./components/common/spinner.html"></div>
 
        <div class="container">
 
@@ -142,7 +109,7 @@
                         <div class="d-flex flex-row-reverse">
                             <input value="Change" class="btn btn-secondary disabled" type="submit"></input>
                         </div>
-                        <!-- <button>Submit</button> -->
+                         <button>Submit</button> 
 
                     </form>
                 </div>
@@ -196,5 +163,3 @@
 
 
 
-<script  type="module" src="./js/profile.js"></script>     
-<script  type="module" src="./js/common.js"></script>     

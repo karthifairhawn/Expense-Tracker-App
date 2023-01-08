@@ -31,6 +31,7 @@
         <!-- Calendar Plugin -->
         <link rel="stylesheet" href="css/monthly.css">
                 
+        <script type="module" src="./js/common.js"></script>
 
         <link rel="stylesheet" href="./libs/selectize.0.6.9.css">
         <script src="./libs/selectize.min.0.6.9.js"></script>
@@ -40,75 +41,15 @@
 
         <script type="module" src="js/payments.js"></script>
 
-        <script type="module" src="./js/common.js"></script>
 
 
     </head>
 
-    <div id="spinner">
-        <div style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    </div>
-
     <body>
-
-        <!-- Toast Notification -->
-        <button type="button" class="btn btn-primary" id="toastbtn">Show Toast</button>
-        <div aria-live="polite" aria-atomic="true" class="toast-container d-flex  justify-content-end w-100">
-            <div class="toast">
-                <div class="toast-header">
-                <strong class="me-auto">Notification</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    <h3>hello worlds</h3>
-                </div>
-            </div>
-        </div>  
-
-
-        <!-- Navbar  -->
-        <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
-            <div class="container-fluid d-flex">
-                <div class="title d-flex align-items-center justify-content-center">
-                    <h2 class="mt-1 mb-3">Expense Tracker App </h2>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <i class="fa-solid fa-chart-pie"></i>
-                 </div>
- 
-                <div class="d-flex">
-                    <a class="nav-item" href="index.html" tabs="dashboard"><i class="fa-solid fa-house"></i></a>
-                    <div class="vr"></div>
-                    <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
-                    <div class="vr"></div>
-                    <a class="nav-item" href="payments.html" tabs="payments"><i class="fa-solid fa-repeat"></i></i></a>
-
-                </div>
- 
-                <div class="nav-right-options d-flex align-items-center">
-                    <a  href="profile.html" tabs="profile" class="nav-item profile"><i class="fas fa-user"></i></a>
-                    <h5 class="nav-item nav-notification"><i class="fa-solid fa-bell"></i></h5>
-                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
-                </div>
- 
-            </div>
-        </nav>
-
-        <!-- Notifications -->
-        <div id="notifications" class="">
-            <div class="notifications-head d-flex align-items-center justify-content-between">
-                <h5>Notifications</h5>
-                <h5 id="clear-not" class="url">Clear all</h5>
-            </div>
-
-            <div id="notificaitons-container">
-                
-            </div>
-
-        </div>
+        
+        <div data-include="./components/common/navbar.html"></div>
+        <div data-include="./components/common/notifications.html"></div>
+        <div data-include="./components/common/spinner.html"></div>
 
         <!-- Multitabs Sections -->
         <div class="container mt-5 responsive-tabs">
@@ -156,12 +97,12 @@
                 <div id="pane-C" class="card tab-pane fade" role="tabpanel" aria-labelledby="tab-C">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="tab-header m-3 h4">&nbsp;</div>
-                        <div id="filter-rpp" >
+                        <!-- <div id="filter-rpp" >
                             <select class="form-select" name="rpp-filter" id="">
                                 <option value="week">This Week</option>
                                 <option value="month">This Month</option>
                             </select>
-                        </div>
+                        </div> -->
                     </div>
 
                     <div class="tab-body container" id="rup-container">
@@ -303,7 +244,7 @@
             <!-- name -->
             <div class="mb-3">
                 <label for="recipient-name" class="col-form-label expense-reason-label requiredd">Payment Name:</label>
-                <input placeholder="new clothes" maxlength="100" required type="text" class="form-control" id="rpayment-name">
+                <input placeholder="Electricity bill" maxlength="100" required type="text" class="form-control" id="rpayment-name">
             </div>
 
             <!-- type -->
@@ -403,18 +344,19 @@
 
 <template id="tt-rec-payments">
     <div class="card-body rpayments mt-4 d-flex align-items-center">
-        <span style="font-size: 15px" class="title w-25">Phone EMI</span>
+        <span style="" class="title w-25">Phone EMI</span>
         <span class="type opacity-75 info type">EMI</span>
         <span class="opacity-75 info "><i class="fa-solid fa-wallet me-2"></i><span class="wallet">Indian Bank</span></span>
         <span class="opacity-75 info "><i class=""></i><span class="timespan">20,000 Monthly</span></span>
         <span class="opacity-75 info due-end"><i class="fa-solid fa-calendar-days me-2"></i><span class="dueend">7 Dues left</span></span>
         <i class="fas fa-edit edit-rp" style="font-size: 15px;"></i>
+        <i class="fas fa-trash ms-3 delete-rp text-danger" style="font-size: 15px;"></i>
     </div>
 </template>
 
 <template id="tt-recp-payments">
     <div class="card-body mt-3 rpayments d-flex align-items-center">
-        <span style="font-size: 15px" class="w-25"> <span class="title">Phone EMI</span></span>
+        <span style="" class="w-25"> <span class="title">Phone EMI</span></span>
         <span class="opacity-75 info"> <span class="type"> EMI</span></span>
         <span class=" opacity-75 info"> <span class="wallet"> Indian Bank</span></span>
         <span class=" opacity-75 info"> <span class="amount"> 20,000</span></span>
@@ -428,7 +370,7 @@
 <template id="tt-recu-payments">
       
     <div class="card-body mb-3 rpayments d-flex align-items-center">
-        <span style="font-size: 15px" class="w-25"> <span class="title">Phone EMI</span></span>
+        <span style="" class="w-25"> <span class="title">Phone EMI</span></span>
         <span class="opacity-75 info"> <span class="type"> EMI</span></span>
         <span class=" opacity-75 info"> <span class="wallet"> Indian Bank</span></span>
         <span class=" opacity-75 info"> <span class="amount"> 20,000</span></span>

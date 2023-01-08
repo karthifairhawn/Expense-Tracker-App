@@ -68,8 +68,6 @@ export async function findBasicEntities(){
 
 }
 
-
-
 export let expenseFormUtil = {
     
     listWalletsInForm : async function listWalletsInForm(){
@@ -87,11 +85,13 @@ export let expenseFormUtil = {
             let option = '<option value="'+userWallets[i].id+'" >'+userWallets[i].name+overdraft+'</option>';
             allOptions+=(option);
         }
-        allOptions += '<option value="-1"> &#xf05a; Select wallet</option>';
-
-
+        allOptions += '<option value="-1"> &#xf05a; N/A</option>';
+        $('#all-wallets-options').html("");
+        $('#rpayment-wallet').html("");
         $('#all-wallets-options').html(allOptions);
         $('#rpayment-wallet').html(allOptions);
+
+
 
 
     },
@@ -321,8 +321,14 @@ export var moneyFormat =  (n)=>{
     return "₹ "+(Math.round(n * 100) / 100).toLocaleString();
 }
 
-$('#toastbtn').hide();
+var toastAddedToDom = false;
 export function handleApiResponse(data,success,error){
+
+    if(!toastAddedToDom){
+        addToastToDom();
+        $('#toastbtn').hide();
+        toastAddedToDom = true;
+    }
     
     let titleColor = getColorCode(data+"".substring(0,1));
     let message = "";
@@ -432,6 +438,15 @@ export function handleApiResponse(data,success,error){
     }
 }
 
+function addToastToDom(){
+    let toastElement = $('<div><button type="button" class="btn btn-primary" id="toastbtn">Show Toast</button> <div aria-live="polite" aria-atomic="true" class="toast-container d-flex  justify-content-end w-100"> <div class="toast"> <div class="toast-header"> <strong class="me-auto">Notification</strong> <button type="button" class="btn-close" data-bs-dismiss="toast"></button> </div> <div class="toast-body"> <h3></h3> </div> </div> </div></div>')
+    $('body').prepend(toastElement);
+}
+
+$(document).ready(function() {
+    let spinner = '<div id="spinner"> <div style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;"> <div class="spinner-border" role="status"> <span class="visually-hidden">Loading...</span> </div> </div> </div>';
+    $('body').prepend($(spinner));
+})
 
 // Validator Functions
 
@@ -445,9 +460,14 @@ export function isNotEmpty(val,element){
 export function isNumber(val,element){
     let result = false;
     if(!isNaN(val)) result = true;
+    console.log(element);
     highlightElement(element,result);
     return result;
 }
+
+export function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 
 export function isLessThanN(val,N,element) {
     let result = false;

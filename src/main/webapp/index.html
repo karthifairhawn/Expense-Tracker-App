@@ -1,141 +1,93 @@
 <!DOCTYPE html>
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Expense Tracker</title>
-        
-        <script  type="module" src="./apis/wallets.js"></script>
-        
 
-        <link href="https://fonts.googleapis.com/css?family=Quicksand:300,500" rel="stylesheet">
-
-        <!-- Bootstap CDN -->
-        <link href="libs/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-        <script src="libs/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
-
-        <!-- Font Awesome CDN -->
-        <link rel="stylesheet" href="./libs/all.min.css">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
 
 
-        <!-- Include Required Prerequisites -->
-        <script type="text/javascript" src="./libs/jquery.min.js"></script>
-        <script type="text/javascript" src="./libs/moment.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:300,500" rel="stylesheet">
+
+    <!-- Bootstap CDN -->
+    <link href="libs/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="libs/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="./libs/all.min.css">
 
 
-        
-        <!-- Include Date Range Picker -->
-        <script type="text/javascript" src="./libs/daterangepicker.js"></script>
-        <link rel="stylesheet" type="text/css" href="./libs/daterangepicker.css" />
+    <!-- Include Required Prerequisites -->
+    <script type="text/javascript" src="./libs/jquery.min.js"></script>
+    <script type="text/javascript" src="./libs/moment.min.js"></script>
+    <script type="text/javascript" src="./libs/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="./libs/daterangepicker.css" />
+    <link rel="stylesheet" href="./libs/selectize.0.6.9.css">
+    <script src="./libs/selectize.min.0.6.9.js"></script>
 
-        <!-- Calendar Plugin -->
-        <link rel="stylesheet" href="css/monthly.css">
-                
-
-        <link rel="stylesheet" href="./libs/selectize.0.6.9.css">
-        <script src="./libs/selectize.min.0.6.9.js"></script>
-
-        <link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
-        <link rel="stylesheet" href="./css/style.css">
+    
+    <script type="module" src="./js/common.js"></script>
+    <script type="module" src="./apis/wallets.js"></script>
 
 
-    </head>
+    <!-- Calendar Plugin -->
+    <link rel="stylesheet" href="css/monthly.css">
 
-    <div id="spinner">
-        <div style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
+
+
+    <link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+
+
+</head>
+
+
+
+<body>
+
+
+    <div data-include="./components/common/navbar.html"></div>
+    <div data-include="./components/common/notifications.html"></div>
+    <div data-include="./components/common/spinner.html"></div>
+    <div data-include="./components/dashboard/headerBox.html"></div>
+
+
+    <!-- Balance Header -->
+
+
+
+    <!-- DashBoard -->
+    <div id="dashboard">
+
+        <!-- #date-range-template template will be mounted here -->
+        <div id="date-range-selector"></div>
+
+        <!-- Monthly View -->
+        <div class="monthly-view month-container container">
+            <div class="monthly" id="mycalendar"></div>
         </div>
+
+        <!-- Weekly View -->
+        <div class="weekly-view-container container mb-2">
+            <div id="weekly-view"></div>
+        </div>
+
+
+        <!-- multiple #expense-card-template will be mounted here -->
+        <div id="expense-card-container" class="container">
+            <div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>
+            <div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>
+            <div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>
+            <div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>
+        </div>
+
+        <div class="m-2"></div>
+
     </div>
 
-    <body>
-
-        <!-- Toast Notification -->
-        <button type="button" class="btn btn-primary" id="toastbtn">Show Toast</button>
-        <div aria-live="polite" aria-atomic="true" class="toast-container d-flex  justify-content-end w-100">
-            <div class="toast">
-                <div class="toast-header">
-                <strong class="me-auto">Notification</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    <h3>hello worlds</h3>
-                </div>
-            </div>
-        </div>  
-
-
-        <!-- Navbar  -->
-        <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
-            <div class="container-fluid d-flex">
-                <div class="title d-flex align-items-center justify-content-center">
-                    <h2 class="mt-1 mb-3">Expense Tracker App </h2>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <i class="fa-solid fa-chart-pie"></i>
-                 </div>
- 
-                <div class="d-flex">
-                    <a class="nav-item" href="index.html" tabs="dashboard"><i class="fa-solid fa-house"></i></a>
-                    <div class="vr"></div>
-                    <a class="nav-item" href="wallets.html" tabs="wallets"><i class="fa-solid fa-wallet"></i></a>
-                    <div class="vr"></div>
-                    <a class="nav-item" href="payments.html" tabs="payments"><i class="fa-solid fa-repeat"></i></i></a>
-
-                </div>
- 
-                <div class="nav-right-options d-flex align-items-center">
-                    <a  href="profile.html" tabs="profile" class="nav-item profile"><i class="fas fa-user"></i></a>
-                    <h5 class="nav-item nav-notification"><i class="fa-solid fa-bell"></i></h5>
-                    <h5 class="nav-item logout"><i class="fas fa-sign-out-alt"></i></h5>
-                </div>
- 
-            </div>
-        </nav>
-
-        <!-- Balance Header -->
-        <div id="balance-header" class="container"></div>
-
-        <div id="notifications" class="">
-            <div class="notifications-head d-flex align-items-center justify-content-between">
-                <h5>Notifications</h5>
-                <h5 id="clear-not" class="url">Clear all</h5>
-            </div>
-
-            <div id="notificaitons-container">
-                
-            </div>
-            <div class="d-flex flex-row-reverse me-3 mb-3">
-                <span class="mark-not-btn">Mark all as read</span>
-            </div>
-        </div>
-
-        <!-- DashBoard -->
-        <div id="dashboard"> 
-
-            <!-- #date-range-template template will be mounted here -->
-            <div id="date-range-selector"></div>
-
-            <!-- Calender View -->
-            <div class="monthly-view month-container container">
-                <div class="monthly" id="mycalendar"></div>
-            </div>
-            
-            <div class="weekly-view-container container mb-2">
-                <div id="weekly-view"></div>
-            </div>
-
-
-            <!-- multiple #expense-card-template will be mounted here -->
-            <div id="expense-card-container" class="container"></div>
-
-            <div class="m-2"></div>
-
-        </div>
-        
-    </body>
+</body>
 
 </html>
 
@@ -157,17 +109,18 @@
             <!-- Date Range Selector -->
             <div class="d-flex justify-content-center">
                 <div id="reportrange" class="pull-right d-flex">
-    
+
                     <div class="d-flex align-items-center justify-content-center">
                         <span>View by </span>
                         &nbsp;&nbsp;&nbsp;
                         <div class="d-flex align-items-center selector">
-                            <span id="date-range-type" class="d-flex align-items-center justify-content-center">Recent</span>
+                            <span id="date-range-type"
+                                class="d-flex align-items-center justify-content-center">Recent</span>
                             <i class="fa-solid fa-chevron-down date-range-sico"></i>
                         </div>
                     </div>
 
-    
+
                 </div>
 
 
@@ -181,40 +134,44 @@
                 </span>
 
                 <!-- Dashboard Settings -->
-                <div class="modal fade" id="dashboard-settings" tabindex="-1" aria-labelledby="dashboard-settings" aria-hidden="true">
+                <div class="modal fade" id="dashboard-settings" tabindex="-1" aria-labelledby="dashboard-settings"
+                    aria-hidden="true">
                     <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Dashboard Settings</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Dashboard Settings</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+
+                            </div>
+                            <div class="modal-footer">
+                            </div>
                         </div>
-                        <div class="modal-body">
-                           
-                        </div>
-                        <div class="modal-footer">
-                        </div>
-                    </div>
                     </div>
                 </div>
 
-                <div class="btn btn-secondary ml-2" id="reload-expenses"><i class="fa fa-refresh" aria-hidden="true"></i></div>
+                <div class="btn btn-secondary ml-2" id="reload-expenses"><i class="fa fa-refresh"
+                        aria-hidden="true"></i></div>
 
 
             </div>
 
- 
-    
+
+
         </div>
 
         <!-- New Record Popup Container - Model content is template automounted -->
-        <div class="modal fade new-expense-form" id="newRecord" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade new-expense-form" id="newRecord" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog">
-              <div class="modal-content">
-    
-              </div>
+                <div class="modal-content">
+
+                </div>
             </div>
         </div>
-    
+
     </div>
 
 </template>
@@ -223,13 +180,14 @@
 <template id="expense-card-template">
     <div class="expense-card d-flex">
 
-        <span class="category-ico d-flex align-items-center justify-content-center"><i class="fa-solid fa-trophy" class="category-ico"></i></span>
-        
+        <span class="category-ico d-flex align-items-center justify-content-center"><i class="fa-solid fa-trophy"
+                class="category-ico"></i></span>
+
         <div class="expcard-body d-flex align-items-center">
 
             <!-- Expense Name -->
             <div class="d-flex flex-column  expense-card-left">
-                
+
                 <span style="font-size: 22px" class="title">Sample Expense</span>
 
                 <!-- <div class="d-flex flex-row">
@@ -240,12 +198,12 @@
                     </div>
     
                 </div> -->
-    
+
             </div>
 
             <!-- Wallet Name -->
             <span style="font-size: 18px;" class="expense-card-wallet d-flex align-items-center">
-                <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> 
+                <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i>
                 &nbsp;&nbsp;
                 <span class="wallet-name">Isndian Bank</span>
             </span>
@@ -260,80 +218,84 @@
 
             <!-- Amount  -->
             <div class="expense-card-bal-cont d-flex align-items-center justify-content-center">
-                <div class="spend-amount">-23 ₹</div> 
+                <div class="spend-amount">-23 ₹</div>
             </div>
 
             <div class="popup-modals">
                 <!-- View Modal         -->
-                <div class="modal fade view-expense-modal"  id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade view-expense-modal" id="exampleModal" tabindex="-1"
+                    aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                        <div class="modal-header d-flex flex-column w-100">
-    
-                            <div class="d-flex w-100">
-                                <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
-                                <span class=" modal-title spend-amount text-red"> </span>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-header d-flex flex-column w-100">
+
+                                <div class="d-flex w-100">
+                                    <h5 class="modal-title title" id="exampleModalLabel">Modal title</h5>
+                                    <span class=" modal-title spend-amount text-red"> </span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+
+                                <div class="category-section w-100 mt-3 d-flex align-items-center">
+                                    <div class="category-ico d-flex align-items-center justify-content-center"></div>
+                                    <div class="category"></div>
+                                </div>
+
                             </div>
-    
-                            <div class="category-section w-100 mt-3 d-flex align-items-center">
-                                <div class="category-ico d-flex align-items-center justify-content-center"></div>
-                                <div class="category"></div>
+                            <div class="modal-body">
+
+                                <div class="mb-2 d-flex flex-column">
+                                    <span class="h5"><b>Expense Amount</b> </span>
+                                    <span class="wallet-splits ">
+
+                                    </span>
+                                </div>
+
+
+                                <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
+
+                                <div class="mb-2 d-flex align-items-center card-field">
+                                    <div class="label">Spend on : </div>
+                                    <div class="spend-on value"></div>
+                                </div>
+
+                                <div class="mb-2 d-flex align-items-center card-field">
+                                    <div class="label">Created on: </div>
+                                    <div class="timestamp value"></div>
+                                </div>
+
+
+
+
+                                <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
+                                    <div class="label w-100">Note: </div>
+                                    <div class="expense-note value w-100"></div>
+                                </div>
+
+                                <div class="mt-2 d-flex align-items-center all-tags-msection mb-2 mt-3">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+
                             </div>
-    
-                        </div>
-                        <div class="modal-body">
-    
-                            <div class="mb-2 d-flex flex-column">
-                                <span class="h5"><b>Expense Amount</b> </span>
-                                <span class="wallet-splits ">
-    
-                                </span>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-warning edit-expense-btn"
+                                    data-bs-dismiss="modal">Edit</button>
+
+
+                                <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id=" 0""></i>
                             </div>
-    
-    
-                            <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
-    
-                            <div class="mb-2 d-flex align-items-center card-field">
-                                <div class="label">Spend on : </div>
-                                <div class="spend-on value"></div>
-                            </div>
-    
-                            <div class="mb-2 d-flex align-items-center card-field">
-                                <div class="label">Created on: </div>
-                                <div class="timestamp value"></div>
-                            </div>
-    
-    
-    
-    
-                            <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
-                                <div class="label w-100">Note: </div>
-                                <div class="expense-note value w-100"></div>
-                            </div>
-    
-                            <div class="mt-2 d-flex align-items-center all-tags-msection mb-2 mt-3">
-                                <i class="fas fa-tags"></i>
-                            </div>
-    
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-warning edit-expense-btn" data-bs-dismiss="modal">Edit</button>
-    
-    
-                            <i class="fa-solid fa-trash btn btn-danger expense-delete-btn expense-id="0""></i>
-                        </div>
                         </div>
                     </div>
                 </div>
-    
+
                 <!-- Edit Modal -->
-                <div class="modal fade edit-expense-form" id="editExpenseForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade edit-expense-form" id="editExpenseForm" tabindex="-1"
+                    aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
-    
-    
-                        </div>        
+
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -341,7 +303,7 @@
         </div>
 
 
-        
+
 
     </div>
 
@@ -352,17 +314,18 @@
     <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Create New Expense</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    </div>
     <div class="modal-body">
 
-          <div id="form-errors" class="text-danger">
+        <div id="form-errors" class="text-danger">
 
-          </div>
+        </div>
 
-          <form id="expense-form" class="expense-form" onsubmit="return false;" action="">
+        <form id="expense-form" class="expense-form" onsubmit="return false;" action="">
             <div class="mb-3">
-                <label for="recipient-name" class="col-form-label expense-reason-label">Expense Reason:</label>
-                <input placeholder="new clothes" maxlength="100" required type="text" class="form-control" id="expense-name">
+                <label for="recipient-name" class="col-form-label expense-reason-label required">Expense Reason:</label>
+                <input placeholder="new clothes" maxlength="100" required type="text" class="form-control "
+                    id="expense-name">
             </div>
 
             <div class="d-flex flex-row justify-content-between ml-2">
@@ -371,18 +334,20 @@
             </div>
 
             <div id="all-wallet-splits">
-                <div class="w-split wallet-split1 d-flex mb-2">                            
+                <div class="w-split wallet-split1 d-flex mb-2">
 
                     <div class="wallet-name-section  w-75">
-                        <select class="form-select form-wallet-list" aria-label="Default select" id="all-wallets-options" >
-                        </select>    
+                        <select class="form-select form-wallet-list" aria-label="Default select"
+                            id="all-wallets-options">
+                        </select>
 
                     </div>
                     <div class="m-2"></div>
                     <div class="d-flex flex-column justify-content-center w-25">
                         <div></div>
-                        <input placeholder="0.00 ₹"type="number" required min="1" max="10000000" class="form-control" id="expense-amount"></input>
-                        
+                        <input placeholder="0.00 ₹" type="number" required min="1" max="10000000"
+                            class="form-control required" id="expense-amount"></input>
+
                     </div>
 
                 </div>
@@ -392,9 +357,9 @@
             <div class="d-flex flex-row-reverse mt-3">
                 <span id="expense-more">+ add more details</span>
             </div>
-            
+
             <div class="more-expense-info" style="display: none;">
-                
+
                 <div class="mb-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <label for="message-text" class="col-form-label" id="category-label">Category:</label>
@@ -407,10 +372,12 @@
                         <div id="form-category-icon">
                         </div>
 
-                        <span name="new-category-icon" id="new-category-icon" value="f2b9" style="display: none;"> &#xf2b9 </span>
+                        <span name="new-category-icon" id="new-category-icon" value="f2b9" style="display: none;">
+                            &#xf2b9 </span>
 
 
-                        <input type="text" class="form-control" maxlength="20" id="new-category-input" placeholder="Food Expense" style="display: none;">
+                        <input type="text" class="form-control" maxlength="20" id="new-category-input"
+                            placeholder="Food Expense" style="display: none;">
 
 
                         <select class="form-select" aria-label="Default select" id="all-categories-options">
@@ -421,21 +388,24 @@
 
                 </div>
 
-                
+
                 <div class="mb-3">
-                    <label for="recipient-name" class="col-form-label">Spend on:</label>
-                    <input placeholder="new clothes" step="any" type="datetime-local" maxDate = 0 class="form-control" id="expense-time">
+                    <label for="recipient-name" class="col-form-label required">Spend on:</label>
+                    <input placeholder="new clothes" step="any" type="datetime-local" maxDate=0 class="form-control"
+                        id="expense-time">
                 </div>
 
                 <div class="mb-3">
-                    <label  class="col-form-label">Note:</label>
-                    <textarea placeholder="new clothes" maxlength="500" class="form-control" id="expense-note"></textarea>  
+                    <label class="col-form-label">Note:</label>
+                    <textarea placeholder="new clothes" maxlength="500" class="form-control"
+                        id="expense-note"></textarea>
                 </div>
 
                 <div class="mb-3">
                     <label for="message-text" class="col-form-label">Tags:</label>
-                    
-                    <select name="locationSets" id="locationSets" multiple="multiple" placeholder="chennai, for friends, upi" style="width: 100%">
+
+                    <select name="locationSets" id="locationSets" multiple="multiple"
+                        placeholder="chennai, for friends, upi" style="width: 100%">
                     </select>
 
                 </div>
@@ -446,47 +416,8 @@
                 <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
             </div>
 
-          </form>
+        </form>
 
-    </div>
-</template>
-
-<template id="tt-balance-header">
-    <div class=" mt-2 mb-2 card main-balance">
-
-        <div class="mi-bal-body d-flex card-body align-items-center justify-content-between">
-            <div class="mi-bal-right">
-                <span class="d-flex align-items-center justify-content-center">
-                    
-                    <span>Total Spendings </span>
-                    &nbsp;
-                    <span class="header-timespan ">(This Month)</span>  
-                    &nbsp;&nbsp;
-                    <div class="htimespan-select">
-                        <i class="fa-solid fa-chevron-down d-flex flex-column"></i>
-                        <div class="options">
-                            <div class="option">Today</div>
-                            <div class="option">This Week</div>
-                            <div class="option">This Month</div>
-                        </div>
-                    </div>
-                </span>
-                <!-- <span>( <span id="total-acct-count">3</span> wallets)</span> -->
-
-                <div class="d-flex">
-                    <div class="mi-bal-left d-flex align-items-center"><i class="fas fa-cannabis"></i>&nbsp;</div>
-                    <div id="mi-bal-amount" class="display-1">
-                        Loading... ₹
-                    </div>
-                    &nbsp;&nbsp;
-                </div>
-
-
-            </div>
-            <button type="button"  class="btn btn-primary" id="create-expense-btn" data-bs-toggle="modal" data-bs-target="#newRecord" data-bs-whatever="@getbootstrap">
-                + New Expense
-            </button>
-        </div>
     </div>
 </template>
 
@@ -505,28 +436,11 @@
             <span class="btn btn-primary" id="categories-view-btn">Open</span>
         </div>
         <div class="h4 border p-3 d-flex justify-content-between" id="tags-set">
-            <span class="label">Tags</span>    
+            <span class="label">Tags</span>
             <span class="btn btn-primary" id="tags-view-btn">Open</span>
         </div>
     </div>
 </template>
 
-<template id="tt-notification">
-    <div class="notifications-body d-flex align-items-center">
-        <div class="not-ico d-flex align-items-center justify-content-center">
-            <i class="fa-sharp fa-solid fa-money-bill"></i>
-        </div>
 
-        <div class="not-right">
-            <h5 class="not-title">Credit card bill.</h5>
-            <span class="not-body">HDFC Card bill payment due in 2 days.</span>
-        </div>
-
-        <div class="not-time">5 min ago</div>
-
-        <div class="not-del-btn"><i class="fa-regular fa-circle-xmark"></i></div>
-    </div>
-</template>
-
-<script  type="module" src="./js/dashboard.js"></script>     
-<script  type="module" src="./js/common.js"></script>     
+<script type="module" src="./js/dashboard.js"></script>

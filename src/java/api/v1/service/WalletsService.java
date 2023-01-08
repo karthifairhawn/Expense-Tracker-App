@@ -1,5 +1,6 @@
 package api.v1.service;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -184,10 +185,10 @@ public class WalletsService {
 				for(CardAlerts cardAlert: alerts) {
 					Long alertLimit = cardAlert.getLimitAlertOn();
 					if(alertLimit<0) return;
-					System.out.println("----------------------------------------------------"+percentageUsed);
+					final DecimalFormat df = new DecimalFormat("0.00");
 					if(alertLimit<=percentageUsed){
 						String title = wallet.getName()+" Limit reached";
-						String info =  "Used "+percentageUsed+" % of "+wallet.getName();
+						String info =  "Used "+df.format(percentageUsed)+" % of "+wallet.getName();
 						Notifications notification = new Notifications(
 								null,title,"limit",info,null,System.currentTimeMillis(),walletId,operatingUser.getId(),false
 								);

@@ -126,3 +126,12 @@ form .error {
     display:none;
 }
 
+
+#spinner{
+    display: none;
+    height: 100%;
+    width: 100%;
+    position: absolute !important;
+    backdrop-filter: blur(10px);
+    z-index: 999;   
+}

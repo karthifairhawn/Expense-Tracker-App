@@ -2,10 +2,6 @@ import * as utils from './util.js';
 import {findTransactions,findTransactionsById,createTransactions,deleteTransactionsById,updateTransactionsById, findTransactionsPaginated} from '../apis/transactions.js';
 import * as paymentsService from '../apis/rpayements.js';
 
-$(document).ready(()=>{
-    runner();
-})
-
 let userCardWallets = [];
 let userNonCardWallets = [];
 
@@ -26,11 +22,19 @@ let expenseFormUtil = utils.expenseFormUtil;
 
 let allRecurringPayments = null;
 let upcomingPayments = [];
+
+$(document).ready(()=>{
+    $('#spinner').show();
+    runner();
+
+    setTimeout(() => {        
+        $('#spinner').hide();
+    }, 600);
+})
+
 async function runner(){
 
-    $('.nav-item[tabs=payments]').addClass('active')
-    $('#tab-B')[0].click();
-   
+    $('#tab-B')[0]
     $('#create-rp').off();
     $('#create-rp').click(()=>{
 
@@ -43,6 +47,7 @@ async function runner(){
         $('#newRPayment').modal({ show: 'false' }); 
         $('#newRPayment').modal('show');
         $('#rpweek-date').hide();
+
         $('#rpyament-occur').off();
         $('#rpayment-occur').change((e)=>{
             let value  = $(e.target).val();
@@ -57,15 +62,23 @@ async function runner(){
                 $('#rpweek-date').hide();
             }
         })
+
+        $('#save-rpayemnt').off();
+        $('#save-rpayemnt').click(()=>{ 
+            saveRpayment(); 
+        });
     })
-
-    $('#save-rpayemnt').click(()=>{ saveRpayment(); });
-
+        
     await utils.findBasicEntities();
     paymentsService.findRecPayments().then((data)=>{
         allRecurringPayments = [];
         upcomingPayments = [];
         allRecurringPayments = data.data;
+        if(allRecurringPayments.length == 0){
+            $('#tab-A')[0].click();
+            $('#tab-B').hide();
+            $('#tab-C').hide();
+        }
         populateRecurringPayments("rp-container");
         populateRecurringPendingPayments("rpp-container");
         populateRecurringUpcomingPayments("rup-container");
@@ -80,24 +93,35 @@ function populateRecurringPayments(containerId){
     $(container).html("");
 
     if(allRecurringPayments.length == 0){
-        $(container).html("<h1>No recurring payments</h1>");
+        $(container).html('<div class="card-body rpayments mt-4 d-flex flex-column align-items-center justify-content-center"> <img class="rp-alert-img" src="https://makecommerce.net/wp-content/uploads/2022/04/One-klick-payments_500w_Global@2x.png"> <h4>Add recurring payments, Get notified and Pay bills in time.</h4><span class="url btn btn-primary btn-lg" onclick="$(`#create-rp`).click();"> Create Now</span> </div>');
+        $('#create-rp').hide();
     }
     for(let i = 0; i < allRecurringPayments.length; i++){
         
         let elementCard = $('#tt-rec-payments')[0].content.cloneNode(true);
         let wallet = (allRecurringPayments[i].walletId==-1 || allRecurringPayments[i].walletId==null) ? 'N/A' : allRecurringPayments[i].walletId;
-        let timespan = allRecurringPayments[i].amount>0 ? utils.moneyFormat(allRecurringPayments[i].amount) : "occurs  ";
-        timespan = timespan +" "+allRecurringPayments[i].occur.split('-')[0];
+        let timespan = allRecurringPayments[i].amount>0 ? utils.moneyFormat(allRecurringPayments[i].amount)+" / " : "";
+        if(allRecurringPayments[i].occur.split('-').length>1){ // length will be one for daily
+            timespan = timespan +" "+ utils.capitalizeFirstLetter(allRecurringPayments[i].occur.split('-')[0])  +"  "+ allRecurringPayments[i].occur.split('-')[1]+ (allRecurringPayments[i].occur.split('-')[1]=='1' ? "st" :"th");
+        }else{
+            timespan = "Daily"
+        }
 
         let endsOn = ( allRecurringPayments[i].endBy==-1 ||  allRecurringPayments[i].endBy=="null" ) ? "N/A" : allRecurringPayments[i].endBy;
-        endsOn = moment(+endsOn).format("MMM d, YYYY");
+        // endsOn = moment(endsOn.substring()).format("MMM d, YYYY");
+
+        let endsOnDateFor = new Date(Number(endsOn));
+        endsOn = moment(endsOnDateFor);
+        endsOn = endsOn.format("MMM D, YYYY")
 
         $(elementCard).find('.title').text(allRecurringPayments[i].name);
         $(elementCard).find('.type').text(allRecurringPayments[i].type);
         $(elementCard).find('.wallet').text(getWalletNameById(wallet));
         $(elementCard).find('.timespan').text(timespan);
+        if(endsOn=="Invalid date") endsOn = "N/A"
         $(elementCard).find('.dueend').text(endsOn);
         $(elementCard).find('.edit-rp').attr('rp-id',allRecurringPayments[i].id);
+        $(elementCard).find('.delete-rp').attr('rp-id',allRecurringPayments[i].id);
         $(container)[0].appendChild(elementCard);
     }
 }
@@ -108,6 +132,11 @@ function populateRecurringPendingPayments(containerId){
     $(container).html("");
 
     let pendingPayments = getPendingPayments();
+    if(pendingPayments.length > 0){
+        $('#tab-B')[0].click();
+    }else if(allRecurringPayments!=0){
+        $('#tab-C')[0].click();
+    }
 
     if(pendingPayments.length == 0){
         $(container).html('<div class="card-body rpayments mt-4 d-flex align-items-center justify-content-center"> <h6>No Pending Payments.</h6> </div>');
@@ -120,7 +149,7 @@ function populateRecurringPendingPayments(containerId){
         let elementCard = $('#tt-recp-payments')[0].content.cloneNode(true);
         let wallet = pendingPayments[i].walletId==-1 ? 'N/A' : pendingPayments[i].walletId;
         let timespan = pendingPayments[i].amount>0 ? utils.moneyFormat(pendingPayments[i].amount) : "occurs  ";
-        timespan = timespan +" "+pendingPayments[i].occur.split('-')[0];
+        timespan = timespan +" "+pendingPayments[i].occur.split('-')[0] + pendingPayments[i].occur.split('-')[1]+"th";
 
         let endsOn = pendingPayments[i].endBy==-1 ? "N/A" : pendingPayments[i].endBy;
         
@@ -191,16 +220,15 @@ function populateRecurringUpcomingPayments(containerId){
     upcomingPayments = getUpcomingPayments();
 
     if(upcomingPayments.length == 0){
-        $(container).html('<div class="card-body rpayments mt-4 d-flex align-items-center justify-content-center"> <h6>No Pending Payments.</h6> </div>');
+        $(container).html('<div class="card-body rpayments mt-4 d-flex align-items-center justify-content-center"> <h6>No Upcoming Payments.</h6> </div>');
         return;
     }
-    console.log(upcomingPayments);
     // create dom element of payments
     for(let i = 0; i < upcomingPayments.length; i++){
         let elementCard = $('#tt-recu-payments')[0].content.cloneNode(true);
         let wallet = getWalletNameById(upcomingPayments[i].walletId);
         let timespan = upcomingPayments[i].amount>0 ? utils.moneyFormat(upcomingPayments[i].amount) : "occurs  ";
-        timespan = timespan +" "+upcomingPayments[i].occur.split('-')[0];
+        timespan = timespan +" "+upcomingPayments[i].occur.split('-')[0] +"  "+ upcomingPayments[i].occur.split('-')[1]+"th";
 
         
         let timeleft = null; 
@@ -232,7 +260,7 @@ function populateRecurringUpcomingPayments(containerId){
         let timeleftNumber = timeleft;
         if(upcomingPayments[i].occur.split('-')[0]=='daily') timeleftNumber= 1;
         
-        if(timeleft==1) timeleft+= 'Tomorrow.';
+        if(timeleft==1) timeleft= 'Tomorrow.';
         else timeleft+= ' days.';
     
 
@@ -242,7 +270,7 @@ function populateRecurringUpcomingPayments(containerId){
 
         $(elementCard).find('.title').text(upcomingPayments[i].name);
         $(elementCard).find('.type').text(upcomingPayments[i].type);
-        $(elementCard).find('.amount').text(upcomingPayments[i].amount==-1 ? 'N/A' : utils.moneyFormat(upcomingPayments[i].amount));
+        $(elementCard).find('.amount').text((upcomingPayments[i].amount==-1 || upcomingPayments[i].amount==0) ? 'N/A' : utils.moneyFormat(upcomingPayments[i].amount));
         $(elementCard).find('.wallet').text(wallet);
         $(elementCard).find('.timespan').text(timespan);
         $(elementCard).find('.timeleft').text(timeleft);
@@ -407,6 +435,14 @@ function activateListeners(){
             })
         })
     }); 
+
+
+    $('.delete-rp').click((e)=>{
+        paymentsService.deleteRecPaymentById($(e.target).attr('rp-id')).then((data)=>{
+            utils.handleApiResponse(data,"Deletion Success","Delete Failed, Try again...");
+            $(e.target).closest(".rpayments").remove();
+        });
+    })
 }
 
 function getPaymentById(id){
@@ -432,10 +468,8 @@ function markPaymentAsPaidById(id,rpRaw){
     rpRaw.lastPaid = new Date().getTime();
     paymentsService.UpdateRecPaymentById(id,JSON.stringify(rpRaw)).then((data)=>{
         utils.handleApiResponse(data,"Status Updated","Update Failed.")
+        runner();
     })
-    // $('.rpp-complete[rp-id='+id+']').closest('.card-body').remove();
-
-    runner();
 }
 
 function mountPaymentCreateForm(rpRaw){
@@ -563,7 +597,9 @@ function saveRpayment(){
 
     let newRpRaw = {};
 
-    newRpRaw.amount = $('#rpayment-amount').val();
+    newRpRaw.amount = $('#rpayment-amount').val()
+    newRpRaw.amount = newRpRaw.amount.length==0 ? 0 : newRpRaw.amount;
+
     newRpRaw.name = $('#rpayment-name').val();
     newRpRaw.occur = $('#rpayment-occur').val();
 
@@ -577,13 +613,23 @@ function saveRpayment(){
     newRpRaw.lastPaid = new Date().getTime();
     newRpRaw.walletId = $('#rpayment-wallet').val();
     newRpRaw.endBy = new Date($('#rpayment-endson').val()).getTime();
+    if(isValidRecPayment(newRpRaw)){
+        paymentsService.createRecPayment(JSON.stringify(newRpRaw)).then((data)=>{
+            utils.handleApiResponse(data,"Creation Success","Failed try again...");
+            $('.btn-close').click();
+            runner();
+        })
+    }else{
+        utils.handleApiResponse({statusCode:400},"","Please all required data.");
+    }
 
-    paymentsService.createRecPayment(JSON.stringify(newRpRaw)).then((data)=>{
-        utils.handleApiResponse(data,"Creation Success");
-        $('.btn-close').click();
-        runner();
-    })
-
+    function isValidRecPayment(newRpRaw){
+        // console.log(utils.isNumber(newRpRaw.endBy,$('#rpayment-endson').val()))
+        console.log(newRpRaw.endBy);
+        // return utils.isGreaterThanZero(newRpRaw.amount,$('#rpayment-amount')) &&
+        return utils.isNotEmpty(newRpRaw.name,$('#rpayment-name')) 
+        // utils.isNumber(newRpRaw.endBy,$('#rpayment-endson'));
+    }
 
 }
 

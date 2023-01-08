@@ -16,8 +16,6 @@ async function pupulateUserData(){
     });
 
     let userDateForm = $('form[name="profile-form"]');
-
-    console.log(userData)
     $(userDateForm).find('#userName').val(userData.name);
     $(userDateForm).find('#userEmail').val(userData.email);
     $(userDateForm).find('#userPhone').val(userData.phoneNumber);

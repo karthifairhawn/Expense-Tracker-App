@@ -2,11 +2,6 @@ import {findWallets} from '../apis/wallets.js';
 import * as util from './util.js';
 import * as notificationService from '../apis/notifications.js'
 
-// Logout user on clicking logout button on navbar
-$('.logout').click(()=>{
-    localStorage.clear();
-    window.location.href= 'login.html';
-})
 
 // Redirect to login if no authToken
 let authToken = localStorage.getItem('authToken');
@@ -16,20 +11,8 @@ if(authToken == null || authToken.length == 0 || typeof authToken === undefined)
 
 var totalNonReadNotifications = 0;
 var totalNotifications = 0;
+
 export function fetchNotifications(){
-
-    $('.nav-notification').off()
-    $('.nav-notification').click(()=>{
-        $('#notifications').toggle();
-    });
-
-    $('#clear-not').click(()=>{
-        notificationService.deleteAll().then((data)=>{
-            if(data.statusCode!=200) return;
-            $("#notificaitons-container").html("");
-            $("#notificaitons-container").append($("<h2 class='mt-3'><center>No Notifications</center></h2>"))
-        })
-    })
 
     notificationService.findAll().then((data)=>{
 
@@ -57,6 +40,40 @@ export function fetchNotifications(){
             zeroNotificationsHandler(totalNotifications);
         })
 
+
+        $('.nav-notification').click(()=>{
+            $('#notifications').toggle();
+            $('body').off();
+           
+    
+            if($('#notifications').css('display')=='block'){
+                $('body').off();
+                $('body').click((evt)=>{    
+                    if(evt.target.id == "notifications")
+                       return;
+                    //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
+                    if($(evt.target).closest('#notifications').length)
+                       return;             
+        
+                       if(!($(evt.target).hasClass('nav-notification') || $(evt.target).hasClass('fa-bell'))){
+                           $('#notifications').toggle();
+                           $('body').off();
+                       }
+                });
+            }
+    
+        });
+
+        $('#clear-not').click(()=>{
+            notificationService.deleteAll().then((data)=>{
+                if(data.statusCode!=200) return;
+                $("#notificaitons-container").html("");
+                $("#notificaitons-container").append($("<h2 class='mt-3'><center>No Notifications</center></h2>"))
+            })
+        })
+    
+    
+
     });
 
 
@@ -69,7 +86,21 @@ export function fetchNotifications(){
         $(container).html("");
 
         for(let i=notifications.length-1;i>=0;i--){
-            let notificationElement = document.getElementById("tt-notification").content.cloneNode(true);
+            
+            let notificationElement = $('<div class="notifications-body d-flex align-items-center">'+
+                                        '<div class="not-ico d-flex align-items-center justify-content-center">'+
+                                            '<i class="fa-sharp fa-solid fa-money-bill"></i>'+
+                                        '</div>'+
+                                
+                                        '<div class="not-right">'+
+                                            '<h5 class="not-title">Credit card bill.</h5>'+
+                                            '<span class="not-body">HDFC Card bill payment due in 2 days.</span>'+
+                                        '</div>'+
+                                
+                                        '<div class="not-time">5 min ago</div>'+
+                                
+                                        '<div class="not-del-btn"><i class="fa-regular fa-circle-xmark"></i></div>'+
+                                    '</div>');
 
             $(notificationElement).find('.not-title').text(notifications[i].title);
             $(notificationElement).find('.not-body').text(notifications[i].info);
@@ -81,7 +112,7 @@ export function fetchNotifications(){
                 $(notificationElement).find('.not-title').prepend('<i class="fa-solid fa-circle-info unread-not-ico"></i> ')
                 $(notificationElement).find('.notifications-body').addClass('unread-not');
             }
-            container.appendChild(notificationElement);
+            $(container).append(notificationElement);
 
         }
         
@@ -112,9 +143,28 @@ export function fetchNotifications(){
 
 }
 
+function initiateListeners(){
+    // Logout user on clicking logout button on navbar
+    $('.logout').click(()=>{
+        localStorage.clear();
+        window.location.href= 'login.html';
+    })
+
+    // HTML componenet injector
+    $(function () {
+        var includes = $('[data-include]')
+        $.each(includes, function () {
+          var file = $(this).data('include')
+          $(this).load(file)
+        })
+    })
+
+    fetchNotifications();
+}
 
 $(document).ready(()=>{
-    fetchNotifications();
+    initiateListeners();
+    
 });
 
 
