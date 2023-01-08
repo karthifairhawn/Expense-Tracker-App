@@ -367,44 +367,11 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
     // Add loading indicator at end of container only for recent transactions
-    if(timeSpan=='Recent' && expenseData.data.expenses.length==15) mountLoadingScreen();
     
     // Store arg values in ana object that will be used for refresh 
     setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId,expenseData);
 
-    // Only appliable for recent transactions section
-    function mountLoadingScreen(){
 
-        if(expenseData.data.expenses.length == 0) return;
-
-        // Load more expenses when reached expense container end
-        $('#'+containerId).off();
-        $('#'+containerId).scroll(function(e){
-
-            // grab the scroll amount and the window height
-            var scrollAmount   = $('#'+containerId).scrollTop();
-            var documentHeight = $('#'+containerId).height();
-        
-            // calculate the percentage the user has scrolled down the page
-            var scrollPercent = (scrollAmount / documentHeight) * 100;
-        
-            if(scrollPercent > 70) {
-                // $('#'+containerId).append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
-                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
-                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
-                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
-                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
-                $('#'+containerId).off();
-                pageNumber++;
-                setTimeout( async ()=>{
-                    await findAllExpenseDetails(null,null,'Recent',false,containerId)
-                    $('#'+containerId).find('.exp-loading-skeleton').remove()
-                    // mountLiveUpdateBar();
-                },1500)
-            }
-        
-        });
-    }
 
     let expenses = expenseData.data.expenses;
     for(let i=0; i<expenses.length; i++){ 
@@ -448,6 +415,38 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
         rangeExpense+=expenses[i].amount;
         newDateSectionHandler(expenses[i]);
         populateExpense(wallets,expenses[i],categoryInfo,containerId);
+    }
+
+    // Only appliable for recent transactions section
+    if(timeSpan=='Recent' && expenseData.data.expenses.length==15) mountLoadingScreen();
+    function mountLoadingScreen(){
+
+        if(expenseData.data.expenses.length == 0) return;
+
+        // Load more expenses when reached expense container end
+        $('#'+containerId).off();
+        $('#'+containerId).scroll(function(e){
+
+            // grab the scroll amount and the window height
+            let elementte = $('#'+containerId)[0];
+            var scrollPercent = (elementte.scrollTop / (elementte.scrollHeight - elementte.offsetHeight))*100;
+
+            console.log(scrollPercent);
+            if(scrollPercent > 70) {
+                // $('#'+containerId).append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
+                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
+                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
+                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
+                $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
+                $('#'+containerId).off();
+                pageNumber++;
+                setTimeout( async ()=>{
+                    await findAllExpenseDetails(null,null,'Recent',false,containerId)
+                    $('#'+containerId).find('.exp-loading-skeleton').remove()
+                },1500)
+            }
+        
+        });
     }
 
     function newDateSectionHandler(expense){
@@ -544,10 +543,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
                 
         // Setting expense data to the dom
         if(categoryInfo?.imagePath == undefined){
-            categoryInfo= {
-                name : 'Syncing...',
-                imagePath : 'f543'
-            }
+            categoryInfo.imagePath = 'f543'
         }
 
         
