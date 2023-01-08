@@ -172,16 +172,16 @@ async function refreshWalletsPage(){
     });
 
     populateBalanceContainer();
-    mountWallets();
+    $('#spinner').show();
 
-    $('.add-income-btn').off();
-    $('.add-wallet-btn').off();
-    $('.view-income-btn').off();
-    $('.create-alert').off();
-    $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
-    $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
-    $('.view-income-btn').click(()=>{ mountAllIncomes() })
-    $('.create-alert').click(()=>{ mountCreateAlertForm() })
+    // To be removed
+    setTimeout(() => {
+        $('#spinner').hide();        
+        mountWallets();
+        initiateListeners();
+    }, 300);
+
+
 
     if(userWallets.length==0){
         $('.no-wallet-available').show();
@@ -200,6 +200,17 @@ async function refreshWalletsPage(){
         $('.cards-section').hide();
     }
 
+}
+
+function initiateListeners(){
+    $('.add-income-btn').off();
+    $('.add-wallet-btn').off();
+    $('.view-income-btn').off();
+    $('.create-alert').off();
+    $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
+    $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
+    $('.view-income-btn').click(()=>{ mountAllIncomes() })
+    $('.create-alert').click((e)=>{ mountCreateAlertForm($(e.target).attr('wallet-id'))  })
 }
 
 function populateBalanceContainer(){
@@ -267,6 +278,7 @@ async function mountWallets(){
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent.toFixed(2));
             $(walletCardClone).find('.card-symbol .fas').addClass(cardSymbols[wallet.id%9])
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
+            $(walletCardClone).find('.create-alert').attr('wallet-id',wallet.id);
             if(creditCardUsagePercent>100){ $(walletCardClone).find('.overdraft-warning').css('display', 'block'); }
             
 
@@ -375,7 +387,7 @@ async function mountWallets(){
 
         }
 
-        $('.card-used-amount').text(totalCardExpense);
+        $('.card-used-amount').text(util.moneyFormat(totalCardExpense));
 
 
         // ----------------------   Card Animation Handlers    ---------------------
@@ -657,14 +669,19 @@ function mountAddIncomeModal(isBill,billMax){
 
 }
 
-function mountCreateAlertForm(){
+function mountCreateAlertForm(walletId){
+
+    console.log(walletId);
+
     $('.btn-close').click();
     $('#cardAlertModal').modal({ show: false})
     $('#cardAlertModal').modal('show');
 
+    $('.alert-wallet').html("");
     for(let i=0;i<userCardWallets.length;i++){
         $('.alert-wallet').append('<option value='+userCardWallets[i].id+'>'+userCardWallets[i].name+'</option>');
     }
+    $('.alert-wallet').val(walletId);
 
     $('#alert-type').off()
     $('#alert-type').change(()=>{

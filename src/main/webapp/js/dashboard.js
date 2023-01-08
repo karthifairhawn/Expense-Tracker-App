@@ -585,8 +585,10 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         if(walletInfo[0].id<0){
             walletName = '<span class="muted">N/A</span>'
         }else if(walletInfo.length == 1){
+            $(currentElement).find('.fa-wallet').css('color','white')
             walletName = (walletInfo[0]?.name);
         }else{
+            $(currentElement).find('.fa-wallet').css('color','white')
             let accounts = walletInfo.length;
             walletName = +accounts+" Accounts "+'<i class="fa-solid fa-arrows-split-up-and-left"></i> '
         }
@@ -1856,7 +1858,6 @@ function mountCategories(container){
         let newCategoryList = $('<div class="d-flex justify-content-between align-items-center border p-3 mb-1 cat-list-section ">'+
                                     '<span class="cname h5"></span>'+
                                     '<div>'+
-                                        '<span class="delete-btn me-1 btn btn-warning" category-id='+userCategories[i].id+'><i class=" fas fa-edit"></i></span>'+
                                         '<span class="delete-btn me-1 btn btn-danger" category-id='+userCategories[i].id+'><i class=" fas fa-trash"></i></span>'+
                                     '</div>'+
                                 '</div>');
@@ -1888,7 +1889,7 @@ function mountTags(container){
         let newCategoryList = $('<div class="d-flex justify-content-between align-items-center border p-3 mb-1 tag-list-section">'+
                                     '<span class="cname h5"></span>'+
                                     '<div>'+
-                                        '<span class="delete-btn me-1 btn btn-warning" tag-id="'+userTags[i].id+'"><i class=" fas fa-edit"></i></span>'+
+                                        // '<span class="delete-btn me-1 btn btn-warning" tag-id="'+userTags[i].id+'"><i class=" fas fa-edit"></i></span>'+
                                         '<span class="delete-btn me-1 btn btn-danger" tag-id="'+userTags[i].id+'"><i class=" fas fa-trash"></i></span>'+
                                     '</div>'+
                                 '</div>');

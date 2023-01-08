@@ -29,7 +29,7 @@ $(document).ready(()=>{
 
     setTimeout(() => {        
         $('#spinner').hide();
-    }, 600);
+    }, 300);
 })
 
 async function runner(){
@@ -44,6 +44,7 @@ async function runner(){
        $(container)[0].appendChild(cloner);
 
         expenseFormUtil.listWalletsInForm();
+
         $('#newRPayment').modal({ show: 'false' }); 
         $('#newRPayment').modal('show');
         $('#rpweek-date').hide();
@@ -78,6 +79,9 @@ async function runner(){
             $('#tab-A')[0].click();
             $('#tab-B').hide();
             $('#tab-C').hide();
+        }else{
+            $('#tab-B').show();
+            $('#tab-C').show();
         }
         populateRecurringPayments("rp-container");
         populateRecurringPendingPayments("rpp-container");
@@ -147,7 +151,7 @@ function populateRecurringPendingPayments(containerId){
     for(let i = 0; i < pendingPayments.length; i++){
        
         let elementCard = $('#tt-recp-payments')[0].content.cloneNode(true);
-        let wallet = pendingPayments[i].walletId==-1 ? 'N/A' : pendingPayments[i].walletId;
+        let wallet = pendingPayments[i].walletId==-1 ? 'N/A' : userWallets[pendingPayments[i].walletId].name;
         let timespan = pendingPayments[i].amount>0 ? utils.moneyFormat(pendingPayments[i].amount) : "occurs  ";
         timespan = timespan +" "+pendingPayments[i].occur.split('-')[0] + pendingPayments[i].occur.split('-')[1]+"th";
 
@@ -270,7 +274,7 @@ function populateRecurringUpcomingPayments(containerId){
 
         $(elementCard).find('.title').text(upcomingPayments[i].name);
         $(elementCard).find('.type').text(upcomingPayments[i].type);
-        $(elementCard).find('.amount').text((upcomingPayments[i].amount==-1 || upcomingPayments[i].amount==0) ? 'N/A' : utils.moneyFormat(upcomingPayments[i].amount));
+        $(elementCard).find('.amount').text((upcomingPayments[i].amount==-1 || upcomingPayments[i].amount==0) ? '₹ N/A' : utils.moneyFormat(upcomingPayments[i].amount));
         $(elementCard).find('.wallet').text(wallet);
         $(elementCard).find('.timespan').text(timespan);
         $(elementCard).find('.timeleft').text(timeleft);
@@ -490,9 +494,9 @@ function mountPaymentCreateForm(rpRaw){
     expenseFormUtil.setDateTimeInForm(currTime);    // Set current time initially
     $('#expense-name').val(rpRaw.name)
     $('#expense-amount').val(rpRaw.amount==-1 ? 0 : rpRaw.amount)
-
     $('#split-wallet').click(()=>expenseFormUtil.splitWalletHandler())       // Split expense ampunt 
     $('#expense-more').click(()=>extendForm());             // Extend the expense creation form      
+    $('#save-expense-btn').off();
     $('#save-expense-btn').click(()=>createNewExpense());   // Save Handler
     
 
