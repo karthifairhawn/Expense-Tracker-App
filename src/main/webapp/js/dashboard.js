@@ -378,8 +378,6 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     }
 
 
-    // Add loading indicator at end of container only for recent transactions
-    
     // Store arg values in ana object that will be used for refresh 
     setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId,expenseData);
 
@@ -390,6 +388,7 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     for(let i=0; i<expenses.length; i++){ 
         // Find all wallets (search in already fetched wallets if not found get from server)
         let wallets = new Array();
+        // console.log(expenses[i].walletSplits)
         for (const [key, value] of Object.entries(expenses[i].walletSplits)){
             let searched = null;
             searched = (userWalletsMap[key])
@@ -443,7 +442,10 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
                 $('#'+containerId).off();
                 pageNumber++;
                 setTimeout( async ()=>{
-                    await findAllExpenseDetails(null,null,'Recent',false,containerId)
+                    await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>{
+                        expenseData.data.expenses.push(...data.data.expenses);
+                        repopulateExpenseDetails(false)
+                    });
                     $('#'+containerId).find('.exp-loading-skeleton').remove()
                 },1500)
             }
@@ -699,7 +701,8 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
                     }
                 }
                 
-                updateHeader();
+                increaseSpendings(null,getExpenseById(expenseId).amount)
+                // updateHeader();
             });
         })
     }
@@ -806,11 +809,17 @@ function calendarMonthExpensesChange(month,year){
 function calendarSingleDayExpense(element){
 
     let date = $(element).attr('date');
+    let stt = moment(date+" 00-00-01",'YYYY-MM-DD HH:mm:ss');
+    let endd = moment(date+" 23-59-59",'YYYY-MM-DD HH:mm:ss');
     date = date.replaceAll("-","");
-    
-    $('#monthly-day-expenses').html("");
-    findAllExpenseDetails(date, date,'Monthly',true,'monthly-day-expenses'); // Start and end date date is same because the this to a days expenses
 
+    
+    let cachedExpenses = previousExpenseFetch.expenseData.data.expenses;
+    let monthsDaysExpenseData =  getExpensesFromExistingCache(stt,endd);    
+    previousExpenseFetch.expenseData.data.expenses = monthsDaysExpenseData;
+    $('#monthly-day-expenses').html("");
+    findAllExpenseDetails(date, date,'Monthly',true,'monthly-day-expenses',false); // Start and end date date is same because the this to a days expenses
+    previousExpenseFetch.expenseData.data.expenses = cachedExpenses;
 }
 
 // All view mounting engines.
@@ -1350,7 +1359,8 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                     `;
                     instance.html(ret);
                     addDateFetchLister();
-                    findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),'Last 7 Days ',false,'myc-available-time-container')
+                    $('.active-weekly-day').click();
+                    // findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),'Last 7 Days ',false,'myc-available-time-container')
                 };
         
                 render();
@@ -1364,7 +1374,20 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                         let date = $(element).attr('date');
                         $('.active-weekly-day').removeClass('active-weekly-day');
                         $(element).addClass('active-weekly-day');
-                        findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
+
+                        let cachedExpenses = previousExpenseFetch.expenseData.data.expenses;
+                        let newDatee = date.substring(0,4)+"-"+date.substring(4,6)+"-"+date.substring(6);
+                        let stt = moment(newDatee+" 00-00-01",'YYYY-MM-DD HH:mm:ss');
+                        let endd = moment(newDatee+" 23-59-59",'YYYY-MM-DD HH:mm:ss');
+
+                        let weekDaysExpenseData =  getExpensesFromExistingCache(stt,endd);    
+                        console.log(weekDaysExpenseData)
+                        previousExpenseFetch.expenseData.data.expenses = weekDaysExpenseData;
+                        $('#myc-available-time-container').html("");
+                        findAllExpenseDetails(date, date,'Weekly',true,'myc-available-time-container',false); // Start and end date date is same because the this to a days expenses
+                        previousExpenseFetch.expenseData.data.expenses = cachedExpenses;                        
+
+                        // findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
                     })
 
                     $('#myc-current-month-year-container').off();
@@ -1511,38 +1534,33 @@ function mountCreateExpenseForm(){
         }   
 
         // Create expense API call to the server
-        async function createExpenseApiCall(expenseInfoo){
+        async function createExpenseApiCall(expenseToSave){
             $('#save-expense-btn').off()
-            expenseInfoo = JSON.stringify(expenseInfoo)
+            let expenseInfoo = JSON.stringify(expenseToSave)
             $('#spinner').css('display','block');
             await createTransactions(expenseInfoo).then((data)=> {
                 $('#newRecord .btn-close').click();
                 $('#spinner').css('display','none');
-                updateHeader();
-                pushExpenseToSection(data);
 
-                // let newExpenseData = previousExpenseFetch.expenseData.data.expenses;
-                
-                // let newMomentPlace = moment(data.data.transactionInfo.spendOn, 'MMM D, YYYY, h:mm:ss a');
-                // let insertionIndex = 0;
-                // for(let kj=0; kj<newExpenseData.length; kj++){
-                //     // console.log(kj)
-                //     let iter = moment(newExpenseData[kj].transactionInfo.spendOn, 'MMM D, YYYY, h:mm:ss a');
-                    
-                //     if(iter.isBefore(newMomentPlace)){
-                //         // console.log(iter.format('MMM D, YYYY, h:mm:ss a'));
-                //         // console.log(newMomentPlace.format('MMM D, YYYY, h:mm:ss a'));
-                //         insertionIndex = kj;
-                //         break;
-                //     }
 
-                // }
-                // newExpenseData.splice(insertionIndex, 0, data.data);
-                
-                // console.log(newExpenseData)
-                
+                increaseSpendings(expenseToSave)
 
-                // repopulateExpenseDetails(false);
+                // New Expense Data
+                let updatedExpenseInfo = data.data;
+                let newMomentPlace = moment(updatedExpenseInfo.transactionInfo.spendOn, 'MMM D, YYYY, h:mm:ss a');
+                updatedExpenseInfo.transactionInfo.spendOn = newMomentPlace.format('YYYY-MM-DD HH:mm:ss');
+                let allExpenses = previousExpenseFetch.expenseData.data.expenses;
+
+                let insertionIndex = 0;
+                for(let kj=0; kj<allExpenses.length; kj++){                    
+                    let iter = moment(allExpenses[kj].transactionInfo.spendOn, 'YYYY-MM-DD hh:mm:ss');                    
+                    if(iter.isBefore(newMomentPlace)){                        
+                        insertionIndex = kj;
+                        break;
+                    }
+                }
+                allExpenses.splice(insertionIndex, 0, data.data);                
+                repopulateExpenseDetails(false);
                 util.handleApiResponse(data,"Expense Created ✅ ");
                 commonService.fetchNotifications();
             })
@@ -1557,102 +1575,33 @@ function mountCreateExpenseForm(){
     }
 }
 
-
-// To handle case where newly created expense is need to be pushed to existing date section
-function pushExpenseToSection(expenseData){
-
-    let createdDate = moment(expenseData.data.transactionInfo.spendOn, 'MMM DD, YYYY').format('DD-MMM-YYYY');
-    if($('.date-grouping[date='+createdDate+']').length==0){
-        $('#reload-expenses').click();
-        return;
-    }
-    $('.date-grouping[date='+createdDate+']').parent().after('<div id="justCreated"></div>');
-
-    let expense = expenseData.data;
-
-    let wallets = new Array();
-    for (const [key, value] of Object.entries(expense.walletSplits)){
-        let searched = null;
-        searched = (userWalletsMap[key])
-        if(searched!=null)  wallets.push(searched);
-        else if(key<0){
-            searched = {
-                "id": -100,
-                "name": "Wallet not linked",
-                "type": "Other",
-                "archiveWallet": false,
-                "balance": 1000,
-                "excludeFromStats": false,
-                "walletInfo": {
-                    "note": ""
-                }
-            }
-            wallets.push(searched)
-        }
-    }
-
-    let categoryid = expense.transactionInfo.categoryId;
-    let categoryInfo = (userCategoriesMap[categoryid]);
-    if(categoryInfo==null){
-        findCategoryById(categoryid).then((data)=>{
-            categoryInfo = data.data;
-            populateExpense(wallets,expense,categoryInfo,'justCreated');
-            $('#justCreated').attr('id','');
-            updateExistingDateSectionBalance(expenseData);
-        })
-    }else{
-        populateExpense(wallets,expense,categoryInfo,'justCreated');
-        $('#justCreated').attr('id','');
-    
-        updateExistingDateSectionBalance(expenseData);
-    }
-
-
-}
-
-function replaceExpenseInSection(expenseData){
-    let expenseId = expenseData.data.id;   
-    $('#editExpenseForm'+expenseId).remove();
-    let element = $('.expense-card[expense-id="' + expenseId+'"');
-    $(element).replaceWith("<div id='justCreated'></div>");
-
-    let expense = expenseData.data;
-
-    let wallets = new Array();
-    for (const [key, value] of Object.entries(expense.walletSplits)){
-        let searched = null;
-        searched = (userWalletsMap[key])
-        if(searched!=null)  wallets.push(searched);
-        else if(key<0){
-            searched = {
-                "id": -100,
-                "name": "Wallet not linked",
-                "type": "Other",
-                "archiveWallet": false,
-                "balance": 1000,
-                "excludeFromStats": false,
-                "walletInfo": {
-                    "note": ""
-                }
-            }
-            wallets.push(searched)
-        }
-    }
-
-    let categoryid = expense.transactionInfo.categoryId;
-    let categoryInfo = (userCategoriesMap[categoryid]);;
-
-
-    populateExpense(wallets,expense,categoryInfo,'justCreated');
-    $('#justCreated').attr('id','');
-
-}
-
 // Update existing date section balance
 function updateExistingDateSectionBalance(expenseData){
     let createdDate = moment(expenseData.data.transactionInfo.spendOn, 'MMM DD, YYYY').format('DD-MMM-YYYY');
     let existingAmount = +($('.date-grouping[date='+createdDate+'] .days-expense').text()).split(" ")[1];
     $('.date-grouping[date='+createdDate+'] .days-expense').text(existingAmount+expenseData.data.amount);
+}
+
+function increaseSpendings(expenseData,toRemove){
+    let bannerTimeSpan = localStorage.getItem('spendingsBannerTime');
+    let currentAmount = $('#mi-bal-amount').text().replaceAll(',',"");
+    currentAmount = currentAmount.split(" ")[1];
+    if(toRemove!=null) currentAmount = Number(currentAmount)-toRemove;
+    if(expenseData==null){
+       $('#mi-bal-amount').text(util.moneyFormat(Number(currentAmount)))
+       return;
+    }
+
+    if(bannerTimeSpan==null) bannerTimeSpan = 'week';
+    else bannerTimeSpan = bannerTimeSpan=='This Month' ? 'month' : 'day';
+
+
+    let currentExpeseDate = moment(expenseData.transactionInfo.spendOn,'MMM D, YYYY, hh:mm:ss a');    
+    if(toRemove!=null) currentExpeseDate = moment(expenseData.transactionInfo.spendOn,'YYYY-MM-DD HH:mm:ss');
+
+    if(currentExpeseDate.isSame(new Date(),bannerTimeSpan)){
+       $('#mi-bal-amount').text(util.moneyFormat(Number(currentAmount)+expenseData.amount))
+    }
 }
 
 function mountEditExpenseForm(expenseId){
@@ -1675,20 +1624,21 @@ function mountEditExpenseForm(expenseId){
 
 
     usingNewCategory = false;
-    
-    
-
     expenseFormUtil.listWalletsInForm(expenseId);
     expenseFormUtil.listCategoriesInForm(expenseId)
     insertExpenseData(expenseId);
-    
-
 
     // Populate old data to edit form
     async function insertExpenseData(expenseId){
 
-        await findTransactionsById(expenseId).then((data)=>{ insertExpenseDataToForm(data.data)})
-
+        let allExpenses = previousExpenseFetch.expenseData.data.expenses;
+        for(let h=0; h<allExpenses.length; h++){
+            if(allExpenses[h].id==expenseId){
+                insertExpenseDataToForm(allExpenses[h]);
+                break;
+            }
+        }
+        
         async function insertExpenseDataToForm(expenseData){
 
             // Parse time to inject into date time input box
@@ -1833,7 +1783,7 @@ function mountEditExpenseForm(expenseId){
         }
 
 
-        // Create expense API call to the server
+        // Update expense API call to the server
         async function updateExpenseApiCall(expenseInfoo){
             expenseInfoo = JSON.stringify(expenseInfoo)
             $('#spinner').css('display','block');
@@ -1841,9 +1791,33 @@ function mountEditExpenseForm(expenseId){
                 $('#spinner').css('display','none');
                 $('.modal-backdrop').remove();
                 util.handleApiResponse(data,"Expense Edited ✏️ ");
-                updateHeader();
-                replaceExpenseInSection(data);
-                // repopulateExpenseDetails(false);
+
+                // updateHeader();
+                increaseSpendings(data.data,getExpenseById(expenseId).amount);
+
+                // New Expense Data
+                let updatedExpenseInfo = data.data;
+                let newMomentPlace = moment(updatedExpenseInfo.transactionInfo.spendOn, 'YYYY-MM-DD HH:mm:ss');
+                updatedExpenseInfo.transactionInfo.spendOn = newMomentPlace.format('YYYY-MM-DD HH:mm:ss');
+                let allExpenses = previousExpenseFetch.expenseData.data.expenses;
+
+                let insertionIndex = 0;
+                for(let i = 0; i < allExpenses.length; i++){
+                    if(allExpenses[i].id == updatedExpenseInfo.id){
+                        allExpenses.splice(i,1);
+                        break;
+                    }
+                }
+                for(let kj=0; kj<allExpenses.length; kj++){                    
+                    let iter = moment(allExpenses[kj].transactionInfo.spendOn, 'YYYY-MM-DD hh:mm:ss');                    
+                    if(iter.isBefore(newMomentPlace)){                        
+                        insertionIndex = kj;
+                        break;
+                    }
+                }
+                allExpenses.splice(insertionIndex, 0, data.data);                
+                repopulateExpenseDetails(false);
+
                 commonService.fetchNotifications();
             });
             $('body').css('overflow', 'scroll');
@@ -1870,6 +1844,7 @@ async function updateHeader(timeRange){
     let end = dateRanges[timeRange][1].format('YYYYMMDD');
 
     let expenseData = null;
+    
     await findTransactions(st,end,'expenses').then((data)=>{
         if(data==null) return;
         expenseData = data.data.expenses
@@ -1990,7 +1965,26 @@ function mountTags(container){
     });
 }
 
+function getExpenseById(expId){
+    let allExpenses = previousExpenseFetch.expenseData.data.expenses;
+    for(let i=0;i<allExpenses.length;i++){
+        if(allExpenses[i].id==expId){
+            return allExpenses[i];
+        }
+    }
+}
 
+function getExpensesFromExistingCache(start,end){
+    let allExpenses = previousExpenseFetch.expenseData.data.expenses;
+    let expenseData = [];
+    for(let i=0;i<allExpenses.length;i++){
+        let iterTimeStamp = moment(allExpenses[i].transactionInfo.spendOn,'YYYY-MM-DD HH:mm:ss');
+        if(iterTimeStamp.isAfter(start) && iterTimeStamp.isBefore(end)){
+            expenseData.push(allExpenses[i]);
+        }
+    }
+    return expenseData;
+}
 
 
 $('#reload-expenses').click(()=>{
