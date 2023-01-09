@@ -54,7 +54,6 @@ export async function findBasicEntities(){
         
         let wallets = values[1].data;
         for(const category in wallets){
-            // console.log(wallets)
             if(category =='Credit Card') userCardWallets.push(...wallets[category]);
             else userNonCardWallets.push(...wallets[category]);
             userWallets.push(...wallets[category]);
@@ -530,7 +529,6 @@ export function isIfscCode(val,element){
 }
 
 export function toastResponse(statusCode, success, fail){
-    console.log(statusCode);
 }
 
 function highlightElement(element,isValid){

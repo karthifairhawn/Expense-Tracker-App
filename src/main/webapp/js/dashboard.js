@@ -184,6 +184,8 @@ let expenseFormUtil = {
                 allTagsId.push(data.data.id);
                 formSelectedTags.push(data.data.id);
                 util.handleApiResponse(data,"Tag Created ✅");
+                userTags.push(data.data);
+                userTagsMap[data.data.id] = data.data;
             })
             return true;
         }
@@ -261,6 +263,8 @@ let expenseFormUtil = {
         await createCategory(raw).then((data)=>{
             util.toastResponse(data, "Category Creation Success","Category Creation Failed");
             util.handleApiResponse(data,"Category Created ✅ ");
+            userCategories.push(data.data);
+            userCategoriesMap[data.data.id] = data.data;
             categoryId = data.data.id;
         })
         return categoryId;
@@ -317,7 +321,6 @@ function findBasicEntities(){
         
         let wallets = values[1].data;
         for(const category in wallets){
-            // console.log(wallets)
             if(category =='Credit Card') userCardWallets.push(...wallets[category]);
             else userNonCardWallets.push(...wallets[category]);
             userWallets.push(...wallets[category]);
@@ -365,15 +368,15 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
     else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
 
-    if(expenseData==null) return;
-    if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
+
 
     // Add loading indicator at end of container only for recent transactions
     
     // Store arg values in ana object that will be used for refresh 
     setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId,expenseData);
 
-
+    if(expenseData==null) return;
+    if(expenseData.data.expenses.length == 0) zeroExpensesHandler(containerId);
 
     let expenses = expenseData.data.expenses;
     for(let i=0; i<expenses.length; i++){ 
@@ -402,16 +405,6 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
         // Find Category info
         let categoryInfo = {};
         categoryInfo= userCategoriesMap[expenses[i].transactionInfo.categoryId];
-        // console.log(categoryInfo);
-        if(categoryInfo==null && expenses[i].transactionInfo.categoryId!=0){
-            await findCategoryById(expenses[i].transactionInfo.categoryId).then((data)=>{
-                categoryInfo = data.data;
-            })
-        }else{
-            categoryInfo = {
-                name : "General Expense"
-            }
-        }
         
         // Add expense amount to currentRangeTotal and Populate
         rangeExpense+=expenses[i].amount;
@@ -774,16 +767,21 @@ function initiateDateSelectorPlugin(){
 
 // Called if no expenses for the user [Trigger = findAllExpenseDetails]
 function zeroExpensesHandler(containerId){
-    // console.log( $('#tt-no-expense-template'));
-    let element = $('.tt-no-expense-template');
-    let userData = util.getUserData();
-    $(element).find('.username').text(userData.name+", ");
-    $("#"+containerId).append(element);
-    // $('#date-range-selector').hide();
-    $('.first-add-exp').click(()=>{
-        $('#create-expense-btn').click();
-    })
-    $(element).css('display', 'block');
+
+    if(previousExpenseFetch.timeSpan=='Recent'){
+        let element = $('.tt-no-expense-template');
+        let userData = util.getUserData();
+        $(element).find('.username').text(userData.name+", ");
+        $("#"+containerId).append(element);
+        // $('#date-range-selector').hide();
+        $('.first-add-exp').click(()=>{
+            $('#create-expense-btn').click();
+        })
+        $(element).css('display', 'block');
+    }else{
+        $('#'+previousExpenseFetch.containerId).append('<div class="card"><div class="card-body d-flex align-items-center justify-content-center"><span class="h3">No expenses found.</span></div></div>')
+    }
+
 }
 
 // Monthly View Functions
@@ -1263,7 +1261,6 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                      });
 
                     var tmp = ``;
-                    // console.log(expenseBasedOnDate);
                     for (var i = 0; i < 7; i++) {
                         var d = settings.startDate.addDays(i);
                         settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
@@ -1531,7 +1528,6 @@ function mountCreateExpenseForm(){
 function pushExpenseToSection(expenseData){
 
     let createdDate = moment(expenseData.data.transactionInfo.spendOn, 'MMM DD, YYYY').format('DD-MMM-YYYY');
-    console.log()
     if($('.date-grouping[date='+createdDate+']').length==0){
         $('#reload-expenses').click();
         return;
@@ -1581,7 +1577,6 @@ function pushExpenseToSection(expenseData){
 }
 
 function replaceExpenseInSection(expenseData){
-    console.log(expenseData);
     let expenseId = expenseData.data.id;   
     $('#editExpenseForm'+expenseId).remove();
     let element = $('.expense-card[expense-id="' + expenseId+'"');
@@ -1739,7 +1734,6 @@ function mountEditExpenseForm(expenseId){
         
         let spendOn = null;
         let userSpendOn = $(form).find('#expense-time').val();
-        // console.log(userSpendOn);
         spendOn = userSpendOn;
         let categoryId = $(form).find('#all-categories-options').val();
         let note =  $(form).find('#expense-note').val();
@@ -1759,7 +1753,6 @@ function mountEditExpenseForm(expenseId){
 
 
             userSpendOn = months[month]+" "+dayOfMonth+", "+year+", "+(time+":03");
-            console.log(userSpendOn);
             spendOn = userSpendOn;
             
         }
@@ -1885,7 +1878,6 @@ function initiateSettingsListeners(){
         let config = localStorage.getItem("config") == null ? {} : JSON.parse(localStorage.getItem("config"));
         config.defaultView = $('#dashboard-view').val();
         localStorage.setItem("config",JSON.stringify(config));
-        console.log(localStorage.getItem("config"));
         util.handleApiResponse({statusCode: 200},"Default view updated");
     })
 

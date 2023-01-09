@@ -420,7 +420,6 @@ function activateListeners(){
             newRpRaw.amount = $('#rpayment-amount').val()>0  ? $('#rpayment-amount').val() : 0;
             newRpRaw.name = $('#rpayment-name').val();
             newRpRaw.occur = $('#rpayment-occur').val();
-            console.log(newRpRaw.occur)
             if(newRpRaw.occur=='monthly'){
                 newRpRaw.occur+="-"+$('#rpmonth-date').val();
             }else if(newRpRaw.occur=='weekly'){
@@ -628,11 +627,7 @@ function saveRpayment(){
     }
 
     function isValidRecPayment(newRpRaw){
-        // console.log(utils.isNumber(newRpRaw.endBy,$('#rpayment-endson').val()))
-        console.log(newRpRaw.endBy);
-        // return utils.isGreaterThanZero(newRpRaw.amount,$('#rpayment-amount')) &&
         return utils.isNotEmpty(newRpRaw.name,$('#rpayment-name')) 
-        // utils.isNumber(newRpRaw.endBy,$('#rpayment-endson'));
     }
 
 }

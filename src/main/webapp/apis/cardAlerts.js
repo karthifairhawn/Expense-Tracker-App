@@ -16,7 +16,6 @@ export  async function deleteById(walletId,alertId) {
         const response = await fetch(server+"/api/v1/users/"+userId+"/wallets/"+walletId+"/alerts/"+alertId, postRequestOptions);
         return await response.json();
     }catch(e){
-        console.log(e);
 
         util.handleApiResponse({statusCode:500},"","Server Unreachable")
     }
@@ -30,7 +29,6 @@ export async function createAlert(walletId,raw) {
         const response = await fetch(server+"/api/v1/users/"+userId+"/wallets/"+walletId+"/alerts", postRequestOptions);
         return await response.json();
     }catch(e){
-        console.log(e);
         util.handleApiResponse({statusCode:500},"","Server Unreachable")
     }
 }

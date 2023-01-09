@@ -10,7 +10,6 @@ var userId= localStorage.getItem('userId');
 
 
 
-// findWallets().then((data) => console.log(data))
 
 // Create wallets
 async function createWallet(raw) {

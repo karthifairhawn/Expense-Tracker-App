@@ -110,11 +110,9 @@ let walletFormUtil = {
 
 
         if(newWalletObject.type=='Bank Account'){
-            // console.log($('#new-wallet-banknote').val());
             newWalletObject['walletInfo'] = {
                 "note": util.isNotEmpty($('#new-wallet-banknote').val()) ? $('#new-wallet-banknote').val() : ""
             }
-            console.log(newWalletObject);
         }else if(newWalletObject.type=='Credit Card'){
             newWalletObject['walletInfo'] = {
                 "repayDate" : $('#new-wallet-repay').val(),
@@ -324,7 +322,6 @@ async function mountWallets(){
             })
 
             let cardAlerts = allWallets[i].walletInfo.alerts;
-            // console.log(allWallets[i])
             for(let j=0; j<cardAlerts.length; j++){
                 let alertElement = $('<div class="mb-2 card-field alert-ele d-flex"> <div class="alert-key label">Limit: </div> <div class="alert-value value wallet-info-label"></div><i class="alert-del-btn fa-solid fa-delete-left" style="display:none"></i> </div>');
                 let alertType = cardAlerts[j].type=='due' ? "Due Alert" : "Limit Alert";
@@ -369,7 +366,6 @@ async function mountWallets(){
             }
 
             function submitBillPayment(event,maxIncome){
-                console.log("submit recieved")
                 let form = $(event.target).closest('.create-expense-form');
                 let paymentAmount = +($(form).find('.amount').val());
                 let note = $(form).find('.note').val();
@@ -384,8 +380,6 @@ async function mountWallets(){
                 isValid = util.isNumber(walletId,$(form).find('.wallet-selection')) && isValid;
                 isValid = util.isGreaterThanZero(paymentAmount,$(form).find('.amount')) && isValid;
         
-                console.log(util.isLessThanN(paymentAmount,maxIncome,$(form).find('.amount')));
-                console.log(paymentAmount+"<"+maxIncome)
                 if(!isValid) return;
 
                 $('.add-income-submit').off();
@@ -699,7 +693,6 @@ function mountAddIncomeModal(isBill,billMax){
 
 function mountCreateAlertForm(walletId){
 
-    console.log(walletId);
 
     $('.btn-close').click();
     $('#cardAlertModal').modal({ show: false})
