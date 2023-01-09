@@ -52,6 +52,7 @@ public class BaseTransactionsDaoService {
 			throw new CustomException("Creation of base transaction failed",500,new Date().toLocaleString());
 		}
 		
+		transaction.setTimestamp(new Timestamp(transaction.getTimestamp().getTime()));
 		return transaction;
 		
 	}

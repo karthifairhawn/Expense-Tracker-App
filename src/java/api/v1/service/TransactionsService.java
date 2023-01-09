@@ -212,8 +212,8 @@ public class TransactionsService {
 		}
 		
 		
-		newTransaction.setId(id);
-		return newTransaction;
+		
+		return findById(id);
 	}
 	
 	public void deleteById(Long id){

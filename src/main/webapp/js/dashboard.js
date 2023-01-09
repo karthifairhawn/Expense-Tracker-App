@@ -54,7 +54,7 @@ let previousExpenseFetch = {
     "refreshExpenseContainer" : null,
     "containerId" : null,
 
-    "fetchResult" : null
+    "expenseData" : null
 }
 
 let expenseFormUtil = {
@@ -347,12 +347,17 @@ function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,
     }
 }
 
-async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
+function repopulateExpenseDetails(refetch){
+    findAllExpenseDetails(previousExpenseFetch.expenseFrom,previousExpenseFetch.expenseTo,previousExpenseFetch.timeSpan,true,previousExpenseFetch.containerId,refetch);
+}
+
+async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId,refetch){   
     $('#date-range-selector').show();
     if(refreshExpenseContainer==true){
         $('.edit-expense-form').remove();
         $('.view-expense-modal').remove();
         listingExpenseDate = null;
+        $('#'+containerId).html("");
     }
 
     // Clearing up old expense section data
@@ -362,12 +367,15 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     
     // Find all expense info from selected date range
     if(timeSpan!=null) $('.timespan').text(timeSpan)
-    if(refreshExpenseContainer==true) $('#'+containerId).html("");
+
 
     // Seperate Fetching Mechanism for timespan view and Recent transactions
-    if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
-    else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
-
+    if(refetch==false){
+        expenseData = previousExpenseFetch.expenseData;
+    }else{
+        if(timeSpan=='Recent') await findTransactionsPaginated(pageNumber,pageSize,'expenses').then((data)=>expenseData = data);
+        else                   await findTransactions(expenseFrom,expenseTo,'expenses').then((data)=>{ expenseData = data });
+    }
 
 
     // Add loading indicator at end of container only for recent transactions
@@ -540,7 +548,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         
 
         $(currentElement).find(".title").text(expense.transactionInfo.reason+" ");
-        $(currentElement).find(".spend-amount").text("-"+expense.amount+" ₹");
+        $(currentElement).find(".spend-amount").text("-"+ util.abbreviateNumber(expense.amount));
         $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
         $(currentElement).find(".timestamp").text(expense.timestamp);
         $(currentElement).find(".category").text(categoryInfo.name);
@@ -768,7 +776,7 @@ function initiateDateSelectorPlugin(){
 // Called if no expenses for the user [Trigger = findAllExpenseDetails]
 function zeroExpensesHandler(containerId){
 
-    if(previousExpenseFetch.timeSpan=='Recent'){
+    if(previousExpenseFetch.timeSpan=='Recent' && $('#'+containerId).children().length==0 ){
         let element = $('.tt-no-expense-template');
         let userData = util.getUserData();
         $(element).find('.username').text(userData.name+", ");
@@ -778,8 +786,11 @@ function zeroExpensesHandler(containerId){
             $('#create-expense-btn').click();
         })
         $(element).css('display', 'block');
-    }else{
+    }else if( $('#'+containerId).children().length==0){
         $('#'+previousExpenseFetch.containerId).append('<div class="card"><div class="card-body d-flex align-items-center justify-content-center"><span class="h3">No expenses found.</span></div></div>')
+    }else{
+        $('#'+previousExpenseFetch.containerId).append('<div class="card"></div>')
+
     }
 
 }
@@ -1509,6 +1520,29 @@ function mountCreateExpenseForm(){
                 $('#spinner').css('display','none');
                 updateHeader();
                 pushExpenseToSection(data);
+
+                // let newExpenseData = previousExpenseFetch.expenseData.data.expenses;
+                
+                // let newMomentPlace = moment(data.data.transactionInfo.spendOn, 'MMM D, YYYY, h:mm:ss a');
+                // let insertionIndex = 0;
+                // for(let kj=0; kj<newExpenseData.length; kj++){
+                //     // console.log(kj)
+                //     let iter = moment(newExpenseData[kj].transactionInfo.spendOn, 'MMM D, YYYY, h:mm:ss a');
+                    
+                //     if(iter.isBefore(newMomentPlace)){
+                //         // console.log(iter.format('MMM D, YYYY, h:mm:ss a'));
+                //         // console.log(newMomentPlace.format('MMM D, YYYY, h:mm:ss a'));
+                //         insertionIndex = kj;
+                //         break;
+                //     }
+
+                // }
+                // newExpenseData.splice(insertionIndex, 0, data.data);
+                
+                // console.log(newExpenseData)
+                
+
+                // repopulateExpenseDetails(false);
                 util.handleApiResponse(data,"Expense Created ✅ ");
                 commonService.fetchNotifications();
             })
@@ -1809,6 +1843,7 @@ function mountEditExpenseForm(expenseId){
                 util.handleApiResponse(data,"Expense Edited ✏️ ");
                 updateHeader();
                 replaceExpenseInSection(data);
+                // repopulateExpenseDetails(false);
                 commonService.fetchNotifications();
             });
             $('body').css('overflow', 'scroll');
