@@ -1383,3 +1383,14 @@ form[name='profile-form'] input{
 .rp-alert-img{
     width: 450px;
 }
+
+.wallets-csettings{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 1;
+}
+
+.wallets-csettings{
+    cursor: pointer;
+}

@@ -264,7 +264,7 @@ function populateRecurringUpcomingPayments(containerId){
         let timeleftNumber = timeleft;
         if(upcomingPayments[i].occur.split('-')[0]=='daily') timeleftNumber= 1;
         
-        if(timeleft==1) timeleft= 'Tomorrow.';
+        if(timeleft==1 || timeleft==0) timeleft= 'Tomorrow.';
         else timeleft+= ' days.';
     
 

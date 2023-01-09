@@ -59,11 +59,9 @@ let previousExpenseFetch = {
 
 let expenseFormUtil = {
     
-    listWalletsInForm : async function listWalletsInForm(){
+    listWalletsInForm : async function listWalletsInForm(expenseId){
 
-        let allOptions = '';
-        
-        
+        let allOptions = '';       
         if(userWallets.length==0){
             $('#split-wallet').remove();
             // $('.wallet-name-section').html('<span class="nr-no-wallet-ind d-flex align-items-center"><i class="fas fa-exclamation-triangle"></i>No Wallet Found</span>');
@@ -80,12 +78,11 @@ let expenseFormUtil = {
             $('#all-wallets-options').attr("disabled", true);
             $('#all-wallets-options').after('<span style="position:absolute" class="text-secondary">You can create a new wallet in <a href="wallets.html" class="url">wallets page.</a> </span>');
         }
-
         $('#all-wallets-options').html(allOptions);
 
     },
 
-    listCategoriesInForm : async function listCategoriesInForm(){
+    listCategoriesInForm : async function listCategoriesInForm(expenseId){
 
         let allCategories = userCategories;
         let allCategoriesHTML = '';
@@ -349,6 +346,9 @@ function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,
 
 async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
 
+    $('.edit-expense-form').remove();
+    $('.view-expense-modal').remove();
+
     // Clearing up old expense section data
     listingExpenseDate = null;
     daysTotalExpense = 0;
@@ -431,7 +431,6 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
             let elementte = $('#'+containerId)[0];
             var scrollPercent = (elementte.scrollTop / (elementte.scrollHeight - elementte.offsetHeight))*100;
 
-            console.log(scrollPercent);
             if(scrollPercent > 70) {
                 // $('#'+containerId).append('<div id="espinner" style="display: flex;align-items: center;justify-content: center;height:200px"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>')
                 $('#'+containerId).append('<div class="exp-loading-skeleton"> <div class="post"> <div class="avatar"></div> <div class="line"></div> </div> </div>');
@@ -450,7 +449,7 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     }
 
     function newDateSectionHandler(expense){
-
+       
         if(expense.transactionInfo.spendOn.split(" ")[0]!=listingExpenseDate){
             daysExpenseCount = 1;
             daysTotalExpense = expense.amount;
@@ -663,6 +662,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
     // Adding Dynamic Styling
     function setCustomStyling(){
         $(currentElement).find('.category-ico').css('background-color','#363636');
+        $(currentElement).find('.modal-content .category-ico').css('background-color','#43cead');
         $(currentElement).find('.category-ico').css('color','#'+colorOne[categoryInfo.id%9]);
         $(currentElement).find(".view-expense-modal .category").css('background-color', '#ace9db');  
         $(currentElement).find(".view-expense-modal .category").css('color', '#000');  
@@ -733,8 +733,10 @@ function initiateDateSelectorPlugin(){
         let expenseTo = end;
         let refreshExpenseContainer = true;
 
-        if(timeSpan=='Recent') refreshExpenseContainer = false;
-        else{
+        if(timeSpan=='Recent'){
+            pageNumber = 1;
+            refreshExpenseContainer = false;
+        }else{
             expenseFrom = start.format('YYYYMMDD').split('-').join('');
             expenseTo = end.format('YYYYMMDD').split('-').join('');
         }
@@ -776,11 +778,12 @@ function zeroExpensesHandler(containerId){
     $("#"+containerId).append('<center class="card mt-4"><h1 class="card-body">No expense data found</h1></center>')
 }
 
+// Monthly View Functions
 function calendarMonthExpensesChange(month,year){
+    if((month+"").length == 1) month = "0"+month;
     let start = year+""+month+"01";
     let end = year+""+month+(32 - new Date(year, month-1, 32).getDate());
-    
-    findAllExpenseDetails(start, end,'Monthly',true,'expense-card-container');
+    findAllExpenseDetails(start, end,'Monthly',true,'');
 }
 
 function calendarSingleDayExpense(element){
@@ -793,6 +796,7 @@ function calendarSingleDayExpense(element){
 
 }
 
+// All view mounting engines.
 function createMountPoint(timeSpan,refreshExpenseContainer){
 
     unmountRecentExpenses();
@@ -920,23 +924,20 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                     // Print out the days
                     for(var dayNumber = 1; dayNumber <= dayQty; dayNumber++) {
                         // Check if it's a day in the past
-                        var isInPast = options.stylePast && (
-                            year < currentYear
-                            || (year === currentYear && (
-                                month < currentMonth
-                                || (month === currentMonth && dayNumber < currentDay)
-                            ))),
-                            innerMarkup = '<div class="monthly-day-number">' + (dayNumber) + '</div><div class="monthly-indicator-wrap"></div>';
+                        var isInPast = options.stylePast && ( year < currentYear || (year === currentYear && ( month < currentMonth || (month === currentMonth && dayNumber < currentDay))));
+                        var innerMarkup = '<div class="monthly-day-number">' + (dayNumber) + '</div><div class="monthly-indicator-wrap"></div>';
                         if(options.mode === "event") {
                             var thisDate = new Date(year, mZeroed, dayNumber, 0, 0, 0, 0);
+                            let currentMonth = thisDate.getMonth()+1;
+                            if((currentMonth+"")==1) currentMonth = "0"+currentMonth;
                             $(parent + " .monthly-day-wrap").append("<div"
                                 + attr("class", "m-d monthly-day monthly-day-event"
                                     + (isInPast ? " monthly-past-day" : "")
                                     // + " dt" + year+"-"+mZeroed+"-"+dayNumber
-                                    + " dt" + thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate())
+                                    + " dt" + thisDate.getFullYear()+"-"+(currentMonth)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate())
                                     )
                                 + attr("data-number", dayNumber)
-                                + attr("date",thisDate.getFullYear()+"-"+(thisDate.getMonth()+1)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate()))
+                                + attr("date",thisDate.getFullYear()+"-"+(currentMonth)+"-"+ ( (thisDate.getDate()+"").length == 1 ? "0"+thisDate.getDate() : thisDate.getDate()))
                                 + ">" + innerMarkup + "</div>");
                         } else {
                             $(parent + " .monthly-day-wrap").append("<a"
@@ -1192,9 +1193,7 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
             }
         
             $.fn.markyourcalendar = function(opts) {
-                var prevHtml = `<div id="myc-prev-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-left"></i></div>`;
-                // var prevHtml = `<a href="#" id="myc-prev-week"></a>`;
-                
+                var prevHtml = `<div id="myc-prev-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-left"></i></div>`;            
                 var nextHtml = `<div id="myc-next-week" class="d-flex align-items-center justify-content-center"><i class="fa-solid fa-chevron-right"></i></div>`;
                 var defaults = {
                     isMultiple: false,
@@ -1235,8 +1234,28 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
         
     
                 // Create weekly dates header tabs.
-                this.getDatesHeader = function() {
+                this.getDatesHeader = async function() {
+                    $('#spinner').show();
+                    let startDay = moment(settings.startDate).format('YYYYMMDD');
+                    let endDay = moment(settings.startDate).add(6, 'days').format('YYYYMMDD');
+                    var expenseBasedOnDate ={};
+                    await findTransactions(startDay,endDay,'expenses').then((data)=>{ 
+                        let expenseDatas = data.data.expenses;
+                        for (var j = 0; j < expenseDatas.length; j++) {
+                            let expenseData = expenseDatas[j];
+                            let date = moment(expenseData.transactionInfo.spendOn,'YYYY-MM-DD').format('YYYYMMDD');
+                            if(expenseBasedOnDate[date]==null){
+                                expenseBasedOnDate[date] = [];
+                                expenseBasedOnDate[date].push(expenseData);
+                            }else{
+                                expenseBasedOnDate[date].push(expenseData);
+                            }  
+                        }
+
+                     });
+
                     var tmp = ``;
+                    // console.log(expenseBasedOnDate);
                     for (var i = 0; i < 7; i++) {
                         var d = settings.startDate.addDays(i);
                         settings.startDate.addDays(i).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)
@@ -1247,15 +1266,32 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                             today = " (today)";
                         }
                         let monthtt = (d.getMonth()+1);
-                        if(monthtt.length == 1 ) monthtt = "0"+monthtt;
-                        let dateAttr = d.getFullYear()+""+monthtt+""+d.getDate()
+                        if((monthtt+"").length == 1 ) monthtt = "0"+monthtt;
+                        let datee = d.getDate();
+                        if((datee+"").length == 1 ) datee = "0"+datee;
+                        let dateAttr = d.getFullYear()+""+monthtt+""+datee;
+                        let allCurrentExpenses = expenseBasedOnDate[dateAttr];
+                        if(allCurrentExpenses==null){
+                            allCurrentExpenses = [];
+                        }
+                        let expenseAmount = 0;
+                        for(var j = 0; j < allCurrentExpenses.length; j++){
+                            let expenseData = allCurrentExpenses[j];
+                            expenseAmount += expenseData.amount;
+                        }
                         tmp += `
-                            <div date='`+dateAttr+`' class="myc-date-header `+classes+`" id="myc-date-header-` + i + `">
+                            <div date='`+dateAttr+`' class="d-flex flex-column flex-wrap myc-date-header `+classes+`" id="myc-date-header-` + i + `">
                                 <div class="myc-date-number">` + d.getDate() + today + `</div>
                                 <div class="myc-date-display">` + settings.weekdays[d.getDay()]+ `</div>
+                                <hr>
+                                <span class="">`+allCurrentExpenses.length+` Expenses | `+util.abbreviateNumber(expenseAmount)+`</span>
                             </div>
                         `;
+                        $('#spinner').hide();
                     }
+
+
+
                     var ret = `<div id="myc-dates-container" class="weekly-dates-container d-flex justify-content-around">` + tmp + `</div>`;                
                     return ret;
                 }
@@ -1286,21 +1322,22 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                     $('#myc-dates-container .myc-date-header ').first().click();
                 });
         
-                var render = function() {
+                var render = async function() {
                     var ret = `
                         <div id="myc-container">
                             <div id="myc-nav-container">` + instance.getNavControl() + `</div>
                             <div id="myc-week-container">
-                            <div id="myc-dates-container">` + instance.getDatesHeader() + `</div>
+                            <div id="myc-dates-container">` + await instance.getDatesHeader() + `</div>
                             <div id="myc-available-time-container">` + `</div>
                             </div>
                         </div>
                     `;
                     instance.html(ret);
+                    addDateFetchLister();
+                    findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),'Last 7 Days ',false,'myc-available-time-container')
                 };
         
                 render();
-                addDateFetchLister();
 
                 
 
@@ -1331,7 +1368,6 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
         $('#weekly-view').markyourcalendar({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()-6)});
 
 
-        findAllExpenseDetails(moment().format('YYYYMMDD'),moment().format('YYYYMMDD'),'Last 7 Days ',false,'myc-available-time-container')
         weeklyTabInitialized = true;
 
 
@@ -1585,10 +1621,13 @@ function updateExistingDateSectionBalance(expenseData){
 function mountEditExpenseForm(expenseId){
 
     // Removing old forms from dom to prevent duplicate elements on form selection
+
     $('.new-expense-form .modal-content').html('');
     $('.edit-expense-form .modal-content').html('');
+    
 
     // Mount form to the dom
+
     $('#editExpenseForm'+expenseId+' .modal-content').html('');
     let newEditFormSelector = '#editExpenseForm'+expenseId;
     let newEditForm = $('#tt-new-expense-form')[0].content.cloneNode(true);
@@ -1600,9 +1639,10 @@ function mountEditExpenseForm(expenseId){
 
     usingNewCategory = false;
     
+    
 
-    expenseFormUtil.listWalletsInForm();
-    expenseFormUtil.listCategoriesInForm()
+    expenseFormUtil.listWalletsInForm(expenseId);
+    expenseFormUtil.listCategoriesInForm(expenseId)
     insertExpenseData(expenseId);
     
 

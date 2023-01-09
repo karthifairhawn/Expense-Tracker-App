@@ -16,6 +16,8 @@ let userWalletFull = [];
 let userCardWallets = [];
 let userNonCardWallets = [];
 let totalBalance = 0;
+let cardBalance = 0;
+let nonCardBalance = 0;
 
 let walletUtil = {
     deleteWalletById :  function deleteWalletById(walletId){
@@ -168,6 +170,8 @@ async function refreshWalletsPage(){
         for(let wallet in userWallets){
             let type = (userWallets[wallet].type);
             totalBalance += userWallets[wallet].balance;
+            if(type == 'Credit Card') cardBalance+= userWallets[wallet].balance;
+            else nonCardBalance+= userWallets[wallet].balance;
         }
     });
 
@@ -207,15 +211,40 @@ function initiateListeners(){
     $('.add-wallet-btn').off();
     $('.view-income-btn').off();
     $('.create-alert').off();
+    $('.wallets-csettings').off();
     $('.add-income-btn').click(()=>{ mountAddIncomeModal() })
     $('.add-wallet-btn').click(()=>{ mountWalletCreationForm() })
     $('.view-income-btn').click(()=>{ mountAllIncomes() })
     $('.create-alert').click((e)=>{ mountCreateAlertForm($(e.target).attr('wallet-id'))  })
+    $('.wallets-csettings').click(function() {
+        console.log(123);
+        console.log($('#walletSettings'));
+        $('#walletSettings').modal({ show: 'true' }); 
+        $('#walletSettings').show();
+    });
+
+    $('.ecc-set-y').click(()=>{
+        localStorage.setItem('eccStatus',1)
+        util.handleApiResponse({statusCode:200},"Changes made successfully","");
+    })
+
+    $('.ecc-set-n').click(()=>{
+        localStorage.setItem('eccStatus',0)
+        util.handleApiResponse({statusCode:200},"Changes made successfully","");
+    })
 }
 
+// Set top container values
 function populateBalanceContainer(){
-    $('#total-acct-count').text(userWallets.length);
-    $('#mi-bal-amount').text(util.moneyFormat(totalBalance));    
+    let eccStatus = localStorage.getItem('eccStatus');
+    if(eccStatus==1){
+        $('#mi-bal-amount').text(util.moneyFormat(totalBalance-cardBalance)); 
+        $('#total-acct-count').text(userNonCardWallets.length);
+    }else{
+        $('#total-acct-count').text(userWallets.length);
+        $('#mi-bal-amount').text(util.moneyFormat(totalBalance)); 
+        localStorage.setItem('eccStatus',0);   
+    }
 }
 
 async function mountWallets(){
@@ -270,7 +299,7 @@ async function mountWallets(){
             $(walletCardClone).find('.credit-card').attr('data-bs-target','#walletInfoModal'+wallet.id);
             $(walletCardClone).find('#walletInfoModal').attr('id','walletInfoModal'+wallet.id);
             $(walletCardClone).find('.wallet-exclude-stats').text(wallet.excludeFromStats);
-            $(walletCardClone).find('.card-limit').text( util.moneyFormat(subInfo.limit))
+            $(walletCardClone).find('.card-limit').text( util.abbreviateNumber(subInfo.limit))
             $(walletCardClone).find('.pay-bill-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.pay-bill-btn').attr('payment', (subInfo.limit- wallet.balance));
             $(walletCardClone).find('.days-left').text(diffDays);
@@ -387,7 +416,7 @@ async function mountWallets(){
 
         }
 
-        $('.card-used-amount').text(util.moneyFormat(totalCardExpense));
+        $('.card-used-amount').text(util.abbreviateNumber(totalCardExpense));
 
 
         // ----------------------   Card Animation Handlers    ---------------------
@@ -571,7 +600,7 @@ async function mountAllIncomes(){
     };
 
 
-    let start = allDateRanges['This Month'][0];
+    let start = moment().year();
     let end = allDateRanges['This Month'][1];
 
     start = start.format('YYYYMMDD').split('-').join('');
