@@ -44,6 +44,39 @@
 
         <div id="wallets" class="container"></div>
 
+
+          
+        <!-- Wallet Settings -->
+        <div class="modal fade" id="walletSettings" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Wallet Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="exclude-card-from d-flex ">
+                        <span class="me-3">Exclude Cards from available balance:</span>    
+                        <div class="me-3 ecc-set-y">
+                            <input type="radio" id="ecc-y" value="1" name="ecc-yn">
+                            <label for="ecc-y">Yes</label>
+                        </div>
+                        <div class="ecc-set-n">
+                            <input type="radio"  id="ecc-n" value="0" name="ecc-yn">
+                            <label for="ecc-n">No</label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button> -->
+                </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 
 </html>
@@ -143,7 +176,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Incomes (This Month)</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">Incomes (This Year)</h5>
                     <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
