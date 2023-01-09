@@ -183,25 +183,28 @@ async function refreshWalletsPage(){
         $('#spinner').hide();        
         mountWallets();
         initiateListeners();
+        handleNoWallets();
     }, 300);
 
 
+    function handleNoWallets(){
 
-    if(userWallets.length==0){
-        $('.no-wallet-available').show();
-        $('.create-wallet-url').click(()=>{ $('.add-wallet-btn').click(); })
-        $('.add-income-btn').hide();
-        $('.view-income-btn').hide();
-    }else{
-        $('.no-wallet-available').hide();
-    }
-
-    if(userNonCardWallets==0){
-        $('.my-wallets-title').hide();
-    }
-
-    if(userCardWallets==0){
-        $('.cards-section').hide();
+        if(userWallets.length==0){
+            $('.no-wallet-available').show();
+            $('.create-wallet-url').click(()=>{ $('.add-wallet-btn').click(); })
+            $('.add-income-btn').hide();
+            $('.view-income-btn').hide();
+        }else{
+            $('.no-wallet-available').hide();
+        }
+    
+        if(userNonCardWallets==0){
+            $('.my-wallets-title').hide();
+        }
+    
+        if(userCardWallets==0){
+            $('.cards-section').hide();
+        }
     }
 
 }

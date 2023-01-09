@@ -2,7 +2,7 @@ import * as walletService from '../apis/wallets.js';
 import * as categoriesService from '../apis/categories.js';
 import * as tagsService from '../apis/tags.js';
 import * as transactionService from '../apis/transactions.js';
-
+import * as commonUtils from './common.js';
 
 export var to12Format = (time) => {
     // Check correct time format and split into components
@@ -66,6 +66,10 @@ export async function findBasicEntities(){
         }
     })
 
+}
+
+export function getUserData(){
+    return commonUtils.getUserData();
 }
 
 export let expenseFormUtil = {

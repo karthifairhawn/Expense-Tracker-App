@@ -1,13 +1,20 @@
 import {findWallets} from '../apis/wallets.js';
 import * as util from './util.js';
+import * as userService from '../apis/users.js'
 import * as notificationService from '../apis/notifications.js'
 
 
 // Redirect to login if no authToken
+var userData = null;
 let authToken = localStorage.getItem('authToken');
 if(authToken == null || authToken.length == 0 || typeof authToken === undefined){
     window.location.href = 'login.html';
-} 
+}else{
+    await userService.findUserById(localStorage.getItem('userId')).then((val)=>{
+        if(val.statusCode!=200) window.location.href = 'login.html';
+        userData  = val.data;
+    });
+}
 
 var totalNonReadNotifications = 0;
 var totalNotifications = 0;
@@ -166,13 +173,15 @@ function initiateListeners(){
         return Math.floor((+new Date() - (+this))/60000) + ' mins ago';
     }
 
+
     fetchNotifications();
 }
 
 $(document).ready(()=>{
     initiateListeners();
-    
 });
 
-
+export function getUserData(){
+    return userData;
+}
 

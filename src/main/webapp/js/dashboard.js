@@ -345,7 +345,7 @@ function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,
 }
 
 async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
-
+    $('#date-range-selector').show();
     if(refreshExpenseContainer==true){
         $('.edit-expense-form').remove();
         $('.view-expense-modal').remove();
@@ -774,7 +774,16 @@ function initiateDateSelectorPlugin(){
 
 // Called if no expenses for the user [Trigger = findAllExpenseDetails]
 function zeroExpensesHandler(containerId){
-    $("#"+containerId).append('<center class="card mt-4"><h1 class="card-body">No expense data found</h1></center>')
+    // console.log( $('#tt-no-expense-template'));
+    let element = $('.tt-no-expense-template');
+    let userData = util.getUserData();
+    $(element).find('.username').text(userData.name+", ");
+    $("#"+containerId).append(element);
+    // $('#date-range-selector').hide();
+    $('.first-add-exp').click(()=>{
+        $('#create-expense-btn').click();
+    })
+    $(element).css('display', 'block');
 }
 
 // Monthly View Functions
