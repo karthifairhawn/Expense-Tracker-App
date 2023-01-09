@@ -8,11 +8,15 @@ import * as notificationService from '../apis/notifications.js'
 var userData = null;
 let authToken = localStorage.getItem('authToken');
 if(authToken == null || authToken.length == 0 || typeof authToken === undefined){
-    window.location.href = 'login.html';
+    if(window.location.href.split('/')[3]!='login.html'){
+        window.location.href = 'login.html';
+    }
 }else{
     await userService.findUserById(localStorage.getItem('userId')).then((val)=>{
-        if(val.statusCode!=200) window.location.href = 'login.html';
         userData  = val.data;
+        if(window.location.href.split('/')[3]!='login.html' && val.statusCode!=200){
+            window.location.href = 'login.html';
+        }
     });
 }
 
@@ -178,7 +182,10 @@ function initiateListeners(){
 }
 
 $(document).ready(()=>{
-    initiateListeners();
+    if(window.location.href.split('/')[3]!='login.html'){
+
+        initiateListeners();
+    }
 });
 
 export function getUserData(){
