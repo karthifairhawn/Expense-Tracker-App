@@ -25,5 +25,6 @@ public class BankWallets{
 		this.note = (String) walletInfo.get("note");
 //		this.id = walletInfo.get("id")!=null ? (long) walletInfo.get("id") : null;
 	}
+
 }
 	

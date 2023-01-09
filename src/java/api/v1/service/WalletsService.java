@@ -160,6 +160,7 @@ public class WalletsService {
 	public void handleLimitAlerts(Map<Long, Long> walletSplits) {
 
 
+
 		Users operatingUser = (Users)RequestContext.getAttribute("user");
 
 		
@@ -183,6 +184,7 @@ public class WalletsService {
 				List<CardAlerts> alerts = CardAlertsService.getInstance().findByCardId(walletId);
 				
 				for(CardAlerts cardAlert: alerts) {
+					if(cardAlert.getType().equals("due")) continue;
 					Long alertLimit = cardAlert.getLimitAlertOn();
 					if(alertLimit<0) return;
 					final DecimalFormat df = new DecimalFormat("0.00");

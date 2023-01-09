@@ -12,7 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class BonusCardWallets{
-	
+
 	public BonusCardWallets(LinkedTreeMap walletInfo) {
 		this.note = (String) walletInfo.get("note");
 		this.id = null;

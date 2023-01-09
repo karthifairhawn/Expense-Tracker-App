@@ -15,6 +15,7 @@ import lombok.ToString;
 @ToString
 public class Transfer {
 
+
 	public Transfer(LinkedTreeMap transactionInfo) {
 		this.walletTo = ((Double) transactionInfo.get("walletTo")).longValue();
 		this.walletFrom = ((Double) transactionInfo.get("walletFrom")).longValue();

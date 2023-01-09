@@ -346,8 +346,10 @@ function setFetchDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,
 
 async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpenseContainer,containerId){   
 
-    $('.edit-expense-form').remove();
-    $('.view-expense-modal').remove();
+    if(refreshExpenseContainer==true){
+        $('.edit-expense-form').remove();
+        $('.view-expense-modal').remove();
+    }
 
     // Clearing up old expense section data
     listingExpenseDate = null;

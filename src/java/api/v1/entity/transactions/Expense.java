@@ -25,6 +25,10 @@ public class Expense {
 	
 
 
+
+
+
+
 	public Expense(LinkedTreeMap linkedTreeMap) {
 		this.categoryId = ((Double) linkedTreeMap.get("categoryId")).longValue();
 		this.reason = (String) linkedTreeMap.get("reason");

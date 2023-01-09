@@ -217,10 +217,7 @@ function initiateListeners(){
     $('.view-income-btn').click(()=>{ mountAllIncomes() })
     $('.create-alert').click((e)=>{ mountCreateAlertForm($(e.target).attr('wallet-id'))  })
     $('.wallets-csettings').click(function() {
-        console.log(123);
-        console.log($('#walletSettings'));
-        $('#walletSettings').modal({ show: 'true' }); 
-        $('#walletSettings').show();
+        // util.expenseFormUtil.listWalletsInForm();
     });
 
     $('.ecc-set-y').click(()=>{
@@ -363,7 +360,6 @@ async function mountWallets(){
                 $('#total-bill').text(event.target.getAttribute('payment'));
                 $('#creditBillModal').find('amount').attr('min','1');
                 $('#creditBillModal').find('amount').attr('max',event.target.getAttribute('payment'));
-                console.log($('.add-income-submit'));
                 $('.add-income-submit').off();
                 let maxIncome = parseInt(event.target.getAttribute('payment'))
                 $('.add-income-submit').click((event)=> { submitBillPayment(event,maxIncome) })

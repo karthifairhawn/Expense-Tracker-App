@@ -13,6 +13,17 @@ public class JsonUtil {
 	
 	private JsonUtil() {}
 	
+
+    public static JsonUtil  getInstance(){
+    	if(jsonUtil==null){
+    		jsonUtil= new JsonUtil();
+    	}
+    	return jsonUtil;
+    }
+
+
+
+	
     public String getBodyJsonString(HttpServletRequest req) throws IOException {
         String body = null;
         StringBuilder stringBuilder = new StringBuilder();
@@ -47,10 +58,4 @@ public class JsonUtil {
         return body;
     }
     
-    public static JsonUtil  getInstance(){
-    	if(jsonUtil==null){
-    		jsonUtil= new JsonUtil();
-    	}
-    	return jsonUtil;
-    }
 }

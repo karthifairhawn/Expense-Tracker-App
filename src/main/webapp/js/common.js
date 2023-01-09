@@ -15,8 +15,9 @@ var totalNotifications = 0;
 export function fetchNotifications(){
 
     notificationService.findAll().then((data)=>{
-
         populateNotifications(data.data,"notificaitons-container");
+
+        $('.notifications-body').off();
         $('.notifications-body').click((e)=>{
             let notificationId = $(e.target).closest('.notifications-body').find('.not-del-btn').attr('notification-id');
             $(e.target).closest('.notifications-body').find('.unread-not-ico').remove();
@@ -26,11 +27,12 @@ export function fetchNotifications(){
             }
             notificationService.updateById(notificationId,JSON.stringify(raw)).then((data)=>{
                 totalNonReadNotifications--;
-
+                $(e.target).closest('.notifications-body').css('opacity','0.7');
                 notificationIndicator(totalNonReadNotifications);
             })
         });
 
+        $('.not-del-btn').off();
         $('.not-del-btn').click((e)=>{
             let notificationId = $(e.target).closest('.not-del-btn').attr('notification-id');
             notificationService.deleteById(notificationId).then(()=>{
@@ -40,7 +42,7 @@ export function fetchNotifications(){
             zeroNotificationsHandler(totalNotifications);
         })
 
-
+        $('.nav-notification').off();
         $('.nav-notification').click(()=>{
             $('#notifications').toggle();
             $('body').off();
@@ -64,6 +66,7 @@ export function fetchNotifications(){
     
         });
 
+        $('#clear-not').off();
         $('#clear-not').click(()=>{
             notificationService.deleteAll().then((data)=>{
                 if(data.statusCode!=200) return;
@@ -71,8 +74,6 @@ export function fetchNotifications(){
                 $("#notificaitons-container").append($("<h2 class='mt-3'><center>No Notifications</center></h2>"))
             })
         })
-    
-    
 
     });
 
@@ -103,14 +104,19 @@ export function fetchNotifications(){
                                     '</div>');
 
             $(notificationElement).find('.not-title').text(notifications[i].title);
+            let secondsAgo = notifications[i].createdOn;
+            secondsAgo = moment(new Date(secondsAgo)).minutesFromNow();
+            $(notificationElement).find('.not-time').text(secondsAgo=='0 mins ago'? 'few seconds ago' : secondsAgo);
             $(notificationElement).find('.not-body').text(notifications[i].info);
             $(notificationElement).find('.not-ico').html(notificationIcons[notifications[i].type]);
             $(notificationElement).find('.not-del-btn').attr('notification-id',notifications[i].id);
-
             if(notifications[i].readed==0){
                 totalNonReadNotifications++;
                 $(notificationElement).find('.not-title').prepend('<i class="fa-solid fa-circle-info unread-not-ico"></i> ')
                 $(notificationElement).find('.notifications-body').addClass('unread-not');
+                $(notificationElement).css('opacity','1');
+            }else{
+
             }
             $(container).append(notificationElement);
 
@@ -158,6 +164,11 @@ function initiateListeners(){
           $(this).load(file)
         })
     })
+
+    // Overriding moment
+    moment.fn.minutesFromNow = function() {
+        return Math.floor((+new Date() - (+this))/60000) + ' mins ago';
+    }
 
     fetchNotifications();
 }

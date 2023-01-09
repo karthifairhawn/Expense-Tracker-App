@@ -17,6 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class CreditCardWallets{
+
 	public CreditCardWallets(LinkedTreeMap walletInfo) {
 		this.id = null;
 		this.repayDate  = Integer.parseInt((walletInfo.get("repayDate")+"").split("\\.")[0]);
