@@ -596,7 +596,7 @@ async function mountAllIncomes(){
     };
 
 
-    let start = moment().year();
+    let start = moment().startOf('year');
     let end = allDateRanges['This Month'][1];
 
     start = start.format('YYYYMMDD').split('-').join('');

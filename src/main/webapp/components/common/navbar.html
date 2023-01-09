@@ -27,4 +27,12 @@
     <script>
         let page = (window.location.href.split('/')[3])
         $('.nav-item[href="'+page+'"]').addClass('active')
+        
+        
+        // Logout user on clicking logout button on navbar
+        $('.logout').click(()=>{
+            localStorage.clear();
+            window.location.href= 'login.html';
+        })
+
     </script>

@@ -460,7 +460,6 @@ export function isNotEmpty(val,element){
 export function isNumber(val,element){
     let result = false;
     if(!isNaN(val)) result = true;
-    console.log(element);
     highlightElement(element,result);
     return result;
 }

@@ -349,10 +349,10 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     if(refreshExpenseContainer==true){
         $('.edit-expense-form').remove();
         $('.view-expense-modal').remove();
+        listingExpenseDate = null;
     }
 
     // Clearing up old expense section data
-    listingExpenseDate = null;
     daysTotalExpense = 0;
     let expenseData = null;
 
@@ -483,7 +483,6 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
             dateSection.innerHTML = '<div class="date-grouping" date="'+date.replaceAll(" ","-")+'" style="margin-top:30px"><b>'+date+'</b> | <small>Total Expense: '+ daysExpenseTemplate;
             dateSection.style.color = '#385170';
             $('#'+containerId).append(dateSection);
-
         }
             
     }
@@ -519,8 +518,6 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
     mountExpenseToDom();
 
     // Grouping multiple days expense with dates and calculating per days's expense 
-
-
 
     function cloneExpenseTemplate(){
         let expenseTemplate = $("#expense-card-template")[0];

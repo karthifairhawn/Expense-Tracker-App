@@ -150,11 +150,6 @@ export function fetchNotifications(){
 }
 
 function initiateListeners(){
-    // Logout user on clicking logout button on navbar
-    $('.logout').click(()=>{
-        localStorage.clear();
-        window.location.href= 'login.html';
-    })
 
     // HTML componenet injector
     $(function () {
@@ -165,6 +160,7 @@ function initiateListeners(){
         })
     })
 
+    
     // Overriding moment
     moment.fn.minutesFromNow = function() {
         return Math.floor((+new Date() - (+this))/60000) + ' mins ago';
