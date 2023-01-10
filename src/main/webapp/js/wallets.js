@@ -146,18 +146,18 @@ let walletFormUtil = {
     
 }
 
-$(document).ready(()=>{
-    refreshWalletsPage();
-})
 
 
-async function refreshWalletsPage(){
+export function startWalletEngine(){
     userWallets = [];
     userWalletFull = [];
     userCardWallets = [];
     userNonCardWallets = [];
     totalBalance = 0;
-    await walletService.findWallets().then((data)=> {
+
+    $('#spinner').show();
+    
+    walletService.findWallets().then((data)=> {
         if(data==null) return;
         data = data.data;
         for(const category in data){
@@ -171,19 +171,13 @@ async function refreshWalletsPage(){
             if(type == 'Credit Card') cardBalance+= userWallets[wallet].balance;
             else nonCardBalance+= userWallets[wallet].balance;
         }
-    });
 
-    populateBalanceContainer();
-    $('#spinner').show();
-
-    // To be removed
-    setTimeout(() => {
-        $('#spinner').hide();        
+        populateBalanceContainer();
         mountWallets();
         initiateListeners();
         handleNoWallets();
-    }, 300);
-
+        $('#spinner').hide();
+    });
 
     function handleNoWallets(){
 

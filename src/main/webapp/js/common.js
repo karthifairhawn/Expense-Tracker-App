@@ -2,26 +2,89 @@ import {findWallets} from '../apis/wallets.js';
 import * as util from './util.js';
 import * as userService from '../apis/users.js'
 import * as notificationService from '../apis/notifications.js'
+import {startDashboardEngine} from './dashboard.js';
+import {startWalletEngine} from './wallets.js';
 
 
-// Redirect to login if no authToken
-var userData = null;
-let authToken = localStorage.getItem('authToken');
-if(authToken == null || authToken.length == 0 || typeof authToken === undefined){
-    if(window.location.href.split('/')[3]!='login.html'){
-        window.location.href = 'login.html';
-    }
-}else{
-    await userService.findUserById(localStorage.getItem('userId')).then((val)=>{
-        userData  = val.data;
-        if(window.location.href.split('/')[3]!='login.html' && val.statusCode!=200){
-            window.location.href = 'login.html';
-        }
-    });
-}
 
 var totalNonReadNotifications = 0;
 var totalNotifications = 0;
+
+
+var page = window.location.hash;
+
+$(document).ready(()=>{
+    checkAuthorisation();
+    doRoute();
+    fetchNotifications();
+    
+});
+
+async function checkAuthorisation(){
+    // Redirect to login if no authToken
+    var userData = null;
+    let authToken = localStorage.getItem('authToken');
+    if(authToken == null || authToken.length == 0 || typeof authToken === undefined){
+        if(window.location.href.split('/')[3]!='login.html'){
+            window.location.href = 'login.html';
+        }
+    }else{
+        await userService.findUserById(localStorage.getItem('userId')).then((val)=>{
+            userData  = val.data;
+            if(window.location.href.split('/')[3]!='login.html' && val.statusCode!=200){
+                window.location.href = 'login.html';
+            }
+        });
+    }
+}
+
+function doRoute(){
+
+    $(window).on('hashchange',function(){ 
+        $('#spinner').show();
+        reRoute();
+    });
+    
+    var page = window.location.hash;
+    if(page==null) window.location.hash = 'homepage';
+    else reRoute();
+
+    function reRoute(){
+        var page = window.location.hash;
+        page = page.replace('#','');
+        if(page==null || page.length==0){
+            page = 'homepage';
+        }
+        let pageToGet = 'components/pages/'+page+'.html';
+        $.get(pageToGet, function(pageContent){
+           $('#page-container').html(pageContent);
+           populateSubComponents(page);
+        })   
+    }
+    
+}
+
+function startEngine(page){
+    if(page=='homepage') startDashboardEngine();
+    else if(page=='wallets') startWalletEngine();
+    $('#spinner').hide();
+}
+
+function populateSubComponents(pagee){
+    // HTML componenet injector
+    $(function () {
+        var includes = $('[data-include]')
+        $.each(includes, function () {
+            var file = $(this).data('include')
+            $(this).load(file)
+        })
+        startEngine(pagee);
+    })
+}
+
+export function getUserData(){
+    return userData;
+}
 
 export function fetchNotifications(){
 
@@ -159,36 +222,3 @@ export function fetchNotifications(){
 
 
 }
-
-function initiateListeners(){
-
-    // HTML componenet injector
-    $(function () {
-        var includes = $('[data-include]')
-        $.each(includes, function () {
-          var file = $(this).data('include')
-          $(this).load(file)
-        })
-    })
-
-    
-    // Overriding moment
-    moment.fn.minutesFromNow = function() {
-        return Math.floor((+new Date() - (+this))/60000) + ' mins ago';
-    }
-
-
-    fetchNotifications();
-}
-
-$(document).ready(()=>{
-    if(window.location.href.split('/')[3]!='login.html'){
-
-        initiateListeners();
-    }
-});
-
-export function getUserData(){
-    return userData;
-}
-

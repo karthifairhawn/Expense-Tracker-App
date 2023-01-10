@@ -31,13 +31,9 @@ var formSelectedTags = [];
 let totalWalletSplits = 1;
 let usingNewCategory = false;
 
-let dateRangeContainer = document.getElementById("date-range-selector");
-let dateRangeElement = document.getElementById("date-range-template");
-let clone = dateRangeElement.content.cloneNode(true);
 let pageNumber = 1;
 let pageSize = 15;
-$(dateRangeContainer).html('');
-dateRangeContainer.appendChild(clone);  
+
 
 // Hide monthly view section by default   
 let listingExpenseDate = null;
@@ -294,11 +290,12 @@ let expenseFormUtil = {
 
 }
 
-$(document).ready(()=>{
+export function startDashboardEngine(){
     updateHeader();
     findBasicEntities();
     initiateDateSelectorPlugin();
-})
+    initiateListeners();
+}
 
 function findBasicEntities(){
     let promisePending = [];
@@ -728,6 +725,14 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
 
 // Initiate the date range selector plugin and trigger populateExpense for Recent
 function initiateDateSelectorPlugin(){
+
+    let dateRangeContainer = document.getElementById("date-range-selector");
+    let dateRangeElement = document.getElementById("date-range-template");
+    let clone = dateRangeElement.content.cloneNode(true);
+
+    
+    $(dateRangeContainer).html('');
+    dateRangeContainer.appendChild(clone);  
 
     function dateChangeCallback(start, end, timeSpan) {
 
@@ -1986,22 +1991,22 @@ function getExpensesFromExistingCache(start,end){
     return expenseData;
 }
 
-
-$('#reload-expenses').click(()=>{
-    findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
-});
-
-
-$('.settings-btn').click(()=>{
-    $('.set-home').show();
-    $('#category-set .label').append('('+userCategories.length+')');
-    $('#tags-set .label').append('('+userTags.length+')');
-    let dashboard = $('#tt-dashboard-settings')[0].content.cloneNode(true)
-    $('#dashboard-settings .modal-body').html("");
-    $('#dashboard-settings .modal-body').append(dashboard);
-    $('#dashboard-view').val(currTimeSpan); 
-
-    initiateSettingsListeners();
-
-})
-
+function initiateListeners(){
+    $('#reload-expenses').click(()=>{
+        findAllExpenseDetails(previousExpenseFetch["expenseFrom"],previousExpenseFetch["expenseTo"],previousExpenseFetch["timeSpan"],previousExpenseFetch["refreshExpenseContainer"],previousExpenseFetch["containerId"]);
+    });
+    
+    
+    $('.settings-btn').click(()=>{
+        $('.set-home').show();
+        $('#category-set .label').append('('+userCategories.length+')');
+        $('#tags-set .label').append('('+userTags.length+')');
+        let dashboard = $('#tt-dashboard-settings')[0].content.cloneNode(true)
+        $('#dashboard-settings .modal-body').html("");
+        $('#dashboard-settings .modal-body').append(dashboard);
+        $('#dashboard-view').val(currTimeSpan); 
+    
+        initiateSettingsListeners();
+    
+    })
+}    
