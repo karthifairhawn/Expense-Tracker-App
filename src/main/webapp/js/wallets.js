@@ -33,6 +33,7 @@ let walletUtil = {
 let walletFormUtil = {
 
     mountWalletSubInforForm : function mountWalletSubInforForm(walletType){
+        console.log(walletType);
         $('#wallet-info-form').html('');
         if(walletType=='Bank Account'){
             let bankWalletForm = $('#create-wallet-bank-account')[0];
@@ -236,13 +237,43 @@ function initiateListeners(){
 function populateBalanceContainer(){
     let eccStatus = localStorage.getItem('eccStatus');
     if(eccStatus==1){
-        $('#mi-bal-amount').text(util.moneyFormat(totalBalance-cardBalance)); 
+        $('#mi-bal-amount').text(util.moneyFormat(totalBalance-cardBalance,"")); 
         $('#total-acct-count').text(userNonCardWallets.length);
     }else{
         $('#total-acct-count').text(userWallets.length);
-        $('#mi-bal-amount').text(util.moneyFormat(totalBalance)); 
+        $('#mi-bal-amount').text(util.moneyFormat(totalBalance,"")); 
         localStorage.setItem('eccStatus',0);   
     }
+    populateTotalIncomesContainer();
+    populateCardSpendings();
+
+    async function populateTotalIncomesContainer(){
+        let start = moment().startOf('year');
+        let end =  moment().endOf('month');
+    
+        start = start.format('YYYYMMDD');
+        end = end.add(1,'days').format('YYYYMMDD');
+    
+        let incomeData = null;
+        await trasnsactionService.findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
+
+        let totalIncome = 0;
+        for(let i=0; i<incomeData.length; i++){
+            totalIncome+=incomeData[i].amount;
+        }
+        $('.mi-inc-amount').text(util.moneyFormat(totalIncome));
+
+    }
+
+    function populateCardSpendings(){
+        let totalSpendings = 0;
+        for(let k=0;k<userCardWallets.length;k++){
+            totalSpendings+=(userCardWallets[k].walletInfo.limit - userCardWallets[k].balance)
+        }
+        $('#mi-cardspn-amount').text(util.moneyFormat(totalSpendings))
+        
+    }
+
 }
 
 async function mountWallets(){
@@ -305,13 +336,14 @@ async function mountWallets(){
             $(walletCardClone).find('.credit-card-used').text(creditCardUsagePercent.toFixed(2));
             $(walletCardClone).find('.card-symbol .fas').addClass(cardSymbols[wallet.id%9])
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
+            $(walletCardClone).find('.edit-wallet-btn').attr('wallet-type',wallet.type);
             $(walletCardClone).find('.create-alert').attr('wallet-id',wallet.id);
             if(creditCardUsagePercent>100){ $(walletCardClone).find('.overdraft-warning').css('display', 'block'); }
             
 
             $(walletCardClone).find('.edit-wallet-btn').attr('type',wallet.type);
             $(walletCardClone).find('.edit-wallet-btn').click((event)=> { 
-                mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('type')) 
+                mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('wallet-type')) 
             });
 
             
@@ -468,13 +500,12 @@ async function mountWallets(){
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.delete-wallet-btn').attr('wallet-id',wallet.id);
             $(walletCardClone).find('.balance').text(util.moneyFormat(wallet.balance))
+            $(walletCardClone).find('.modal-dialog .balance').append("")
             $(walletCardClone).find('.balance').attr('balance',(wallet.balance))
             $(walletCardClone).find('.edit-wallet-btn').attr('wallet-id',wallet.id);
-            $(walletCardClone).find('.edit-wallet-btn').attr('type',wallet.type);
-
-            $(walletCardClone).find('.edit-wallet-btn').click((event)=> { 
-                mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('type')) 
-            });
+            $(walletCardClone).find('.edit-wallet-btn').attr('wallet-type',wallet.type);
+            $(walletCardClone).find('.inwallet-addinc-btn').attr('wallet-id',wallet.id);
+            $(walletCardClone).find('.edit-wallet-btn').click((event)=> {  mountEditWalletForm(event.target.getAttribute('wallet-id'),event.target.getAttribute('wallet-type')) });
 
             if(wallet.balance <0 ) $(walletCardClone).find('.uncommon-wallet-fields').before($('<div class="text-danger">account is overdrafted</div>'))
             
@@ -493,6 +524,7 @@ async function mountWallets(){
                 
                 if(obj=='note'){
                     newWalletInfo = $('<div class="mb-2 d-flex align-items-center flex-column w-100 card-field"> <div class="label w-100"></div><span class="w-100 d-flex align-items-center"><div class="w-100 spend-on value wallet-info-label '+obj+'" type="textarea"></div></span> </div>');
+                    $(walletCardClone).find('.ncw-note').text(data[obj]);
                 }
                 let key = obj;
                 var text = obj;
@@ -500,35 +532,31 @@ async function mountWallets(){
                 key =  result;
 
                 if(data[obj]=='null' || data[obj].length==0 || data[obj].length==null) data[obj] = "-";
-                if(obj=='note'){
-                    key = 'Note';
-                   
-                }
-
-
-                if(obj!='note'){
-                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';
-                }else{
-                    subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
-                }
-
+                if(obj=='note') key = 'Note';
+                if(obj!='note') subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-key">'+key+' :</div><span class="ucf-value">'+data[obj]+'</span></div>';
+                else            subWalletInfoHtml +='<div class="uncommon-wallet-field mb-2"><div class="ucf-value">'+data[obj]+'</div></div>';
 
                 $(newWalletInfo).find('.label').text(key);   
                 $(newWalletInfo).find('.value').text(data[obj]);   
                 $(formWalletInfo).append(newWalletInfo);
-
             }
 
             $(walletCardClone).find('#walletInfoModal'+wallet.id+' .modal-body').append(formWalletInfo);
             $(walletCardClone).find('.uncommon-wallet-fields').append(subWalletInfoHtml);
+            $(walletCardClone).find('.inwallet-addinc-btn').click((e)=>{
+                let walletId = $(e.target).attr('wallet-id');
+                $('.btn-close').click();
+                $('.add-income-btn').click();
+                $('#incomeModal #new-income-wallet').val(walletId);
+                $('#incomeModal #new-income-wallet').attr('disabled', 'disabled');
+            })
+
             $(walletCardClone).find('.delete-wallet-btn').click(function(event) { walletUtil.deleteWalletById(event.target.getAttribute('wallet-id')) })
             $('#all-wallets-container').append(walletCardClone);
 
         }
         walletContainer.appendChild(newWalletSection[0]); 
     }
-
-
 }
 
 function mountWalletCreationForm(){
@@ -594,10 +622,10 @@ async function mountAllIncomes(){
 
 
     let start = moment().startOf('year');
-    let end = allDateRanges['This Month'][1];
+    let end =  moment().endOf('month');
 
-    start = start.format('YYYYMMDD').split('-').join('');
-    end = end.add(1,'days').format('YYYYMMDD').split('-').join('');
+    start = start.format('YYYYMMDD');
+    end = end.add(1,'days').format('YYYYMMDD');
 
     let incomeData = null;
     await trasnsactionService.findTransactions(start,end,'incomes').then((data)=>incomeData = data.data.incomes);
@@ -606,7 +634,6 @@ async function mountAllIncomes(){
 
     for(let i = 0; i < incomeData.length; i++){
         let newRow = $('<tr> <th scope="row" class="wallet">1</th> <td class="time">Mark</td> <td class="amount">Otto</td> <td class="note">@mdo</td> </tr>');
-
         let walletInfo = null;
         let walletId = incomeData[i]['transactionInfo']['walletId'];
         let isDeletedWallet = false;
@@ -645,12 +672,9 @@ function mountAddIncomeModal(isBill,billMax){
     $('.add-income-submit').off();
     $('.add-income-submit').click((event)=>{ submitIncome(event)})
 
-    if(userNonCardWallets==0){
-        $('#incomeModal').find('.modal-body').html('<h3>No wallets found to add income</h3>')
-    }
-    for(let i=0;i<userNonCardWallets.length;i++){
-        walletSelection.append('<option value='+userNonCardWallets[i].id+'>'+userNonCardWallets[i].name+'</option>');
-    }
+    if(userNonCardWallets==0) $('#incomeModal').find('.modal-body').html('<h3>No wallets found to add income</h3>')
+    for(let i=0;i<userNonCardWallets.length;i++) walletSelection.append('<option value='+userNonCardWallets[i].id+'>'+userNonCardWallets[i].name+'</option>');
+    
 
     function submitIncome(event){
         

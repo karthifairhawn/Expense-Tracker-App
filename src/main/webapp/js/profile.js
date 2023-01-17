@@ -3,7 +3,7 @@ import * as util from './util.js'
 
 $('.nav-item[tabs=profile]').addClass('active')
 
-$(window).load(()=>{
+$(document).ready(()=>{
     pupulateUserData();
     activateListers();
 })
@@ -14,7 +14,7 @@ async function pupulateUserData(){
     await userService.findUserById(localStorage.getItem('userId')).then((val)=>{
         userData  = val.data;
     });
-
+    console.log(userData);
     let userDateForm = $('form[name="profile-form"]');
     $(userDateForm).find('#userName').val(userData.name);
     $(userDateForm).find('#userEmail').val(userData.email);

@@ -199,9 +199,7 @@
 <template id="expense-card-template">
     <div class="expense-card d-flex">
 
-        <span class="category-ico d-flex align-items-center justify-content-center"><i class="fa-solid fa-trophy"
-                class="category-ico"></i></span>
-
+        <span class="category-ico d-flex align-items-center justify-content-center"><i class="fa-solid fa-trophy" class="category-ico"></i></span>
         <div class="expcard-body d-flex align-items-center">
 
             <!-- Expense Name -->
@@ -221,6 +219,13 @@
             </div>
 
             <!-- Wallet Name -->
+            <span style="font-size: 18px;" class="expense-card-time d-flex align-items-center">
+                <i class="fa-solid fa-clock" style="opacity: 0.3;" ></i>
+                &nbsp;&nbsp;
+                <div class="spend-on value"></div>
+            </span>
+
+            <!-- Wallet Name -->
             <span style="font-size: 18px;" class="expense-card-wallet d-flex align-items-center">
                 <!-- <i class="fa-solid fa-circle text-green" style="font-size: 10px;color:green;"></i> -->
                 <i class="fa-solid fa-wallet"  style="font-size: 20px;color:grey;"></i>
@@ -228,13 +233,7 @@
                 <span class="wallet-name">Isndian Bank</span>
             </span>
 
-            <!-- Tags Listing -->
-            <div class="d-flex align-items-center tags-section ">
-                <!-- <i class="fa-solid fa-tag"></i> -->
-                <div class="all-tags-section d-flex ">
 
-                </div>
-            </div>
 
             <!-- Amount  -->
             <div class="expense-card-bal-cont d-flex align-items-center justify-content-center">
@@ -263,29 +262,23 @@
 
                             </div>
                             <div class="modal-body">
-
                                 <div class="mb-2 d-flex flex-column">
                                     <span class="h5"><b>Expense Amount</b> </span>
                                     <span class="wallet-splits ">
 
                                     </span>
                                 </div>
-
-
-                                <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div>
-
+                                <!-- <div class="h5 mt-4 mb-2"><b>Transaction Info</b> </div> -->
+                                <hr>
                                 <div class="mb-2 d-flex align-items-center card-field">
                                     <div class="label">Spend on : </div>
                                     <div class="spend-on value"></div>
                                 </div>
 
                                 <div class="mb-2 d-flex align-items-center card-field">
-                                    <div class="label">Created on: </div>
+                                    <div class="label">Added on: </div>
                                     <div class="timestamp value"></div>
                                 </div>
-
-
-
 
                                 <div class="mb-2 d-flex align-items-center flex-column w-100 card-field">
                                     <div class="label w-100">Note: </div>
@@ -350,30 +343,26 @@
                 <span class="url" id="split-wallet">split</span>
             </div>
 
-            <div id="all-wallet-splits">
+            <div id="all-wallet-splits" >
                 <div class="w-split wallet-split1 d-flex mb-2">
-
+                    <div class="d-flex flex-column justify-content-center w-100">
+                        <div></div>
+                        <input placeholder="0.00 ₹" type="number" required min="1" max="10000000" class="form-control position-relative required ps-4" id="expense-amount">
+                            <i style="left: 23px;opacity: 0.7;" class="fas fa-inr position-absolute"></i>
+                        </input>
+                    </div>
+                    <div class="m-2"></div>
                     <div class="wallet-name-section  w-75">
                         <select class="form-select form-wallet-list" aria-label="Default select"
                             id="all-wallets-options">
                         </select>
 
                     </div>
-                    <div class="m-2"></div>
-                    <div class="d-flex flex-column justify-content-center w-25">
-                        <div></div>
-                        <input placeholder="0.00 ₹" type="number" required min="1" max="10000000"
-                            class="form-control required" id="expense-amount"></input>
-
-                    </div>
 
                 </div>
-
             </div>
 
-            <div class="d-flex flex-row-reverse mt-3">
-                <span id="expense-more">+ add more details</span>
-            </div>
+
 
             <div class="more-expense-info" style="display: none;">
 
@@ -429,8 +418,14 @@
 
             </div>
 
-            <div class="modal-footer">
-                <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
+            <div class="">
+                <div class="d-flex justify-content-center flex-column align-items-center">
+                    <span id="expense-more"><i style="font-size:15px;color:#3366CC;" class="fa-solid fa-chevron-down d-inline"></i>add more details</span>
+                    
+                </div>
+                <div class="d-flex flex-row-reverse">
+                    <button id="save-expense-btn" type="submit" class="btn btn-primary">Save</button>
+                </div>
             </div>
 
         </form>

@@ -20,6 +20,7 @@ import api.v1.entity.transactions.Expense;
 import api.v1.entity.transactions.Income;
 import api.v1.entity.transactions.Transactions;
 import api.v1.entity.transactions.Transfer;
+import api.v1.entity.wallets.Wallets;
 import api.v1.exception.CustomException;
 import api.v1.utils.DatabaseUtil;
 import api.v1.utils.ValidatorUtil;
@@ -81,7 +82,9 @@ public class TransactionsService {
 			 
 			 List<Transactions> completeTransaction = new LinkedList<Transactions>();
 			 for(Transactions t:transactions) {
-				 completeTransaction.add(findById(t.getId()));
+				 Transactions tt = findById(t.getId());
+				 if(tt==null) continue;
+				 completeTransaction.add(tt);
 			 }
 			 
 			 allTransactions.put(e.getKey(),completeTransaction);
@@ -163,6 +166,9 @@ public class TransactionsService {
 			
 		else if(transactionType.equalsIgnoreCase("income")) {
 			Income t = incomeTransactionDaoService.findByTransactionId(transaction.getId());
+			Long walletId = t.getWalletId();
+			Wallets wallet = WalletsService.getInstance().findById(walletId);
+			if(wallet.getType().equals("Credit Cadrd")) return null;
 			transaction.setTransactionInfo(t);
 		}
 			

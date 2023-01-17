@@ -190,7 +190,7 @@ html, body{
     padding: 0px 10px;
 }
 
-.expense-card-wallet{ 
+.expense-card-wallet,.expense-card-time{ 
     width: 300px;
 }
 
@@ -205,7 +205,6 @@ html, body{
 }
 
 .bank-name{
-    width: 140px;
 }
 
 .acct-type{
@@ -487,7 +486,7 @@ select {
 
 
 
-.add-wallet-btn, .add-income-btn{
+.add-wallet-btn{
     /* height: 40px; */
     font-size: 30px;
     width: 70px;
@@ -507,15 +506,29 @@ select {
 }
 
 .main-balance{
-    background-color: #1c1d21;
+    /* padding: 10px; */
     border-radius: 15px;
     color: white;
 }
 
 .mi-bal-body{
     height: 150px;
-    background-color: #131519;
     border-radius: 10px;
+}
+
+.ryt-container {
+    background-color: #1c1d21;
+}
+
+.card-avb{
+    background-color: #58e29f;
+    height: 100%;
+    border-radius: 15px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: center;
+    /* align-items: center; */
+    flex-direction: column;
 }
 
 .main-balance .card-body{
@@ -535,8 +548,25 @@ select {
     font-weight: 600;
 }
 
-#mi-bal-amount{
-    font-size: 40px;
+.card-spc{
+    background-color: #fe7364;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    justify-content: center;
+    /* color: grey; */
+    border-radius: 15px;
+}
+
+.mi-bal-amount, .mi-cardspn-amount{
+    font-size: 40px !important;
+    /* font-weight: 500; */
+    padding: 7px 0px;
+}
+
+.mi-inc-amount{
+    font-size: 30px;
     /* font-weight: 500; */
     padding: 7px 0px;
 }
@@ -759,6 +789,7 @@ select {
     transition: all ease-in-out 100ms;
     font-family: 'Montserrat', sans-serif;
 }
+
 .wallet-card:hover{
     transition: all ease-in-out 100ms;
 }
@@ -772,10 +803,10 @@ select {
 }
 
 .wallet-card .balance{
-    font-size: 20px;
     text-transform: capitalize;
+    position: absolute;
+    right: 20px;
     /* margin: 30px 0px; */
-    width: 100%;
 }
 
 .wallet-card .rupee-symbol{
@@ -786,6 +817,14 @@ select {
     color: black;
 }
 
+.incamt-input {
+    height: 70px;
+}
+
+.incamt-input input{
+    font-size: 35px;
+}
+
 .acct-type-ico{
     font-size: 30px;
     margin-right: 10px;
@@ -794,11 +833,18 @@ select {
     border-radius: 20px;
 }
 
-.wallet-card #open-wallet-btn{
-    width:100%;
-    height: 100%;
-    opacity: 0;
-    position: absolute;
+ #open-wallet-btn{
+    cursor: pointer;
+}
+
+.ncw-card-footer{
+    background-color: #2e2e2ea2;
+    bottom: -26px;
+    width: 100%;
+    border-radius: 0px 0px 20px 20px;
+    padding: 3px 10px 3px 10px; 
+    font-size: 15px;    
+    height: 27px;
 }
 
 #all-wallets-container{
@@ -1196,8 +1242,8 @@ form[name='profile-form'] input{
     background-color: #292929;
 }
 
-#mark-not-read{
-    
+.bh-dashboard .mi-bal-body{
+    background-color: #1c1d21;
 }
 
 .not-ico{
@@ -1386,8 +1432,8 @@ form[name='profile-form'] input{
 
 .wallets-csettings{
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 15px;
+    top: 5px;
     z-index: 1;
 }
 

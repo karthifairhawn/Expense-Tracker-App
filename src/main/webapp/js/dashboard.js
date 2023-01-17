@@ -388,7 +388,6 @@ async function findAllExpenseDetails(expenseFrom,expenseTo,timeSpan,refreshExpen
     for(let i=0; i<expenses.length; i++){ 
         // Find all wallets (search in already fetched wallets if not found get from server)
         let wallets = new Array();
-        // console.log(expenses[i].walletSplits)
         for (const [key, value] of Object.entries(expenses[i].walletSplits)){
             let searched = null;
             searched = (userWalletsMap[key])
@@ -540,7 +539,9 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
 
         // Format expense time
         let timeOnly = expense.transactionInfo.spendOn.split(" ")[1].split(":");
-        let fullExpenseTime = (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
+        let dateOnly = moment(expense.transactionInfo.spendOn.split(" ")[0],"YYYY-MM-DD").format("MMM D,");
+        timeOnly = (util.to12Format(timeOnly[0]+":"+timeOnly[1]));
+        let fullExpenseTime = dateOnly +" "+ timeOnly;
                 
         // Setting expense data to the dom
         if(categoryInfo?.imagePath == undefined){
@@ -554,7 +555,8 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         $(currentElement).find(".expense-note").text(expense.transactionInfo.note);
         $(currentElement).find(".timestamp").text(expense.timestamp);
         $(currentElement).find(".category").text(categoryInfo.name);
-        $(currentElement).find(".spend-on").text(fullExpenseTime);
+        $(currentElement).find(".spend-on").text(timeOnly);
+        $(currentElement).find(".modal-dialog .spend-on").text(fullExpenseTime);
         $(currentElement).find(".category-ico").html('&#x'+categoryInfo.imagePath)
     }
 
@@ -565,12 +567,12 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
         
         for(let i=0; i<walletInfo.length;i++){
             if(walletInfo[i].id <   0 ){
+                let id = walletInfo[i]?.id;
                 isWalletMissSet = false;
                 let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
-                $(newWalletSplit).find('.account-name').text(walletInfo[i].name);
-                $(newWalletSplit).find('.account-spend').text('N/A');
-                // $(currentElement).find(".wallet-splits").append(newWalletSplit);
-                
+                $(newWalletSplit).find('.account-name').text('N/A');
+                $(newWalletSplit).find('.account-spend').text(expense.walletSplits[id]+" ₹");  
+                $(currentElement).find(".wallet-splits").append(newWalletSplit);
             }else{
                 let id = walletInfo[i]?.id;
                 let newWalletSplit = $('<div class="wallet-split d-flex card-field"> <div class="w-50 account-name label"> Indian Bank </div> <div class="w-50 account-spend value"> 500 ₹ </div> </div>');
@@ -584,6 +586,7 @@ async function populateExpense(walletInfo,expense,categoryInfo,containerIdToMoun
 
         // Finding wallet name
         if(walletInfo[0].id<0){
+            $(currentElement).find('.expense-card-wallet').remove();
             walletName = '<span class="muted">N/A</span>'
         }else if(walletInfo.length == 1){
             $(currentElement).find('.fa-wallet').css('color','white')
@@ -1232,10 +1235,8 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                 var settings = $.extend({}, defaults, opts);
                 var onClickNavigator = settings.onClickNavigator;
                 var instance = this;
-        
-                // kuhanin ang buwan
-                this.getMonthName = function(idx) {  return settings.months[idx]; };
-        
+
+                this.getMonthName = function(idx) {  return settings.months[idx]; };        
         
                 // here is the controller to switch weeks
                 // Controller to change 
@@ -1267,6 +1268,7 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                     var expenseBasedOnDate ={};
                     await findTransactions(startDay,endDay,'expenses').then((data)=>{ 
                         let expenseDatas = data.data.expenses;
+                        previousExpenseFetch.expenseData.data.expenses = expenseDatas;
                         for (var j = 0; j < expenseDatas.length; j++) {
                             let expenseData = expenseDatas[j];
                             let date = moment(expenseData.transactionInfo.spendOn,'YYYY-MM-DD').format('YYYYMMDD');
@@ -1277,7 +1279,6 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                                 expenseBasedOnDate[date].push(expenseData);
                             }  
                         }
-
                      });
 
                     var tmp = ``;
@@ -1315,18 +1316,15 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                         $('#spinner').hide();
                     }
 
-
-
                     var ret = `<div id="myc-dates-container" class="weekly-dates-container d-flex justify-content-around">` + tmp + `</div>`;                
                     return ret;
                 }
-    
+                
     
                 // when last week was pressed
                 this.on('click', '#myc-prev-week', function() {
                     settings.startDate = settings.startDate.addDays(-7);
                     render(instance);
-        
                     if ($.isFunction(onClickNavigator)) {
                         onClickNavigator.call(this, ...arguments, instance);
                     }
@@ -1365,8 +1363,6 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
         
                 render();
 
-                
-
                 function addDateFetchLister (){
                     $('.myc-date-header').off();
                     $('.myc-date-header').click((e)=>{
@@ -1381,12 +1377,10 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
                         let endd = moment(newDatee+" 23-59-59",'YYYY-MM-DD HH:mm:ss');
 
                         let weekDaysExpenseData =  getExpensesFromExistingCache(stt,endd);    
-                        console.log(weekDaysExpenseData)
                         previousExpenseFetch.expenseData.data.expenses = weekDaysExpenseData;
                         $('#myc-available-time-container').html("");
                         findAllExpenseDetails(date, date,'Weekly',true,'myc-available-time-container',false); // Start and end date date is same because the this to a days expenses
                         previousExpenseFetch.expenseData.data.expenses = cachedExpenses;                        
-
                         // findAllExpenseDetails(date,date,'Weekly',true,'myc-available-time-container')
                     })
 
@@ -1405,11 +1399,7 @@ function createMountPoint(timeSpan,refreshExpenseContainer){
 
         $('#weekly-view').html('');
         $('#weekly-view').markyourcalendar({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()-6)});
-
-
         weeklyTabInitialized = true;
-
-
     }
     
     function mountCalendarExpensesSection() {

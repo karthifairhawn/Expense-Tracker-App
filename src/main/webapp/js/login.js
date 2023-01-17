@@ -54,22 +54,23 @@ $( function() {
         fetch(server+"/api/v1/login", postRequestOptions).then((data)=> data.json()).then((data)=>{
             processLogin(data);
         }).catch((error)=>{
-            util.handleApiResponse({data:400},"","Failed in server communication, Try again later.")
+            // console.log(error);
         })
 
         function processLogin(data){
-            if(data.statusCode==400) util.handleApiResponse(data,"Invalid information.","Invalid information.");
-            else if(data.statusCode == 404) util.handleApiResponse(data,"Invalid information.","Invalid email or password.");
-            else if(data.statusCode==200){
+            console.log(data);
+            $('#spinner').hide();
+            if(data.statusCode==400) $('.logo').next($("Invalid email or password."));
+            else if(data.statusCode == 404){
+                $('.logo').after('<div class="alert alert-danger" role="alert">Invalid email or password.</div>');
+                $('#log-password').css('border','1px solid red');
+                $('#log-password').val('');
+                $('#log-password').focus();
+            }else if(data.statusCode==200){
                 localStorage.setItem('authToken',data.data.authToken);
                 localStorage.setItem('userId',data.data.userId);
                 window.location.href = "index.html"
             }
-
-            // To be removed - timeout
-            setTimeout(() => {                
-                $('#spinner').hide();
-            }, 1200);
         }
   
         

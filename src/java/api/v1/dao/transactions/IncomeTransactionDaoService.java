@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import api.v1.entity.transactions.Income;
+import api.v1.entity.wallets.Wallets;
 import api.v1.exception.CustomException;
+import api.v1.service.WalletsService;
 import api.v1.utils.DatabaseUtil;
 
 public class IncomeTransactionDaoService {
@@ -49,8 +51,9 @@ public class IncomeTransactionDaoService {
 		
 		try {
 			rs = dbUtil.executeSelectionQuery(sql);
-
 			while (rs.next()) {
+				
+				
 				income.setId(rs.getLong("id"));
 				income.setNote(rs.getString("note"));
 				income.setTransactionId(transactionId);

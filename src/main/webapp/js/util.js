@@ -320,8 +320,9 @@ export var to24Format = (time) => {
     return (sHours + ":" + sMinutes);
 }
 
-export var moneyFormat =  (n)=>{
-    return "₹ "+(Math.round(n * 100) / 100).toLocaleString();
+export var moneyFormat =  (n,formatter)=>{
+    formatter = formatter==null ?  '₹' : formatter
+    return formatter+" "+(Math.round(n * 100) / 100).toLocaleString();
 }
 
 var toastAddedToDom = false;

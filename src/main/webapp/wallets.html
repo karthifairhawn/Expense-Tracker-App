@@ -99,7 +99,7 @@
         <div class="d-flex align-items-center">
             <div class="d-flex w-100 justify-content-between section-title">     
                 <div class="section-title my-wallets-title">Cards</div>
-                <span class="">Pending Bill: <span class="card-used-amount">20000</span> </span>
+                <!-- <span class="">Pending Bill: <span class="card-used-amount">20000</span> </span> -->
             </div>
         </div>
 
@@ -138,39 +138,31 @@
     <div class="modal fade" id="incomeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Add Income</h5>
-                <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="create-expense-form" id="addIncomeForm" onsubmit="return false;">
-                    
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Add Income</h5>
+                    <button type="button" class="btn-close income-model-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="create-expense-form" id="addIncomeForm" onsubmit="return false;">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Wallet</span>
+                            <select class="form-select wallet-selection" name="wallet-selection" id="new-income-wallet">
 
-                    <div class="input-group mb-4">
-                        <span class="input-group-text">Amount</span>
-                        <input type="text"class="form-control amount" placeholder="20000">
-                    </div>
-                    
-
-                    <div class="input-group mb-4">
-                        <span class="input-group-text">Note</span>
-                        <input type="text" class="form-control note" aria-label="Amount (to the nearest rupee)" placeholder="October Salary...">
-                    </div>
-
-                    <div class="input-group mb-4">
-                        <span class="input-group-text">Wallet</span>
-                        <select class="form-select wallet-selection" name="wallet-selection" id="new-income-wallet">
-
-                        </select>
-                    </div>
-
-
-                    <div class="mt-2 d-flex flex-row-reverse">
-                        <button class="btn btn-success add-income-submit">+ add</button>
-                    </div>
-                </form>
-            </div>
-
+                            </select>
+                        </div>
+                        <div class="input-group incamt-input mb-4">
+                            <span class="input-group-text required">Amount</span>
+                            <input type="number" class="form-control amount" placeholder="20000">
+                        </div>
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Note</span>
+                            <input type="text" class="form-control note" aria-label="Amount (to the nearest rupee)" placeholder="October Salary...">
+                        </div>
+                        <div class="mt-2 d-flex flex-row-reverse">
+                            <button class="btn btn-success add-income-submit">+ add</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -461,64 +453,53 @@
 <!-- Non Card Wallet template -->
 <template id="wallet-card-template">   
     <div class="card wallet-card m-3" >
-        <div class="card-body d-flex align-items-center">
-            <a type="button" id="open-wallet-btn" wallet-id = '10' class="d-flex align-items-center btn btn-primary" href="" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
-                <i class="fas fa-eye"></i>
-            </a>
-
+        <div style="overflow: hidden;" class="card-body d-flex align-items-center" id="open-wallet-btn" wallet-id = '10' data-bs-toggle="modal" data-bs-target="#walletInfoModal">
             <span class="acct-type-ico"></span>
-
             <div class="d-flex flex-column">
                 <div class="bank-name">Indain Bank</div>
                 <div class="muted acct-type" style="font-size: 15px;">Bank Account</div>
             </div>
-
             <span class="balance">3000</span>&nbsp; 
+        </div>
 
-            <!-- <div class="uncommon-wallet-fields"></div> -->
-
-            <div class="d-flex">
-
-                <!-- Modal -->
-                <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="acct-type-ico">
-                    
-                            </div>
-                            &nbsp;
-                        <h5 class="modal-title bank-name wallet-info-label"  id="exampleModalLabel"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Modals -->
+        <div class="d-flex">
+            <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="acct-type-ico">
+                
                         </div>
-                        <div class="modal-body">
-                            <span class="acct-type"></span>
-                            <br>
-                            <span class="wallet-type balance wallet-info-label"></span> 
-                            <br>
-                            <hr>
-                        </div>
-                        <div class="modal-footer">
-
-                            <button type="button" class="btn btn-success edit-wallet-btn" id="">Edit</button>
-                            <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
-                        </div>
+                        &nbsp;
+                    <h5 class="modal-title bank-name wallet-info-label"  id="exampleModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <div class="modal-body">
+                        <span class="acct-type"></span>
+                        <br>
+                        <div class="d-flex justify-content-between align-items-center flex">
+                            <span class="wallet-type balance wallet-info-label h1 position-static"></span> 
+                            <span class='btn btn-primary inwallet-addinc-btn' style='font-size:15px'>add income+</span>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn btn-success edit-wallet-btn" id="">Edit</button>
+                        <button type="button" class="btn btn-danger delete-wallet-btn" data-bs-dismiss="modal">Delete</button>
                     </div>
                 </div>
-
-
+                </div>
             </div>
         </div>
+
     </div> 
 </template>
 
 
 <!-- Create Wallet Form Templates -->
 <template id="create-wallet-bank-account">
-    <hr>
-    <div class="h6"><b>Wallet Info</b></div>
-
     <div class="input-group">
         <span class="input-group-text" maxlength="20">Note</span>
         <input type="text" id="new-wallet-banknote" class="form-control" placeholder="ac-no 97823465323">
@@ -527,8 +508,6 @@
 </template>
 
 <template id="create-wallet-credit-card">
-    <hr>
-    <div class="h6"><b>Wallet Info</b></div>
 
     <div class="input-group">
         <span class="input-group-text required">Limit ₹</span>
@@ -580,8 +559,6 @@
 </template>
 
 <template id="create-wallet-bonus-account">
-    <hr>
-    <div class="h6"><b>Wallet Info</b></div>
 
     <div class="input-group">
         <span class="input-group-text" maxlength="20">Note</span>
@@ -592,9 +569,6 @@
 </template>
 
 <template id="create-wallet-other">
-    <hr>
-    <div class="h6"><b>Wallet Info</b></div>
-
     <div class="input-group">
         <span class="input-group-text">Note</span>
         <input type="text" id='new-wallet-onote' maxlength="20" class="form-control" placeholder="Cromax coupen">

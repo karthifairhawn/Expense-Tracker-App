@@ -22,6 +22,16 @@ h1,h2,h3{
     color: #fff;
 }
 
+.right-pane input{
+    height: 60px;
+    font-size: 18px;
+}
+
+.right-pane label{
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
 .myform{
     position: relative;
     display: -ms-flexbox;
@@ -122,7 +132,7 @@ form .error {
     color: #ff0000;
 }
 
-#first{
+#second{
     display:none;
 }
 
